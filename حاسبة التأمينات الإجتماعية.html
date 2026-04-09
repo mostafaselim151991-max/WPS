@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>حاسبة التأمينات – السعودية</title>
+  <style>
+    :root {
+      --bg: #0b1324;
+      --card: #111a30;
+      --muted: #95a3b8;
+      --text: #e7eefb;
+      --accent: #4f8cff;
+      --border: #203050;
+    }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans Arabic", Tahoma, Arial;
+      background: radial-gradient(1200px 600px at 80% -10%, #1a2750 0%, var(--bg) 60%);
+      color: var(--text);
+    }
+    .wrap { max-width: 1100px; margin: 32px auto; padding: 0 16px; }
+    h1 { font-size: 28px; margin: 0 0 6px; }
+    .sub { color: var(--muted); margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+    .card { background: #111a30; border: 1px solid var(--border); border-radius: 18px; padding: 16px; }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    input[type="number"], select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: #0f1a32; color: var(--text); }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .kpi { background: #0f1a32; border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+    .kpi .title { font-size: 12px; color: var(--muted); }
+    .kpi .val { font-size: 20px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-variant-numeric: tabular-nums; }
+    th, td { border-bottom: 1px solid var(--border); padding: 10px; text-align: center; }
+    th { color: var(--muted); font-weight: 600; }
+    .footer { text-align: center; color: var(--muted); margin-top: 30px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>حاسبة التأمينات الاجتماعية (السعودية)</h1>
+    <div class="sub">تفصيل مساهمة صاحب العمل والمشترك وعرض صافي الراتب بعد الخصومات</div>
+
+    <div class="grid">
+      <section class="card" style="grid-column: span 12;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <label>الجنسية</label>
+            <select id="nationality">
+              <option value="saudi">سعودي/ـة</option>
+              <option value="resident">مقيم/ـة (غير سعودي)</option>
+            </select>
+          </div>
+          <div>
+            <label>الأجر الأساسي (SAR)</label>
+            <input type="number" id="basic" min="0" step="0.01" />
+          </div>
+          <div>
+            <label>بدل السكن (SAR)</label>
+            <input type="number" id="housing" min="0" step="0.01" />
+          </div>
+          <div>
+            <label>إعاشات/بدلات ثابتة (SAR)</label>
+            <input type="number" id="fixedAllow" min="0" step="0.01" />
+          </div>
+        </div>
+      </section>
+
+      <section class="card" style="grid-column: span 12;">
+        <div class="kpis">
+          <div class="kpi">
+            <div class="title">وعاء الاشتراك</div>
+            <div class="val" id="baseWage">0.00 SAR</div>
+          </div>
+          <div class="kpi">
+            <div class="title">ما تتحمله الشركة 11.75%</div>
+            <div class="val" id="employerTotal">0.00 SAR</div>
+          </div>
+          <div class="kpi">
+            <div class="title">ما يتحمله الموظف 9.75%</div>
+            <div class="val" id="employeeTotal">0.00 SAR</div>
+          </div>
+          <div class="kpi">
+            <div class="title">إجمالي الاشتراكات (21.5%)</div>
+            <div class="val" id="totalContribution">0.00 SAR</div>
+          </div>
+        </div>
+        <div class="kpis" style="grid-template-columns: repeat(3,1fr);">
+          <div class="kpi">
+            <div class="title">الراتب بعد خصم 9.75%</div>
+            <div class="val" id="salaryAfterEmployee">0.00 SAR</div>
+          </div>
+          <div class="kpi">
+            <div class="title">الراتب بعد خصم 11.75%</div>
+            <div class="val" id="salaryAfterEmployer">0.00 SAR</div>
+          </div>
+          <div class="kpi">
+            <div class="title">الراتب بعد خصم 21.5%</div>
+            <div class="val" id="salaryAfterBoth">0.00 SAR</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>البند</th>
+              <th>نسبة الشركة</th>
+              <th>مساهمة الشركة</th>
+              <th>نسبة الموظف</th>
+              <th>مساهمة الموظف</th>
+            </tr>
+          </thead>
+          <tbody id="breakdownBody"></tbody>
+        </table>
+      </section>
+    </div>
+    <div class="footer">تصميم م / مصطفى عبده سليم</div>
+  </div>
+
+  <script>
+    const EL = id => document.getElementById(id);
+    const fmt = n => (isFinite(n) ? n.toLocaleString('ar-SA',{minimumFractionDigits:2,maximumFractionDigits:2})+ ' SAR' : '—');
+
+    function applyResidentPreset(){
+      return {
+        pensionEmployer:0, pensionEmployee:0,
+        occEmployer:0.02, occEmployee:0,
+        sandEmployer:0, sandEmployee:0
+      };
+    }
+    function applySaudiPreset(){
+      return {
+        pensionEmployer:0.09, pensionEmployee:0.09,
+        occEmployer:0.02, occEmployee:0,
+        sandEmployer:0.0075, sandEmployee:0.0075
+      };
+    }
+
+    function calc(){
+      const nat = EL('nationality').value;
+      const basic = parseFloat(EL('basic').value)||0;
+      const housing = parseFloat(EL('housing').value)||0;
+      const fixedAllow = parseFloat(EL('fixedAllow').value)||0;
+      const base = basic+housing+fixedAllow;
+
+      const rates = nat==='resident'?applyResidentPreset():applySaudiPreset();
+      const rows=[
+        {name:'المعاشات',erRate:rates.pensionEmployer,eeRate:rates.pensionEmployee},
+        {name:'الأخطار المهنية',erRate:rates.occEmployer,eeRate:rates.occEmployee},
+        {name:'ساند',erRate:rates.sandEmployer,eeRate:rates.sandEmployee}
+      ];
+      const breakdown = rows.map(r=>{
+        return {name:r.name, erAmt: base*r.erRate, eeAmt: base*r.eeRate, erRate:r.erRate*100, eeRate:r.eeRate*100};
+      });
+
+      const employerTotal = breakdown.reduce((s,r)=>s+r.erAmt,0);
+      const employeeTotal = breakdown.reduce((s,r)=>s+r.eeAmt,0);
+      const totalContribution = employerTotal + employeeTotal;
+
+      const salaryAfterEmployee = base - employeeTotal;
+      const salaryAfterEmployer = base - employerTotal;
+      const salaryAfterBoth = base - totalContribution;
+
+      EL('baseWage').textContent=fmt(base);
+      EL('employerTotal').textContent=fmt(employerTotal);
+      EL('employeeTotal').textContent=fmt(employeeTotal);
+      EL('totalContribution').textContent=fmt(totalContribution);
+
+      EL('salaryAfterEmployee').textContent = fmt(salaryAfterEmployee);
+      EL('salaryAfterEmployer').textContent = fmt(salaryAfterEmployer);
+      EL('salaryAfterBoth').textContent = fmt(salaryAfterBoth);
+
+      EL('breakdownBody').innerHTML=breakdown.map(r=>`
+        <tr>
+          <td>${r.name}</td>
+          <td>${r.erRate.toFixed(2)}%</td>
+          <td>${fmt(r.erAmt)}</td>
+          <td>${r.eeRate.toFixed(2)}%</td>
+          <td>${fmt(r.eeAmt)}</td>
+        </tr>`).join('');
+    }
+
+    ['nationality','basic','housing','fixedAllow'].forEach(id=>EL(id).addEventListener('input',calc));
+    EL('nationality').addEventListener('change',calc);
+    calc();
+  </script>
+</body>
+</html>

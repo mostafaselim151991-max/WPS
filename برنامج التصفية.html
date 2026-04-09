@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>برنامج تصفية موظف</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  body {
+    background-color: #f0f8ff; /* لون خلفية أفتح مريح */
+    font-family: 'Tajawal', sans-serif;
+    font-size: 18px;
+    direction: rtl;
+    color: #222;
+    margin: 0;
+    padding: 20px 10px;
+  }
+  h2, h3 {
+    color: #004a99;
+    text-align: center;
+    margin: 25px 0 15px;
+    font-weight: 700;
+  }
+  table {
+    width: 90%;
+    margin: 20px auto 40px;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 0 12px rgba(0,0,0,0.07);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 14px 12px;
+    border: 1.5px solid #ccc;
+    text-align: right;
+    vertical-align: middle;
+  }
+  th {
+    background-color: #cce5ff;
+    color: #004a99;
+    font-weight: 700;
+  }
+  td {
+    background-color: #fafafa;
+    font-weight: 500;
+  }
+  input[type="text"],
+  input[type="date"],
+  input[type="number"],
+  select {
+    width: 96%;
+    padding: 10px;
+    border: 1.5px solid #88b3ff;
+    border-radius: 6px;
+    font-size: 17px;
+    color: #004a99;
+    font-weight: 600;
+  }
+  input[type="text"][readonly],
+  input[type="number"][readonly] {
+    background-color: #e6f0ff;
+    color: #555;
+    border-color: #a0bfff;
+  }
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  .total-row {
+    background-color: #dceeff !important;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .btn-container {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  button {
+    background-color: #0070d2;
+    color: white;
+    font-weight: 700;
+    font-size: 18px;
+    padding: 12px 35px;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+  button:hover {
+    background-color: #005bb5;
+  }
+</style>
+</head>
+<body>
+    <style>
+    @media print {
+        .no-print {
+            display: none !important; /* إخفاء الجداول التي تحمل هذا الكلاس */
+        }
+    }
+</style>
+
+<div id="printArea">
+    <div style="text-align: center; margin-top: 30px;"></div>
+   <h2> تصفية حساب موظف (إجازة/نهائي)</h2>
+    <table id="basicinfo">
+        <tr>
+            <th>رقم الإقامة</th>
+            <td><input type="text" id="رقم_الإقامة"></td>
+        </tr>
+        <tr>
+            <th>اسم الموظف</th>
+            <td><input type="text" id="اسم_الموظف"></td>
+        </tr>
+        <tr>
+            <th>الجنسية</th>
+            <td><input type="text" id="الجنسية"></td>
+        </tr>
+        <tr>
+            <th>الشركة أو المؤسسة / الفرع / الوظيفة</th>
+            <td><input type="text" id="الشركة_المؤسسة"></td>
+        </tr>
+        <tr>
+            <th>الراتب الأساسي</th>
+            <td><input type="text" id="الراتب_الأساسي"></td>
+        </tr>
+        <tr>
+            <th>تاريخ الإلتحاق بالشركة	</th>
+            <td><input type="date" id="startDate" onchange="calculateFinalLeave()"></td>
+        </tr>
+        <tr>
+            <th>تاريخ مباشرة العمل</th>
+            <td><input type="date" id="تاريخ_مباشرة_العمل" onchange="calculateFinalLeave()"></td>
+        </tr>
+        <tr>
+            <th>تاريخ نزول الأجازة</th>
+            <td><input type="date" id="leaveDate" onchange="calculateFinalLeave()"></td>
+        </tr> 
+        <tr>
+            <th>مدة الأجازة </th>
+            <td><input type="text" id="الجنسية"></td>
+        </tr>
+    </table>
+    <div class="no-print">   
+    <h3>رصيد الأجازة في حالة عدم النزول من بداية التعيين</h3>
+     
+     <table id="resultsTable" class="no-print">  
+     <tr>
+                <th>البيان</th>
+                <th>التفاصيل</th>
+            </tr>
+            
+            <tr>
+                <td>إجمالي مدة الخدمة بالشركة</td>
+                <td id="serviceDuration"></td>
+            </tr>
+            
+            <tr>
+                <td>رصيد أول 5 سنوات (21 يومًا سنويًا)</td>
+                <td id="firstPeriod"></td>
+            </tr>
+            <tr>
+                <td>تفصيل السنوات الإضافية بعد 5 سنوات</td>
+                <td id="additionalBreakdown"></td>
+            </tr>
+            <tr>
+                <td>رصيد السنوات الإضافية (30 يومًا سنويًا)</td>
+                <td id="extraLeave"></td>
+            </tr>
+</table>
+</div>
+<div class="no-print">   
+        <table>
+            <tr>
+                <td><strong>إجمالي رصيد الإجازة المستحق في حالة عدم النزول من بداية التعيين</strong></td>
+                <td id="totalLeave"></td>
+            </tr>
+        </table>
+        </div>
+
+        <table>
+        <h3>رصيد الأجازة المستحق بعد آخر عودة و مدة الخدمة بعد آخر عودة</h3>
+     <id="resultsTable">
+     <tr>
+                <td>مدة الخدمة بعد آخر عودة</td>
+                <td id="serviceDuration1"></td>
+            </tr>
+        <tr>
+            <th>رصيد الأجازة السنوي</th>
+            <td><input type="text" id="عدد_أيام_الإجازة" readonly></td>
+        </tr>
+    </table>
+<h3>قيمة بدل الأجازة ورصيد  الأجازة المستحق</h3>
+<table id="allowancetable" class="no-print">
+        <tr>
+            <th>تاريخ بداية الراتب</th>
+            <th>تاريخ نهاية الراتب</th>
+            <th>قيمة الراتب</th>
+            <th>عدد الأيام</th>
+            <th>رصيد الأجازة السنوي</th>
+            <th>مبلغ بدل الأجازة</th>
+            <th>الأجازة المستحقة - بالأيام</th>
+
+        </tr>
+        <tr>
+            <td><input type="date" id="salarystartdate03" onchange="calculateDuration03()"></td>
+            <td><input type="date" id="salaryenddate03" onchange="calculateDuration03()"></td>
+            <td><input type="text" id="periodsaralry03" onchange="calculateDuration03()"></td>
+            <td><input type="text" id="daysnumber03"readonly></td>
+            <td>
+            <select id="vacationannual03" onchange="updateVacation()">
+            <option value="21">21 يوم</option>
+            <option value="30">30 يوم</option>
+            <option value="15">15 يوم</option>
+            </select>
+            </td>
+            <td><input type="text" id="vacationallownce03" readonly></td>
+            <td><input type="text" id="vacationdeserve03" readonly></td>
+        </tr>
+      <tr>
+            <td><input type="date" id="salarystartdate04" onchange="calculateDuration04()"></td>
+            <td><input type="date" id="salaryenddate04" onchange="calculateDuration04()"></td>
+            <td><input type="text" id="periodsaralry04" onchange="calculateDuration04()"></td>
+            <td><input type="text" id="daysnumber04"readonly></td>
+            <td>
+            <select id="vacationannual04" onchange="updateVacation()">
+            <option value="21">21 يوم</option>
+            <option value="30">30 يوم</option>
+            <option value="15">15 يوم</option>
+            </select>
+            </td>
+            <td><input type="text" id="vacationallownce04" readonly></td>
+            <td><input type="text" id="vacationdeserve04" readonly></td>
+        </tr>
+        <tr>
+            <td><input type="date" id="salarystartdate05" onchange="calculateDuration05()"></td>
+            <td><input type="date" id="salaryenddate05" onchange="calculateDuration05()"></td>
+            <td><input type="text" id="periodsaralry05" onchange="calculateDuration05()"></td>
+            <td><input type="text" id="daysnumber05"readonly></td>
+            <td>
+            <select id="vacationannual05" onchange="updateVacation()">
+            <option value="21">21 يوم</option>
+            <option value="30">30 يوم</option>
+            <option value="15">15 يوم</option>
+            </select>
+            </td>
+            <td><input type="text" id="vacationallownce05" readonly></td>
+            <td><input type="text" id="vacationdeserve05" readonly></td>
+        </tr>
+        <tr>
+            <td><input type="date" id="salarystartdate06" onchange="calculateDuration06()"></td>
+            <td><input type="date" id="salaryenddate06" onchange="calculateDuration06()"></td>
+            <td><input type="text" id="periodsaralry06" onchange="calculateDuration06()"></td>
+            <td><input type="text" id="daysnumber06"readonly></td>
+            <td>
+            <select id="vacationannual06" onchange="updateVacation()">
+            <option value="21">21 يوم</option>
+            <option value="30">30 يوم</option>
+            <option value="15">15 يوم</option>
+            </select>
+            </td>
+            <td><input type="text" id="vacationallownce06" readonly></td>
+            <td><input type="text" id="vacationdeserve06" readonly></td>
+        </tr>
+</table>
+<table>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th>إجمالي عدد الأيام</th>
+            <th></th>
+            <th>إجمالي مبلغ بدل الأجازة</th>
+            <th>إجمالي الأجازة المستحقة</th>
+
+        </tr>
+        <tr>
+        <td colspan="3"><strong>الإجمالي</strong></td>
+        <td><input type="text" id="إجمالي_عدد_الأيام" readonly></td>
+        <td></td>
+        <td><input type="text" id="totalammount" readonly></td>
+        <td><input type="text" id="إجمالي_بدل_الإجازة" readonly></td>
+    </tr>
+</table>
+</table id="custudyTable">
+ <h3>الُعهد العينية</h3>
+    <table>
+        <tr>
+            <td>سيارة</td>
+            <td><input type="checkbox" id="car"></td>
+            <td>تم تسليم العهدة إلى </td>
+	      <td><input type="text" id="carRecipient"></td>
+        </tr>
+        <tr>
+            <td>جوال</td>
+            <td><input type="checkbox" id="phone"></td>
+            <td>تم تسليم العهدة إلى </td>
+                   <td><input type="text" id="phoneRecipient">
+        </tr>
+        <tr>
+            <td>شريحة</td>
+            <td><input type="checkbox" id="sim"></td>
+            <td>تم تسليم العهدة إلى </td>
+                   <td><input type="text" id="simRecipient"></td>
+        </tr>
+        <tr>
+            <td>لاب توب  - كمبيوتر مكتبي</td>
+            <td><input type="checkbox" id="car"></td>
+            <td>تم تسليم العهدة إلى </td>
+	      <td><input type="text" id="carRecipient"></td>
+        </tr>
+    </table>
+
+    <h3>مبالغ مستحقة للموظف</h3>
+    <table id="salaryTable">
+        <tr>
+            <th>البيان</th>
+            <th>المبلغ</th>
+            <th>تفاصيل المبلغ</th>
+        </tr>
+        <tr>
+            <th>الراتب</th>
+            <td><input type="text" value="0" class="salary"></td>
+            <td><input type="text"></td>
+        </tr>
+        <tr>
+            <th>إضافي عن فترة </th>
+            <td><input type="text" value="0" class="salary"></td>
+            <td><input type="text"></td>
+        </tr>
+         <tr>
+            <th>بدل أجازة</th>
+            <td><input type="text" value="0" class="salary"></td>
+            <td><input type="text"></td>
+        </tr>
+        <tr>
+            <th>بدل تذاكر طيران</th>
+            <td><input type="text" value="0" class="salary"></td>
+            <td><input type="text"></td>
+        </tr>
+	<tr>
+            <td><input type="text"></td>
+            <td><input type="text" value="0" class="salary"></td>
+            <td><input type="text"></td>
+        </tr>
+	<tr>
+            <td><input type="text"></td>
+            <td><input type="text" value="0" class="salary"></td>
+            <td><input type="text"></td>
+        </tr>
+	<tr>
+            <td><input type="text"></td>
+            <td><input type="text" value="0" class="salary"></td>
+            <td><input type="text"></td>
+        </tr>
+	<tr>
+            <td><input type="text"></td>
+            <td><input type="text" value="0" class="salary"></td>
+            <td><input type="text"></td>
+        </tr>
+
+        <tr>
+            <th class="total-row">الاجمالي المستحق</th>
+            <td colspan="3"><input type="text" id="totalDue" value="0.00" readonly></td>
+        </tr>
+    </table>
+    <h3>الحسميـــــات</h3>
+
+<div style="text-align:center; margin-bottom:10px;">
+    <button type="button" onclick="addDeductionRow()">➕ إضافة خصم جديد</button>
+</div>
+
+<table id="discountTable">
+
+    <tr>
+        <th>نوع الخصم</th>
+        <th>البيان</th>
+        <th>المبلغ</th>
+    </tr>
+
+    <tr>
+        <td>سلف</td>
+        <td><input type="text" placeholder="تفاصيل السلفة"></td>
+        <td><input type="text" class="deduction" value="0"></td>
+    </tr>
+
+    <tr>
+        <td>مصروفات ادارية مستحقة علي الموظف</td>
+        <td><input type="text" placeholder="تفاصيل المصروف"></td>
+        <td><input type="text" class="deduction" value="0"></td>
+    </tr>
+
+    <tr>
+        <td>مخالفات مرورية</td>
+        <td><input type="text" placeholder="تفاصيل المخالفة"></td>
+        <td><input type="text" class="deduction" value="0"></td>
+    </tr>
+
+    <tr>
+        <td>عهدة</td>
+        <td><input type="text" placeholder="تفاصيل العهدة"></td>
+        <td><input type="text" class="deduction" value="0"></td>
+    </tr>
+
+    <tr>
+        <td>خصومات أخرى</td>
+        <td><input type="text" placeholder="سبب الخصم"></td>
+        <td><input type="text" class="deduction" value="0"></td>
+    </tr>
+
+    <tr>
+        <th colspan="2">اجمالي الحسميات</th>
+        <td>
+            <input type="text" id="totalDeductions" value="0.00" readonly>
+        </td>
+    </tr>
+
+</table>
+
+    <h3>المبلغ الصافي للموظف</h3>
+   <table id="netsalarytable">
+        <tr>
+            <th class="total-row">الصافي للموظف</th>
+            <td colspan="4"><input type="text" id="netSalary" value="0.00" readonly></td>
+        </tr>
+    </table>
+    <table>
+    <tr>
+        <th>الصافي كتابةً</th>
+        <td><input type="text" id="netSalaryWords" readonly></td>
+    </tr>
+</table>
+ <div style="display: flex; justify-content: space-between; margin-top: 50px;">
+    <div style="text-align: center;">
+        <label> مدير قسم الرواتب وحماية الأجور</label><br>
+        <input type="text" id="financialManagerSignature" style="border: none; border-bottom: 1px solid #000; width: 250px;">
+    </div>
+
+    <div style="text-align: center;">
+        <label> المدير المالي</label><br>
+        <input type="text" id="accountManagerSignature" style="border: none; border-bottom: 1px solid #000; width: 250px;">
+    </div>
+
+    <div style="text-align: center;">
+        <label>المدير التنفيذي او من ينوب عنه </label><br>
+        <input type="text" id="employeeSignature" style="border: none; border-bottom: 1px solid #000; width: 250px;">
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    let inputs = document.querySelectorAll("input");
+    inputs.forEach(input => {
+        input.addEventListener("input", function() {
+            updateTotals();
+            calculateFinalLeave(); // استخدم الدالة الموحدة
+        });
+    });
+});
+
+function calculateFinalLeave() {
+    let start = new Date(document.getElementById("startDate").value);
+    let leave = new Date(document.getElementById("leaveDate").value);
+    let directReturn = new Date(document.getElementById("تاريخ_مباشرة_العمل").value);
+
+    if (isNaN(start) || isNaN(leave)) return;
+
+    // مدة الخدمة الكاملة
+    let totalYears = leave.getFullYear() - start.getFullYear();
+    let totalMonths = leave.getMonth() - start.getMonth();
+    let totalDays = leave.getDate() - start.getDate();
+
+    if (totalDays < 0) {
+        totalMonths--;
+        totalDays += new Date(leave.getFullYear(), leave.getMonth(), 0).getDate();
+    }
+    if (totalMonths < 0) {
+        totalYears--;
+        totalMonths += 12;
+    }
+
+    document.getElementById("serviceDuration").innerText = `${totalYears} سنة، ${totalMonths} شهر، ${totalDays} يوم`;
+
+    // احتساب الإجازة وفقًا للفترة
+    let firstPeriodYears = Math.min(totalYears, 5);
+    let additionalYears = Math.max(totalYears - 5, 0);
+    let totalMonths5years= (totalYears >= 5) ? totalMonths : 0;
+    let totalDays5years=(totalYears >= 5) ? totalDays : 0;
+    let currentAnnualLeave = (totalYears >= 5) ? 30 : 21;
+
+    let firstPeriodLeave = (firstPeriodYears * 21) + ((totalYears <= 5) ? ((totalMonths * 1.75) + (totalDays * 0.0575342465753425)) : 0);
+    let additionalLeave = (totalYears > 5) ? ((additionalYears * 30) + (totalMonths * 2.5) + (totalDays * 0.0821917808219178)) : 0;
+    let totalLeave = firstPeriodLeave + additionalLeave;
+
+    document.getElementById("firstPeriod").innerText = `${firstPeriodLeave.toFixed(2)} يومًا`;
+    document.getElementById("additionalBreakdown").innerText = `${additionalYears} سنة، ${totalMonths5years} شهر، ${totalDays5years} يوم`;
+    document.getElementById("extraLeave").innerText = `${additionalLeave.toFixed(2)} يومًا`;
+    document.getElementById("totalLeave").innerText = `${totalLeave.toFixed(2)} يومًا`;
+
+    // مدة الخدمة بعد العودة الأخيرة
+    if (!isNaN(directReturn)) {
+        const result = getDurationBetweenDates(directReturn, leave);
+
+        document.getElementById("serviceDuration1").innerText =
+            `${result.years} سنة، ${result.months} شهر، ${result.days} يوم`;
+
+        // حساب الأيام الفعلية منذ العودة
+        let daysSinceReturn = Math.floor((leave - directReturn) / (1000 * 60 * 60 * 24));
+        let leaveEntitlement = (daysSinceReturn / 365) * currentAnnualLeave;
+
+        document.getElementById("عدد_أيام_الإجازة").value = currentAnnualLeave;
+        document.getElementById("عدد_أيام_الإجازة_المستحقة").value = leaveEntitlement.toFixed(2);
+    }
+}
+
+function getDurationBetweenDates(startDate, endDate) {
+    let start = new Date(startDate);
+    let end = new Date(endDate);
+
+    let years = end.getFullYear() - start.getFullYear();
+    let months = end.getMonth() - start.getMonth();
+    let days = end.getDate() - start.getDate();
+
+    if (days < 0) {
+        months--;
+        let prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+        days += prevMonth.getDate();
+    }
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
+
+    return { years, months, days };
+}
+function calculateDuration03() {
+    let salarystartdateInput = document.getElementById("salarystartdate03").value;
+    let salaryenddateInput = document.getElementById("salaryenddate03").value;
+    let salaryValue = parseFloat(document.getElementById("periodsaralry03").value);
+    let vacationAnnual = parseInt(document.getElementById("vacationannual03").value);
+
+    if (!salarystartdateInput || !salaryenddateInput) {
+        document.getElementById("daysnumber03").value = "يرجى إدخال التواريخ";
+        document.getElementById("vacationdeserve03").value = "";
+        document.getElementById("vacationallownce03").value = "";
+        return;
+    }
+
+    let salarystartdate = new Date(salarystartdateInput);
+    let salaryenddate = new Date(salaryenddateInput);
+
+    if (isNaN(salarystartdate.getTime()) || isNaN(salaryenddate.getTime()) || isNaN(salaryValue)) {
+        document.getElementById("daysnumber03").value = "تاريخ أو قيمة غير صالحة";
+        document.getElementById("vacationdeserve03").value = "";
+        document.getElementById("vacationallownce03").value = "";
+        return;
+    }
+
+    let timeDifference = salaryenddate - salarystartdate;
+
+    if (timeDifference < 0) {
+        document.getElementById("daysnumber03").value = "تاريخ النهاية يجب أن يكون بعد البداية";
+        document.getElementById("vacationdeserve03").value = "";
+        document.getElementById("vacationallownce03").value = "";
+        return;
+    }
+
+    let daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+    document.getElementById("daysnumber03").value = daysDifference;
+
+    let vacationDeserve = 0;
+    if (vacationAnnual === 30) {
+        vacationDeserve = daysDifference * 0.0821917808219178;
+    } else if (vacationAnnual === 21) {
+        vacationDeserve = daysDifference * 0.0575342465753425;
+    } else if (vacationAnnual === 15) {
+        vacationDeserve = daysDifference * 0.0416666666666667;
+    }
+
+    document.getElementById("vacationdeserve03").value = vacationDeserve.toFixed(2);
+
+    let vacationAllowance = (salaryValue / 30) * vacationDeserve;
+    document.getElementById("vacationallownce03").value = vacationAllowance.toFixed(2);
+}
+   
+  function calculateDuration04() {
+    let salarystartdateInput = document.getElementById("salarystartdate04").value;
+    let salaryenddateInput = document.getElementById("salaryenddate04").value;
+    let salaryValue = parseFloat(document.getElementById("periodsaralry04").value);
+    let vacationAnnual = parseInt(document.getElementById("vacationannual04").value);
+
+    if (!salarystartdateInput || !salaryenddateInput) {
+        document.getElementById("daysnumber04").value = "يرجى إدخال التواريخ";
+        document.getElementById("vacationdeserve04").value = "";
+        document.getElementById("vacationallownce04").value = "";
+        return;
+    }
+
+    let salarystartdate = new Date(salarystartdateInput);
+    let salaryenddate = new Date(salaryenddateInput);
+
+    if (isNaN(salarystartdate.getTime()) || isNaN(salaryenddate.getTime()) || isNaN(salaryValue)) {
+        document.getElementById("daysnumber04").value = "تاريخ أو قيمة غير صالحة";
+        document.getElementById("vacationdeserve04").value = "";
+        document.getElementById("vacationallownce04").value = "";
+        return;
+    }
+
+    let timeDifference = salaryenddate - salarystartdate;
+
+    if (timeDifference < 0) {
+        document.getElementById("daysnumber04").value = "تاريخ النهاية يجب أن يكون بعد البداية";
+        document.getElementById("vacationdeserve04").value = "";
+        document.getElementById("vacationallownce04").value = "";
+        return;
+    }
+
+    let daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+    document.getElementById("daysnumber04").value = daysDifference;
+
+      let vacationDeserve = 0;
+    if (vacationAnnual === 30) {
+        vacationDeserve = daysDifference * 0.0821917808219178;
+    } else if (vacationAnnual === 21) {
+        vacationDeserve = daysDifference * 0.0575342465753425;
+    } else if (vacationAnnual === 15) {
+        vacationDeserve = daysDifference * 0.0416666666666667;
+    }
+
+
+    document.getElementById("vacationdeserve04").value = vacationDeserve.toFixed(2);
+
+    let vacationAllowance = (salaryValue / 30) * vacationDeserve;
+    document.getElementById("vacationallownce04").value = vacationAllowance.toFixed(2);
+}
+ 
+function calculateDuration05() {
+    let salarystartdateInput = document.getElementById("salarystartdate05").value;
+    let salaryenddateInput = document.getElementById("salaryenddate05").value;
+    let salaryValue = parseFloat(document.getElementById("periodsaralry05").value);
+    let vacationAnnual = parseInt(document.getElementById("vacationannual05").value);
+
+    if (!salarystartdateInput || !salaryenddateInput) {
+        document.getElementById("daysnumber05").value = "يرجى إدخال التواريخ";
+        document.getElementById("vacationdeserve05").value = "";
+        document.getElementById("vacationallownce05").value = "";
+        return;
+    }
+
+    let salarystartdate = new Date(salarystartdateInput);
+    let salaryenddate = new Date(salaryenddateInput);
+
+    if (isNaN(salarystartdate.getTime()) || isNaN(salaryenddate.getTime()) || isNaN(salaryValue)) {
+        document.getElementById("daysnumber05").value = "تاريخ أو قيمة غير صالحة";
+        document.getElementById("vacationdeserve05").value = "";
+        document.getElementById("vacationallownce05").value = "";
+        return;
+    }
+
+    let timeDifference = salaryenddate - salarystartdate;
+
+    if (timeDifference < 0) {
+        document.getElementById("daysnumber05").value = "تاريخ النهاية يجب أن يكون بعد البداية";
+        document.getElementById("vacationdeserve05").value = "";
+        document.getElementById("vacationallownce05").value = "";
+        return;
+    }
+
+    let daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+    document.getElementById("daysnumber05").value = daysDifference;
+
+      let vacationDeserve = 0;
+    if (vacationAnnual === 30) {
+        vacationDeserve = daysDifference * 0.0821917808219178;
+    } else if (vacationAnnual === 21) {
+        vacationDeserve = daysDifference * 0.0575342465753425;
+    } else if (vacationAnnual === 15) {
+        vacationDeserve = daysDifference * 0.0416666666666667;
+    }
+
+
+    document.getElementById("vacationdeserve05").value = vacationDeserve.toFixed(2);
+
+    let vacationAllowance = (salaryValue / 30) * vacationDeserve;
+    document.getElementById("vacationallownce05").value = vacationAllowance.toFixed(2);
+}
+
+function calculateDuration06() {
+    let salarystartdateInput = document.getElementById("salarystartdate06").value;
+    let salaryenddateInput = document.getElementById("salaryenddate06").value;
+    let salaryValue = parseFloat(document.getElementById("periodsaralry06").value);
+    let vacationAnnual = parseInt(document.getElementById("vacationannual06").value);
+
+    if (!salarystartdateInput || !salaryenddateInput) {
+        document.getElementById("daysnumber06").value = "يرجى إدخال التواريخ";
+        document.getElementById("vacationdeserve06").value = "";
+        document.getElementById("vacationallownce06").value = "";
+        return;
+    }
+
+    let salarystartdate = new Date(salarystartdateInput);
+    let salaryenddate = new Date(salaryenddateInput);
+
+    if (isNaN(salarystartdate.getTime()) || isNaN(salaryenddate.getTime()) || isNaN(salaryValue)) {
+        document.getElementById("daysnumber06").value = "تاريخ أو قيمة غير صالحة";
+        document.getElementById("vacationdeserve06").value = "";
+        document.getElementById("vacationallownce06").value = "";
+        return;
+    }
+
+    let timeDifference = salaryenddate - salarystartdate;
+
+    if (timeDifference < 0) {
+        document.getElementById("daysnumber06").value = "تاريخ النهاية يجب أن يكون بعد البداية";
+        document.getElementById("vacationdeserve06").value = "";
+        document.getElementById("vacationallownce06").value = "";
+        return;
+    }
+
+    let daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+    document.getElementById("daysnumber06").value = daysDifference;
+
+      let vacationDeserve = 0;
+    if (vacationAnnual === 30) {
+        vacationDeserve = daysDifference * 0.0821917808219178;
+    } else if (vacationAnnual === 21) {
+        vacationDeserve = daysDifference * 0.0575342465753425;
+    } else if (vacationAnnual === 15) {
+        vacationDeserve = daysDifference * 0.0416666666666667;
+    }
+
+
+    document.getElementById("vacationdeserve06").value = vacationDeserve.toFixed(2);
+
+    let vacationAllowance = (salaryValue / 30) * vacationDeserve;
+    document.getElementById("vacationallownce06").value = vacationAllowance.toFixed(2);
+}
+
+
+
+
+
+function calculateTotals() {
+    let totalDays = 0, totalAllowance = 0, totalVacation = 0;
+
+    // جمع القيم من جميع الحقول الخاصة بعدد الأيام
+    document.querySelectorAll("#daysnumber, #daysnumber03, #daysnumber04, #daysnumber05, #daysnumber06").forEach(input => {
+        totalDays += parseFloat(input.value) || 0;
+    });
+
+    // جمع القيم من جميع الحقول الخاصة بمبلغ بدل الإجازة
+    document.querySelectorAll("#vacationallownce, #vacationallownce03, #vacationallownce04, #vacationallownce05, #vacationallownce06").forEach(input => {
+        totalAllowance += parseFloat(input.value) || 0;
+    });
+
+    // جمع القيم من جميع الحقول الخاصة بالإجازة المستحقة
+    document.querySelectorAll("#vacationdeserve, #vacationdeserve03, #vacationdeserve04, #vacationdeserve05, #vacationdeserve06").forEach(input => {
+        totalVacation += parseFloat(input.value) || 0;
+    });
+
+    // تحديث القيم في الصف الإجمالي
+    document.getElementById("إجمالي_عدد_الأيام").value = totalDays.toFixed(2);
+    document.getElementById("totalammount").value = totalAllowance.toFixed(2);
+    document.getElementById("إجمالي_بدل_الإجازة").value = totalVacation.toFixed(2);
+}
+
+// تحسين دالة الحساب وإضافة استدعاء تلقائي للإجماليات
+function calculateDuration02() {
+    let salarystartdateInput = document.getElementById("salarystartdate").value;
+    let salaryenddateInput = document.getElementById("salaryenddate").value;
+    let salaryValue = parseFloat(document.getElementById("periodsaralry").value) || 0;
+    let vacationAnnual = parseInt(document.getElementById("vacationannual").value) || 0;
+
+    if (!salarystartdateInput || !salaryenddateInput) return;
+
+    let salarystartdate = new Date(salarystartdateInput);
+    let salaryenddate = new Date(salaryenddateInput);
+    
+    let timeDifference = salaryenddate - salarystartdate;
+    if (timeDifference < 0) return;
+
+    let daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+    document.getElementById("daysnumber").value = daysDifference.toFixed(2);
+
+    let vacationDeserve = vacationAnnual === 30 ? daysDifference * 0.0821917808219178 : daysDifference * 0.0575342465753425;
+    document.getElementById("vacationdeserve").value = vacationDeserve.toFixed(2);
+
+    let vacationAllowance = (salaryValue / 30) * vacationAnnual;
+    document.getElementById("vacationallownce").value = vacationAllowance.toFixed(2);
+
+    // تحديث الإجماليات تلقائيًا بعد الحساب
+    calculateTotals();
+}
+
+// إضافة مستمع للأحداث لجميع المدخلات لضمان تحديث الإجماليات تلقائيًا عند تغيير أي قيمة
+document.querySelectorAll("input, select").forEach(input => {
+    input.addEventListener("input", calculateTotals);
+});
+
+function calculateTotalSalary() {
+    let totalSalary = 0;
+
+    // جمع جميع القيم من الحقول التي تحمل الفئة "salary"
+    document.querySelectorAll(".salary").forEach(input => {
+        totalSalary += parseFloat(input.value) || 0;
+    });
+
+    // تحديث حقل الإجمالي المستحق
+    document.getElementById("totalDue").value = totalSalary.toFixed(2);
+}
+
+// إضافة مستمع للأحداث لضمان تحديث الإجمالي عند تغيير أي قيمة
+document.querySelectorAll(".salary").forEach(input => {
+    input.addEventListener("input", calculateTotalSalary);
+});
+
+function calculateTotalDeductions() {
+    let totalDeductions = 0;
+
+    // جمع جميع القيم من الحقول التي تحمل الفئة "deduction"
+    document.querySelectorAll(".deduction").forEach(input => {
+        totalDeductions += parseFloat(input.value) || 0;
+    });
+
+    // تحديث حقل الإجمالي المستحق للحسميات
+    document.getElementById("totalDeductions").value = totalDeductions.toFixed(2);
+}
+
+// إضافة مستمع للأحداث لضمان تحديث الإجمالي عند تغيير أي قيمة
+document.querySelectorAll(".deduction").forEach(input => {
+    input.addEventListener("input", calculateTotalDeductions);
+});
+
+function calculateNetSalary() {
+    let totalDue = parseFloat(document.getElementById("totalDue").value) || 0;
+    let totalDeductions = parseFloat(document.getElementById("totalDeductions").value) || 0;
+
+    // حساب الصافي عبر طرح إجمالي الحسميات من إجمالي المستحقات
+    let netSalary = totalDue - totalDeductions;
+
+    // تحديث حقل المبلغ الصافي للموظف
+    document.getElementById("netSalary").value = netSalary.toFixed(2);
+    document.getElementById("netSalaryWords").value = numberToArabicWords(netSalary);
+}
+
+// إضافة مستمع للأحداث لضمان تحديث الصافي عند تغيير أي قيمة
+document.querySelectorAll("#totalDue, #totalDeductions").forEach(input => {
+    input.addEventListener("input", calculateNetSalary);
+});
+
+// استدعاء جميع الحسابات تلقائيًا عند تعديل المدخلات
+document.querySelectorAll(".salary").forEach(input => {
+    input.addEventListener("input", () => {
+        calculateTotalSalary();
+        calculateNetSalary();
+    });
+});
+
+document.querySelectorAll(".deduction").forEach(input => {
+    input.addEventListener("input", () => {
+        calculateTotalDeductions();
+        calculateNetSalary();
+    });
+});
+
+// تحديث القيم عند تحميل الصفحة لضمان المزامنة الفورية
+window.onload = function() {
+    calculateTotalSalary();
+    calculateTotalDeductions();
+    calculateNetSalary();
+};
+function addDeductionRow() {
+    const table = document.getElementById("discountTable");
+
+    const row = table.insertRow(table.rows.length - 1);
+
+    const cell1 = row.insertCell(0);
+    const cell2 = row.insertCell(1);
+    const cell3 = row.insertCell(2);
+
+    cell1.innerHTML = '<input type="text" placeholder="نوع الخصم">';
+    cell2.innerHTML = '<input type="text" placeholder="البيان">';
+    cell3.innerHTML = '<input type="text" class="deduction" value="0">';
+
+    cell3.querySelector("input").addEventListener("input", () => {
+        calculateTotalDeductions();
+        calculateNetSalary();
+    });
+}
+
+</script>
+
+
+<div class="btn-container no-print">
+  <button onclick="saveFilledHTML()">💾 حفظ التصفية باسم</button>
+  <input type="text" id="filename" placeholder="اسم الملف" style="padding: 8px; font-size: 16px; width: 250px; margin-left: 10px;">
+  <button onclick="printDiv()">🖨️ طباعة التصفية</button>
+
+</div>
+
+<style>
+  .btn-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* مسافة بين العناصر */
+    margin: 20px 0;
+    flex-wrap: wrap; /* يخليهم ينزلوا تحت لو الشاشة صغيرة */
+  }
+
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    @page {
+      size: A4;
+      margin: 20mm;
+    }
+  }
+</style>
+        <div class="no-print" style=" 
+            background-color: #a1cffa;
+            padding: 10px;
+            margin-top: 15px;
+            width: 100%;
+            box-sizing: border-box;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+        ">
+            تصميم :: أ / مصطفى عبده -------- م / إيمان قدري <<<<<<<<<<<< نموذج خاص بشركة سادن المتخصصة للإستشارات الجيولوجية >>>>>>>>>>>>>>>>>>>>>>>>>>
+        </div >
+    </div>
+</div>
+
+
+
+<script>
+  function printDiv() {
+    // ننسخ العنصر الأصلي
+const original = document.getElementById("printArea").cloneNode(true);
+
+// حذف العناصر غير المخصصة للطباعة
+original.querySelectorAll(".no-print").forEach(el => el.remove());
+
+    // نحول جميع الـ input إلى عناصر span لعرض القيم فقط
+    const inputs = original.querySelectorAll("input, select, textarea");
+    inputs.forEach(function (input) {
+        const span = document.createElement("span");
+        span.textContent = input.value;
+        input.parentNode.replaceChild(span, input);
+    });
+
+    // فتح نافذة الطباعة
+    const printWindow = window.open('', '', 'height=500,width=800');
+    printWindow.document.write('<html><head><title>تصفية موظف أجازة / نهائي</title>');
+
+    // تحميل خط Tajawal
+    printWindow.document.write('<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">');
+
+    // إعدادات الطباعة
+    printWindow.document.write('<style>');
+    printWindow.document.write('@page { size: A4 portrait; margin: 15mm; }');
+    printWindow.document.write('@media print {');
+    printWindow.document.write('  .no-print { display: none !important; }');
+    printWindow.document.write('  html, body { height: 100%; overflow: hidden; margin: 0; padding: 0; zoom: 65%; }');
+    printWindow.document.write('  * { page-break-inside: avoid !important; }');
+    printWindow.document.write('}');
+    printWindow.document.write('body { direction: rtl; text-align: right; font-family: "Tajawal", sans-serif; margin: 0; padding: 0; }');
+    printWindow.document.write('table { width: 100%; border-collapse: collapse; }');
+    printWindow.document.write('th, td { border: 2px solid black; padding: 10px; font-size: 20px; }');
+    printWindow.document.write('</style>');
+
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(original.innerHTML);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+
+    printWindow.onload = function () {
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    };
+}
+
+</script>
+
+<script>
+ function saveFilledHTML() {
+      const fileNameInput = document.getElementById("filename");
+      const fileName = fileNameInput.value.trim();
+
+      if (!fileName) {
+        alert("⚠️ من فضلك أدخل اسم الملف قبل الحفظ.");
+        fileNameInput.focus();
+        return;
+      }
+
+      const fullDocument = document.documentElement.cloneNode(true);
+
+      // تعبئة القيم داخل عناصر الإدخال
+      fullDocument.querySelectorAll("input, select, textarea").forEach(input => {
+        if (input.type === "checkbox") {
+          if (input.checked) input.setAttribute("checked", "checked");
+          else input.removeAttribute("checked");
+        } else if (input.tagName === "TEXTAREA") {
+          input.innerHTML = input.value;
+        } else {
+          input.setAttribute("value", input.value);
+        }
+      });
+
+      const finalHTML = "<!DOCTYPE html>\n" + fullDocument.outerHTML;
+
+      const blob = new Blob([finalHTML], { type: "text/html" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = fileName.endsWith(".html") ? fileName : `${fileName}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+                                 </script>
+<script>
+function numberToArabicWords(num) {
+    if (num === 0) return "صفر ريال";
+
+    const ones = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة"];
+    const tens = ["", "عشرة", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+    const teens = ["عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر",
+                   "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+    const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة",
+                      "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
+
+    function convertBelowThousand(n) {
+        let word = "";
+        let h = Math.floor(n / 100);
+        let t = n % 100;
+
+        if (h > 0) word += hundreds[h] + " ";
+
+        if (t >= 10 && t < 20) {
+            word += teens[t - 10];
+        } else {
+            let o = t % 10;
+            let te = Math.floor(t / 10);
+            if (o > 0) word += ones[o] + (te > 0 ? " و " : "");
+            if (te > 0) word += tens[te];
+        }
+        return word.trim();
+    }
+
+    let integerPart = Math.floor(num);
+    let decimalPart = Math.round((num - integerPart) * 100);
+
+    let result = "";
+    let thousands = Math.floor(integerPart / 1000);
+    let remainder = integerPart % 1000;
+
+    if (thousands > 0) {
+        result += convertBelowThousand(thousands) + " ألأف";
+        if (remainder > 0) result += " و ";
+    }
+
+    if (remainder > 0) {
+        result += convertBelowThousand(remainder);
+    }
+
+    result += " ريال";
+
+    if (decimalPart > 0) {
+        result += " و " + convertBelowThousand(decimalPart) + " هللة";
+    }
+
+    return result;
+}
+</script>
+

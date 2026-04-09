@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>برنامج تصفية موظف</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    font-family: 'Tajawal', sans-serif; /* تغيير الخط هنا */
+    background: linear-gradient(135deg,#e3f2fd,#ffffff);
+    padding: 20px;
+    direction: rtl;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+h2 {
+    text-align: center;
+    color: #1a73e8;
+    font-weight: 700;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 160px 1fr 160px 1fr;
+    gap: 12px;
+}
+
+label {
+    font-weight: 700;
+    align-self: center;
+}
+
+input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: 'Tajawal', sans-serif; /* ضمان تطبيق الخط داخل الحقول */
+    font-size: 14px;
+}
+
+button {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #1a73e8;
+    color: #fff;
+    margin-top: 12px;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #1557b0;
+}
+
+#doc {
+    margin: 30px auto;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 25mm;
+    background: white;
+    border: 1px solid #000;
+    line-height: 2.1;
+    font-size: 18px;
+    font-family: 'Tajawal', sans-serif; /* الخط للمستند المطبوع */
+}
+
+.title {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 25px 0;
+    color: #000;
+}
+
+.sign {
+    margin-top: 100px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+}
+
+/* تنسيق الطباعة الرسمي */
+@media print {
+    body { background: white; padding: 0; }
+    .container { box-shadow: none; border: none; }
+    h2, .grid, button { display: none; }
+    #doc { border: none; margin: 0; width: 100%; padding: 20mm; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>إدخال بيانات المخالصة</h2>
+
+<div class="grid">
+<label>التاريخ</label>
+<input id="date" type="date">
+
+<label>اسم الموظف</label>
+<input id="name">
+
+<label>الفرع</label>
+<input id="branch">
+
+<label>الجنسية</label>
+<input id="nationality">
+
+<label>رقم الهوية</label>
+<input id="idnum">
+
+<label>اسم الشركة</label>
+<input id="company">
+
+<label>المبلغ رقم</label>
+<input id="amount" oninput="convertAmount()">
+
+<label>المبلغ كتابة</label>
+<input id="amountText" readonly>
+
+<label>بداية العمل</label>
+<input id="startDate" type="date">
+
+<label>نهاية العمل</label>
+<input id="endDate" type="date">
+</div>
+
+<button onclick="generateDoc()">إنشاء النموذج</button>
+<button onclick="downloadPDF()">تحميل PDF</button>
+
+<div id="doc">
+    <div id="output">
+        <p style="text-align:center; color:#999;">سيظهر محتوى المخالصة هنا بعد تعبئة البيانات والضغط على "إنشاء النموذج"</p>
+    </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+/* نفس المنطق البرمجي السابق مع الحفاظ على كفاءته */
+
+let currentDocNumber = "";
+
+function generateDocNumber(){
+    const now = new Date();
+    return "DOC-" +
+        now.getFullYear() +
+        (now.getMonth()+1).toString().padStart(2,'0') +
+        now.getDate().toString().padStart(2,'0') + "-" +
+        Math.floor(Math.random()*900+100);
+}
+
+function numberToArabicWords(n){
+    if(n===0) return "صفر";
+    const ones=["","واحد","اثنان","ثلاثة","أربعة","خمسة","ستة","سبعة","ثمانية","تسعة","عشرة"];
+    const teens=["أحد عشر","اثنا عشر","ثلاثة عشر","أربعة عشر","خمسة عشر","ستة عشر","سبعة عشر","ثمانية عشر","تسعة عشر"];
+    const tens=["","","عشرون","ثلاثون","أربعون","خمسون","ستون","سبعون","ثمانون","تسعون"];
+    const hundreds=["","مائة","مائتان","ثلاثمائة","أربعمائة","خمسمائة","ستمائة","سبعمائة","ثمانمائة","تسعمائة"];
+
+    function convertHundreds(num){
+        let parts=[];
+        if(num>=100){ parts.push(hundreds[Math.floor(num/100)]); num%=100; }
+        if(num>=11 && num<=19){ parts.push(teens[num-11]); num=0; }
+        if(num>=20){
+            let t=Math.floor(num/10); let o=num%10;
+            if(o>0) parts.push(ones[o]+" و"+tens[t]); else parts.push(tens[t]);
+            num=0;
+        }
+        if(num>0 && num<=10) parts.push(ones[num]);
+        return parts.join(" و");
+    }
+
+    let parts=[];
+    if(n>=1000000){
+        let m=Math.floor(n/1000000);
+        if(m===1) parts.push("مليون");
+        else if(m===2) parts.push("مليونان");
+        else parts.push(convertHundreds(m)+" مليون");
+        n%=1000000;
+    }
+    if(n>=1000){
+        let t=Math.floor(n/1000);
+        if(t===1) parts.push("ألف");
+        else if(t===2) parts.push("ألفان");
+        else parts.push(convertHundreds(t)+" ألف");
+        n%=1000;
+    }
+    if(n>0) parts.push(convertHundreds(n));
+    return parts.join(" و");
+}
+
+function convertAmount(){
+    const val=document.getElementById("amount").value;
+    const amountText = document.getElementById("amountText");
+    if(!val) return amountText.value="";
+    const num=parseFloat(val);
+    if(isNaN(num)) return amountText.value="";
+    const riyals=Math.floor(num);
+    const halalas=Math.round((num-riyals)*100);
+    let words=numberToArabicWords(riyals)+" ريال سعودي";
+    if(halalas>0) words+=" و"+numberToArabicWords(halalas)+" هللة";
+    words+=" فقط";
+    amountText.value=words;
+}
+
+function generateDoc(){
+    const get=id=>document.getElementById(id).value;
+    currentDocNumber = generateDocNumber();
+    document.getElementById("output").innerHTML=`
+    <div style="display:flex;justify-content:space-between; font-weight:500;">
+        <div>رقم المستند: <span style="color:red">${currentDocNumber}</span></div>
+        <div>التاريخ: <span style="color:red">${get("date")}</span></div>
+    </div>
+
+    <div class="title">إقرار مخالصة نهائية</div>
+
+    <p>
+    أُقر أنا الموقع أدناه / <span style="color:red;"><b>${get("name")}</b></span><br>
+    الجنسية: <span style="color:red;"><b>${get("nationality")}</b></span><br>
+    الفرع: <span style="color:red;"><b>${get("branch")}</b></span><br>
+    هوية رقم: <span style="color:red;"><b>${get("idnum")}</b></span>
+    </p>
+
+    <p>
+    أني قد استلمت من شركة / مؤسسة / <span style="color:red;"><b>${get("company")}</b></span><br>
+    مبلغ <span style="color:red;"><b>${get("amount")}</b></span> ريال سعودي<br>
+    فقط <span style="color:red;"><b>${get("amountText")}</b></span><br>
+    وذلك مقابل جميع حقوقي المالية والمعنوية منذ بداية عملي بتاريخ <span style="color:red;"><b>${get("startDate")}</b></span>
+    وحتى تاريخ <span style="color:red;"><b>${get("endDate")}</b></span>.
+    </p>
+
+    <p>
+    ويعد هذا الإقرار مخالصة نهائية لا يحق لي بعدها مطالبة الشركة / المؤسسة بأي مستحقات مالية أو عمالية وعلى ذلك أوقع .
+    </p>
+
+    <div class="sign">
+        <div>الاسم: ................................</div>
+        <div>التوقيع: ................................</div>
+        <div>البصمة:</div>
+    </div>`;
+}
+
+async function downloadPDF(){
+    const output = document.getElementById("output");
+    if(output.innerText.includes("سيظهر محتوى")){
+        alert("يرجى إنشاء النموذج أولاً");
+        return;
+    }
+    const employeeName = document.getElementById("name").value || "موظف";
+    const { jsPDF } = window.jspdf;
+    const canvas = await html2canvas(document.querySelector("#doc"), {scale:2});
+    const img = canvas.toDataURL("image/jpeg", 0.9);
+    const pdf = new jsPDF("p","mm","a4");
+    const width = 210;
+    const height = canvas.height * width / canvas.width;
+    pdf.addImage(img,'JPEG',0,0,width,height);
+    pdf.save(`مخالصة_${employeeName}_${currentDocNumber}.pdf`);
+}
+</script>
+
+</body>
+</html>

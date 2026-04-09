@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تقرير توزيع التصفية الرسمي</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #64748b;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --border: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            color: #334155;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        h2, h3, h4 {
+            text-align: center;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .input-panel {
+            background: #f1f5f9;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group { display: flex; flex-direction: column; }
+        label { font-weight: 700; margin-bottom: 8px; font-size: 14px; color: var(--secondary); }
+        
+        input { 
+            padding: 10px; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            font-size: 14px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 15px;
+        }
+
+        .table th, .table td {
+            border: 1px solid #94a3b8;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .table th { 
+            background-color: #f8fafc; 
+            color: var(--primary); 
+            font-weight: 700;
+        }
+
+        #reportArea {
+            padding: 30px;
+            border: 1px solid #e2e8f0;
+            display: none;
+            background: white;
+            position: relative;
+        }
+
+        /* تنسيق الهيدر مع شعار نصي بديل لتجنب أخطاء التحميل */
+        .header-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 3px double var(--primary);
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+
+        .logo-placeholder {
+            width: 120px;
+            height: 60px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+
+        .btn-zone {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        .btn-calc { background: var(--primary); color: white; }
+        .btn-pdf { background: #ef4444; color: white; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .signature-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .sig-box {
+            text-align: center;
+            min-width: 280px;
+            line-height: 1.8;
+        }
+
+        .highlight { font-weight: 700; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="input-panel" id="adminPanel">
+        <h3>إدخال بيانات التصفية والتوزيع</h3>
+        <div class="input-grid">
+            <div class="input-group"><label>اسم الموظف</label><input type="text" id="empName" placeholder="الأسم كامل"></div>
+            <div class="input-group"><label>هوية الموظف</label><input type="text" id="empId" placeholder="XXXXXXXX"></div>
+            <div class="input-group"><label>قيمة التصفية الإجمالية</label><input type="number" step="0.01" id="totalValue"></div>
+            <div class="input-group"><label>قيمة آخر راتب بالبدلات</label><input type="number" step="0.01" id="lastSalary"></div>
+            <div class="input-group"><label>آخر فرع عمل به</label><input type="text" id="lastBranch"></div>
+        </div>
+
+        <table class="table" id="inputTable">
+            <thead>
+                <tr><th>الفرع</th><th>تاريخ البدء</th><th>تاريخ الانتهاء</th><th>إجراء</th></tr>
+            </thead>
+            <tbody id="periodBody">
+                <tr>
+                    <td><input type="text" class="row-branch" style="width:90%"></td>
+                    <td><input type="date" class="row-start"></td>
+                    <td><input type="date" class="row-end"></td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="display:flex; gap:10px;">
+            <button class="btn" style="background:#10b981; color:white;" onclick="addRow()">+ إضافة فترة عمل</button>
+            <button class="btn btn-calc" onclick="calculate()">توليد التقرير النهائي</button>
+        </div>
+    </div>
+
+    <div id="reportArea">
+        <div class="header-box">
+            <div class="logo-placeholder">Saden Specialized Co.</div>
+            <h2 style="margin:0; flex-grow: 1; text-align: center;">توزيع مستحقات تصفية موظف</h2>
+            <div style="width: 120px; text-align: left; font-size: 12px;">إدارة الرواتب وحماية الأجور</div> 
+        </div>
+
+        <table class="table">
+            <tr>
+                <td style="text-align:right"><strong>اسم الموظف:</strong> <span id="outName" class="highlight"></span></td>
+                <td style="text-align:right"><strong>رقم الهوية:</strong> <span id="outId" class="highlight"></span></td>
+            </tr>
+            <tr>
+                <td style="text-align:right"><strong>آخر فرع تابع له:</strong> <span id="outLastBranch" class="highlight"></span></td>
+                <td style="text-align:right"><strong>آخر راتب مستحق:</strong> <span id="outSalary" class="highlight"></span> ريال</td>
+            </tr>
+            <tr style="background:#f1f5f9">
+                <td colspan="2" style="font-size: 18px;"><strong>إجمالي المبلغ المستحق للتصفية:</strong> <span id="outTotal" class="highlight" style="color:#dc2626"></span> ريال</td>
+            </tr>
+        </table>
+
+        <h4>أولاً: تفصيل فترات العمل المسجلة</h4>
+        <table class="table" id="periodResultTable">
+            <thead><tr><th>الفرع</th><th>تاريخ البداية</th><th>تاريخ النهاية</th><th>المدة الزمنية</th><th>الأيام</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <h4>ثانياً: التوزيع المالي المستحق على الفروع</h4>
+        <table class="table" id="settlementResultTable">
+            <thead><tr><th>اسم الفرع</th><th>نصيب التصفية</th><th>الراتب المضاف</th><th>الإجمالي للمطالبة</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <div class="signature-section">
+            <div class="sig-box">
+                <p>يعتمد,,</p>
+                <strong>مدير قسم الرواتب وحماية الأجور</strong><br><br>
+                <span>التوقيع: ........................................</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-zone" id="actionButtons" style="display:none;">
+        <button class="btn btn-pdf" onclick="exportPDF()">حفظ التقرير بصيغة PDF</button>
+        <button class="btn" style="background:#64748b; color:white;" onclick="window.location.reload()">تصفية البيانات وإدخال جديد</button>
+    </div>
+</div>
+
+<script>
+    function addRow() {
+        let row = document.getElementById("periodBody").insertRow();
+        row.innerHTML = `<td><input type="text" class="row-branch" style="width:90%"></td>
+                         <td><input type="date" class="row-start"></td>
+                         <td><input type="date" class="row-end"></td>
+                         <td><button onclick="this.parentElement.parentElement.remove()" style="color:#ef4444; border:none; background:none; cursor:pointer; font-weight:bold;">حذف</button></td>`;
+    }
+
+    function getDuration(days) {
+        let months = Math.floor(days / 30);
+        let remainingDays = days % 30;
+        let text = "";
+        if (months > 0) text += months + " شهر ";
+        if (remainingDays > 0) text += (months > 0 ? "و " : "") + remainingDays + " يوم";
+        return text || "0 يوم";
+    }
+
+    function calculate() {
+        const totalVal = parseFloat(document.getElementById("totalValue").value) || 0;
+        const lastSal = parseFloat(document.getElementById("lastSalary").value) || 0;
+        const lastBr = document.getElementById("lastBranch").value;
+        const netSettlement = totalVal - lastSal;
+
+        let branchesData = [];
+        let totalDays = 0;
+
+        document.querySelectorAll("#periodBody tr").forEach(row => {
+            const branch = row.querySelector(".row-branch").value;
+            const startStr = row.querySelector(".row-start").value;
+            const endStr = row.querySelector(".row-end").value;
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+
+            if(branch && !isNaN(start) && !isNaN(end)) {
+                const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
+                totalDays += diffDays;
+                branchesData.push({ 
+                    name: branch, 
+                    days: diffDays, 
+                    start: startStr, 
+                    end: endStr 
+                });
+            }
+        });
+
+        if(totalDays === 0 || !lastBr) { 
+            alert("يرجى التأكد من إدخال البيانات بشكل صحيح (الفترات، آخر فرع، والقيم المالية)"); 
+            return; 
+        }
+
+        const fmt = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+
+        document.getElementById("outName").innerText = document.getElementById("empName").value;
+        document.getElementById("outId").innerText = document.getElementById("empId").value;
+        document.getElementById("outSalary").innerText = lastSal.toLocaleString('en-US', fmt);
+        document.getElementById("outLastBranch").innerText = lastBr;
+        document.getElementById("outTotal").innerText = totalVal.toLocaleString('en-US', fmt);
+
+        const pBody = document.querySelector("#periodResultTable tbody");
+        pBody.innerHTML = "";
+        branchesData.forEach(d => {
+            pBody.innerHTML += `<tr><td>${d.name}</td><td>${d.start}</td><td>${d.end}</td><td>${getDuration(d.days)}</td><td>${d.days}</td></tr>`;
+        });
+
+        const sBody = document.querySelector("#settlementResultTable tbody");
+        sBody.innerHTML = "";
+        branchesData.forEach(d => {
+            let share = Math.round(((netSettlement / totalDays) * d.days) * 100) / 100;
+            let addedSal = (d.name.trim() === lastBr.trim()) ? lastSal : 0;
+            let totalRow = share + addedSal;
+
+            sBody.innerHTML += `<tr>
+                <td>${d.name}</td>
+                <td>${share.toLocaleString('en-US', fmt)}</td>
+                <td>${addedSal.toLocaleString('en-US', fmt)}</td>
+                <td class="highlight">${totalRow.toLocaleString('en-US', fmt)}</td>
+            </tr>`;
+        });
+
+        document.getElementById("reportArea").style.display = "block";
+        document.getElementById("actionButtons").style.display = "flex";
+        document.getElementById("adminPanel").style.display = "none";
+    }
+
+    // دالة التصدير المحدثة التي تعمل مباشرة
+    async function exportPDF() {
+        try {
+            const { jsPDF } = window.jspdf;
+            const element = document.getElementById("reportArea");
+            
+            // تحسين جودة الصورة مع تجنب أخطاء CORS
+            const canvas = await html2canvas(element, { 
+                scale: 2, 
+                useCORS: true,
+                logging: false,
+                allowTaint: true
+            });
+            
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`توزيع_تصفية_${document.getElementById("empName").value || 'تقرير'}.pdf`);
+        } catch (error) {
+            console.error("PDF Export Error:", error);
+            alert("حدث خطأ أثناء تصدير الملف. يرجى المحاولة مرة أخرى.");
+        }
+    }
+</script>
+
+</body>
+</html>
