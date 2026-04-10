@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>منظومة سادن الذكية - تسجيل الدخول</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --saden-red: #ff0000; --header-bg: #c00000; }
+        body { font-family: 'Tajawal', sans-serif; background: #ececec; margin: 0; padding: 0; }
+        
+        /* تصميم صفحة الدخول */
+        #loginScreen {
+            height: 100vh; display: flex; align-items: center; justify-content: center; background: #1a1a1a;
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            width: 350px; text-align: center; border-top: 5px solid var(--saden-red);
+        }
+        .login-card h2 { color: #333; margin-bottom: 25px; }
+        .login-card input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .login-card button { width: 100%; padding: 12px; background: var(--saden-red); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        .login-card button:hover { background: #b30000; }
+        #errorMsg { color: red; font-size: 13px; margin-bottom: 10px; display: none; }
+
+        /* تصميم النظام (مخفي افتراضياً) */
+        #mainApp { display: none; padding: 20px; flex-direction: row; }
+
+        .controls { 
+            width: 420px; background: white; padding: 20px; border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: fixed; right: 20px; top: 20px; 
+            max-height: 90vh; overflow-y: auto; z-index: 100;
+        }
+        .section-box { background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e5e7eb; }
+        h4 { margin: 0 0 10px 0; color: var(--header-bg); border-bottom: 2px solid; display: inline-block; font-size: 15px; }
+        .input-row { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; flex-wrap: wrap; }
+        input, select { padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: 'Tajawal'; font-size: 12px; }
+        .btn-add { background: #059669; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 10px; }
+        .btn-del { background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+
+        #letterPage { 
+            width: 210mm; min-height: 297mm; padding: 20mm 15mm; 
+            background: transparent; margin: 0 auto 0 460px; 
+            position: relative; color: #000; box-sizing: border-box;
+            border: 1px dashed #ccc; 
+        }
+
+        .header-date { text-align: right; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+        .red-txt { color: var(--saden-red); font-weight: bold; }
+        .sub-main-title { text-align: center; color: var(--saden-red); font-size: 20px; font-weight: bold; margin: 10px 0 25px 0; text-decoration: underline; }
+        .dest-row { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 18px; margin: 10px 0; padding: 0 5mm; }
+        .intro-text { font-size: 17px; font-weight: bold; line-height: 1.8; margin-bottom: 15px; text-align: justify; margin-top: 20px; }
+        .section-title { color: var(--saden-red); font-weight: bold; text-decoration: underline; margin: 15px 0 10px 0; font-size: 18px; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
+        th { background-color: var(--header-bg); color: white; border: 1px solid #000; padding: 8px; font-size: 13px; }
+        td { border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold; font-size: 13px; word-wrap: break-word; }
+        .total-row { background-color: #fce4e4; }
+
+        .footer { margin-top: 40px; font-weight: bold; text-align: center; width: 200px; float: left; }
+        .btn-pdf { background: var(--saden-red); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        .logout-btn { background: #333; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; float: left; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="loginScreen">
+    <div class="login-card">
+        <h2>سادن لخدمات الأعمال</h2>
+        <div id="errorMsg">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+        <input type="text" id="username" placeholder="اسم المستخدم">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <button onclick="checkLogin()">دخول النظام</button>
+    </div>
+</div>
+
+<div id="mainApp">
+    <div class="controls">
+        <button class="logout-btn" onclick="location.reload()">تسجيل خروج</button>
+        <h3 style="color:red; margin-top:0;">إدارة بيانات الموظف</h3>
+        <div class="section-box">
+            <h4>البيانات الأساسية</h4>
+            <input type="text" id="inDate" placeholder="التاريخ العام" oninput="render()" style="width:100%">
+            <input type="text" id="inName" placeholder="اسم الموظف" oninput="render()" style="width:100%; margin-top:5px;">
+            <input type="text" id="inID" placeholder="رقم الإقامة" oninput="render()" style="width:100%; margin-top:5px;">
+            <input type="text" id="inBranch" placeholder="الفرع" oninput="render()" style="width:100%; margin-top:5px;">
+        </div>
+        <div class="section-box">
+            <h4>الخصومات</h4>
+            <div id="deductionInputs"></div>
+            <button class="btn-add" onclick="addRow('deductionInputs')">+ إضافة بند خصم</button>
+        </div>
+        <div class="section-box">
+            <h4>العهد العينية</h4>
+            <div id="assetInputs"></div>
+            <button class="btn-add" onclick="addRow('assetInputs')">+ إضافة عهدة عينية</button>
+        </div>
+        <button class="btn-pdf" onclick="generatePDF()">تصدير PDF شفاف</button>
+    </div>
+
+    <div id="letterPage">
+        <div class="header-date">التاريخ : <span id="outDate" class="red-txt">2026/04/10</span></div>
+        <div class="sub-main-title">بيان الخصومات والعهد لإدراجها بتصفية موظف</div>
+        <div class="dest-row">
+            <span>السيد الأستاذ / <span class="red-txt">مصطفى عبده</span></span>
+            <span>مدير قسم الرواتب وحماية الأجور</span>
+        </div>
+        <p style="text-align: center; font-weight: bold; font-size: 18px; margin: 15px 0;">تحية طيبة وبعد ،،،</p>
+        <div class="intro-text">
+            فيما يلي بيان بكل ما يخص الموظف / <span id="outName" class="red-txt">..........</span> رقم إقامة : <span id="outID" class="red-txt">..........</span> فرع <span id="outBranch" class="red-txt">..........</span> من قيمة خصومات وعهد نقدية وعينية وطريقة تسليمها قبل إعداد التصفية.
+        </div>
+        <div class="section-title">خصومات الموظف:</div>
+        <table id="deductionTable">
+            <thead><tr><th>نوع الخصم</th><th>القيمة المادية</th></tr></thead>
+            <tbody id="outDeductions"></tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td style="background:#eee">إجمالي الخصومات</td>
+                    <td id="totalDeduction" class="red-txt" style="font-size: 15px;">0</td>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="section-title">العهد العينية:</div>
+        <table id="assetTable">
+            <thead><tr><th>العهدة</th><th>المواصفات</th><th>المستلم</th><th>التاريخ</th></tr></thead>
+            <tbody id="outAssets"></tbody>
+        </table>
+        <div style="text-align: center; font-weight: bold; margin-top: 20px;">ودمتم بخير ،،،</div>
+        <div class="footer">محاسب الفرع<br><br>..........................</div>
+    </div>
+</div>
+
+<script>
+    // بيانات الدخول
+    function checkLogin() {
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+
+        if (user === 'admin' && pass === '123456') {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'flex';
+        } else {
+            document.getElementById('errorMsg').style.display = 'block';
+        }
+    }
+
+    function addRow(containerId) {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = 'input-row';
+        if (containerId === 'deductionInputs') {
+            div.innerHTML = `<select class="d-type" onchange="render()" style="width:110px"><option value="سلف">سلف</option><option value="عهدة نقدية">عهدة نقدية</option><option value="مصروفات إدارية">مصروفات إدارية</option><option value="مخالفات مرورية">مخالفات مرورية</option><option value="أخرى">خصومات أخرى</option></select><input type="number" class="d-val" placeholder="المبلغ" oninput="render()" style="width:70px"><button class="btn-del" onclick="this.parentElement.remove(); render();">✕</button>`;
+        } else {
+            div.innerHTML = `<select class="a-type" onchange="render()" style="width:90px"><option value="جوال">جوال</option><option value="شريحة إتصال">شريحة إتصال</option><option value="لاب توب">لاب توب</option><option value="سيارة">سيارة</option><option value="أخرى">أخرى</option></select><input type="text" class="a-spec" placeholder="مواصفات" oninput="render()" style="width:70px"><input type="text" class="a-to" placeholder="مستلم" oninput="render()" style="width:70px"><input type="text" class="a-date" placeholder="التاريخ" oninput="render()" style="width:80px"><button class="btn-del" onclick="this.parentElement.remove(); render();">✕</button>`;
+        }
+        container.appendChild(div);
+        render();
+    }
+
+    function render() {
+        document.getElementById('outDate').innerText = document.getElementById('inDate').value || '2026/04/10';
+        document.getElementById('outName').innerText = document.getElementById('inName').value || '..........';
+        document.getElementById('outID').innerText = document.getElementById('inID').value || '..........';
+        document.getElementById('outBranch').innerText = document.getElementById('inBranch').value || '..........';
+        const dOut = document.getElementById('outDeductions');
+        dOut.innerHTML = '';
+        let total = 0;
+        document.querySelectorAll('#deductionInputs .input-row').forEach(row => {
+            const val = parseFloat(row.querySelector('.d-val').value) || 0;
+            total += val;
+            dOut.innerHTML += `<tr><td>${row.querySelector('.d-type').value}</td><td class="red-txt">${val.toLocaleString()}</td></tr>`;
+        });
+        document.getElementById('totalDeduction').innerText = total.toLocaleString();
+        const aOut = document.getElementById('outAssets');
+        aOut.innerHTML = '';
+        document.querySelectorAll('#assetInputs .input-row').forEach(row => {
+            aOut.innerHTML += `<tr><td style="background:#eee">${row.querySelector('.a-type').value}</td><td>${row.querySelector('.a-spec').value || '-'}</td><td>${row.querySelector('.a-to').value || '-'}</td><td>${row.querySelector('.a-date').value || '-'}</td></tr>`;
+        });
+    }
+
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const canvas = await html2canvas(document.getElementById('letterPage'), { scale: 3, backgroundColor: null });
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvas.height * 210) / canvas.width);
+        pdf.save(`تصفية_سادن_${Date.now()}.pdf`);
+    }
+</script>
+
+</body>
+</html>

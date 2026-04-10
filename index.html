@@ -7,238 +7,219 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0f172a; 
-            --accent: #3b82f6;  
+            --primary: #0f172a; --accent: #3b82f6;  
             --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             --sidebar-grad: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-            --white: #ffffff;
-            --glass: rgba(255, 255, 255, 0.8);
+            --white: #ffffff; --glass: rgba(255, 255, 255, 0.8);
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-            /* توحيد الخط لكل العناصر */
-            font-family: 'Tajawal', sans-serif !important;
+        /* --- شاشة الدخول --- */
+        #loginOverlay {
+            position: fixed; inset: 0; background: var(--primary);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
         }
+        .login-card {
+            background: white; padding: 40px; border-radius: 20px; width: 380px;
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border-top: 5px solid var(--accent);
+        }
+        .login-card input {
+            width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #e2e8f0;
+            border-radius: 10px; outline: none; background: #f8fafc; font-size: 16px;
+        }
+        .login-card button {
+            width: 100%; padding: 14px; background: var(--accent); color: white;
+            border: none; border-radius: 10px; cursor: pointer; font-weight: bold;
+        }
+        #loginError { color: #ef4444; font-size: 14px; margin-bottom: 15px; display: none; }
 
-        body {
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            background: var(--bg-gradient);
-            color: #1e293b;
-            overflow: hidden;
+        /* --- نافذة الإدارة --- */
+        #userModal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            display: none; align-items: center; justify-content: center; z-index: 10000;
         }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 400px; }
+        .user-list-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .del-btn { color: #ef4444; cursor: pointer; font-weight: bold; background: #fee2e2; padding: 4px 10px; border-radius: 5px; }
+
+        /* --- التنسيق العام --- */
+        * { box-sizing: border-box; font-family: 'Tajawal', sans-serif !important; }
+        body { margin: 0; display: flex; height: 100vh; background: var(--bg-gradient); overflow: hidden; }
 
         .sidebar {
-            width: 320px;
-            background: var(--sidebar-grad);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 30px 0;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 10;
+            width: 320px; background: var(--sidebar-grad); color: white;
+            display: flex; flex-direction: column; padding: 30px 0;
         }
-
-        .sidebar-header {
-            text-align: center;
-            padding: 0 20px 30px 20px;
-            margin-bottom: 20px;
-        }
-
-        .logo {
-            width: 100px;
-            height: auto;
-            margin-bottom: 20px;
-            filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.3));
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar h2 {
-            font-size: 1.1rem;
-            font-weight: 700; /* وزن عريض للعنوان الرئيسي */
-            margin: 0;
-            line-height: 1.6;
-            background: linear-gradient(to left, #fff, #94a3b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .sidebar h3 {
-            font-size: 0.85rem;
-            font-weight: 300; /* وزن خفيف للعنوان الفرعي */
-            margin-top: 10px;
-            color: #94a3b8;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-group {
-            padding: 0 15px;
-        }
-
+        .sidebar-header { text-align: center; padding: 0 20px 30px; }
+        .logo { width: 90px; margin-bottom: 15px; }
+        
+        .nav-group { padding: 0 15px; }
         .nav-btn {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: #cbd5e1;
-            padding: 14px 20px;
-            text-align: right;
-            font-size: 17px;
-            font-weight: 500; /* وزن متوسط للأزرار */
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border-radius: 12px;
-            margin-bottom: 8px;
+            width: 100%; background: transparent; border: none; color: #cbd5e1;
+            padding: 14px 20px; text-align: right; font-size: 16px;
+            cursor: pointer; display: flex; align-items: center; gap: 12px;
+            border-radius: 12px; margin-bottom: 5px; transition: 0.3s;
         }
+        .nav-btn:hover, .nav-btn.active { background: var(--accent); color: white; }
 
-        .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            transform: translateX(-5px);
-        }
+        #adminTools { margin-top: auto; padding: 15px; background: rgba(0,0,0,0.2); display: none; }
+        .admin-btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
 
-        .nav-btn.active {
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-            font-weight: 700; /* زيادة السمك عند الاختيار */
-        }
-
-        .main-content {
-            flex-grow: 1;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .content-container {
-            width: 100%;
-            height: 100%;
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .welcome-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .welcome-screen h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
-        .welcome-screen p {
-            font-size: 1.1rem;
-            font-weight: 300;
-            color: #64748b;
-            max-width: 600px;
-            line-height: 1.8;
-        }
-
-        .footer {
-            margin-top: auto;
-            padding: 20px;
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: 300;
-            color: #64748b;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .badge {
-            background: rgba(255,255,255,0.1);
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 700;
-            margin-right: auto;
-        }
+        .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; }
+        .content-container { width: 100%; height: 100%; background: var(--glass); border-radius: 20px; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
+    <div id="loginOverlay">
+        <div class="login-card">
+            <img src="logo.png" style="width: 80px; margin-bottom: 15px;">
+            <h2>تسجيل الدخول</h2>
+            <div id="loginError">بيانات الدخول غير صحيحة!</div>
+            <input type="text" id="userInput" placeholder="اسم المستخدم">
+            <input type="password" id="passInput" placeholder="كلمة المرور">
+            <button onclick="checkLogin()">دخول</button>
+        </div>
+    </div>
+
+    <div id="userModal">
+        <div class="modal-content">
+            <h3 style="margin-top:0">إدارة المستخدمين</h3>
+            <input type="text" id="newU" placeholder="اسم المستخدم الجديد" style="width:100%; padding:10px; margin-bottom:10px;">
+            <input type="password" id="newP" placeholder="كلمة المرور" style="width:100%; padding:10px; margin-bottom:15px;">
+            <button onclick="addNewUser()" style="width:100%; padding:10px; background:#10b981; color:white; border:none; border-radius:5px; cursor:pointer;">إضافة</button>
+            <div id="displayUsers" style="margin-top:20px; max-height:150px; overflow-y:auto;"></div>
+            <button onclick="document.getElementById('userModal').style.display='none'" style="margin-top:15px; width:100%; padding:8px;">إغلاق</button>
+        </div>
+    </div>
+
     <aside class="sidebar">
         <div class="sidebar-header">
-            <img src="logo.png" alt="شعار سادن" class="logo">
-            <h2>شركة سادن المتخصصة للإستشارات الجيولوجية</h2>
-            <h3>إدارة الرواتب وحماية الأجور</h3>
+            <img src="logo.png" class="logo">
+            <h2 style="font-size: 1.1rem;">شركة سادن المتخصصة</h2>
         </div>
         
         <nav class="nav-group">
-            <button class="nav-btn" onclick="loadPage(this, 'برنامج التصفية.html')">
-                <span>📂</span> برنامج التصفية
-            </button>
-            
-            <button class="nav-btn" onclick="loadPage(this, 'المخالصة.html')">
-                <span>🖋️</span> المخالصة القانونية
-            </button>
-
-            <button class="nav-btn" onclick="loadPage(this, 'تقسيم مبالغ التصفية.html')">
-                <span>📈</span> توزيع مبلغ التصفية 
-            </button>
-
-            <button class="nav-btn" onclick="loadPage(this, 'حاسبة مبالغ  و ايام عمل موظف.html')">
-                <span>🧮</span> حاسبة مستحقات الأيام
-            </button>
-
-            <button class="nav-btn" onclick="loadPage(this, 'حاسبة التأمينات الإجتماعية.html')">
-                <span>🛡️</span> التأمينات الإجتماعية
-                <span class="badge">GOSI</span>
-            </button>
+            <button class="nav-btn" data-url="برنامج التصفية.html" onclick="loadPage(this, 'برنامج التصفية.html')">📂 برنامج التصفية</button>
+            <button class="nav-btn" data-url="المخالصة.html" onclick="loadPage(this, 'المخالصة.html')">🖋️ المخالصة القانونية</button>
+            <button class="nav-btn" data-url="تقسيم مبالغ التصفية.html" onclick="loadPage(this, 'تقسيم مبالغ التصفية.html')">📈 توزيع مبالغ التصفية</button>
+            <button class="nav-btn" data-url="حاسبة مبالغ و ايام عمل موظف.html" onclick="loadPage(this, ' حاسبة مبالغ  و ايام عمل موظف.html')">🧮 حاسبة أيام عمل موظف</button>
+            <button class="nav-btn" data-url="حاسبة التأمينات الإجتماعية.html" onclick="loadPage(this, 'حاسبة التأمينات الإجتماعية.html')">🛡️ التأمينات الاجتماعية</button>
+            <button class="nav-btn" data-url="الخطابات.html" onclick="loadPage(this, 'الخطابات.html')">📧 مركز النماذج والخطابات</button>
         </nav>
 
-        <div class="footer">
-            جميع الحقوق محفوظة &copy; 2026<br>
-            <strong>Saden Specialized Co. for Geological Consulting</strong>
+        <div id="adminTools">
+            <button class="admin-btn" onclick="openAdminPanel()">⚙️ إدارة الحسابات</button>
         </div>
+        <button onclick="logout()" style="margin: 10px 15px; padding: 10px; color: #ef4444; border: 1px solid #ef4444; background: none; border-radius: 10px; cursor: pointer;">خروج</button>
     </aside>
 
     <main class="main-content">
         <div class="content-container">
-            <div class="welcome-screen" id="welcome">
-                <div style="background: white; padding: 40px; border-radius: 50%; box-shadow: 0 20px 40px rgba(0,0,0,0.05); margin-bottom: 30px;">
-                    <img src="logo.png" style="width: 220px;">
-                </div>
-                <h1>مرحباً بك في النظام الموحد لإدارة الرواتب</h1>
-                <p>تم تصميم هذا النظام لتسهيل عمليات إدارة الرواتب وحساب التصفية بدقة واحترافية عالية باستخدام أحدث معايير التصميم.</p>
-                <div style="margin-top: 20px; color: var(--accent); font-weight: 700;">← اختر مهمة من القائمة للبدء</div>
+            <div id="welcome" style="text-align:center; margin-top:150px;">
+                <img src="logo.png" style="width: 150px; opacity: 0.5;">
+                <h1>مرحباً بك في نظام سادن الموحد</h1>
+                <p>اختر القسم المطلوب من القائمة الجانبية</p>
             </div>
             <iframe id="frame" src="" style="display: none;"></iframe>
         </div>
     </main>
 
     <script>
+        let users = JSON.parse(localStorage.getItem('sadenUsers')) || [
+            { user: "admin", pass: "123456", role: "admin" }
+        ];
+
+        window.onload = function() {
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            const userRole = sessionStorage.getItem('userRole');
+            const lastPage = sessionStorage.getItem('lastPage');
+            
+            if (isLoggedIn === 'true') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                if (userRole === 'admin') {
+                    document.getElementById('adminTools').style.display = 'block';
+                }
+
+                // استعادة آخر صفحة كانت مفتوحة
+                if (lastPage) {
+                    const btn = document.querySelector(`.nav-btn[data-url="${lastPage}"]`);
+                    if (btn) loadPage(btn, lastPage);
+                }
+            }
+        };
+
+        function checkLogin() {
+            const u = document.getElementById('userInput').value;
+            const p = document.getElementById('passInput').value;
+            const found = users.find(x => x.user === u && x.pass === p);
+            
+            if (found) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('userRole', found.role);
+                document.getElementById('loginOverlay').style.display = 'none';
+                if (found.role === 'admin') document.getElementById('adminTools').style.display = 'block';
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            location.reload();
+        }
+
         function loadPage(btn, url) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            
             document.getElementById('welcome').style.display = 'none';
             const frame = document.getElementById('frame');
             frame.style.display = 'block';
             frame.src = url;
+
+            // حفظ الصفحة الحالية في الجلسة
+            sessionStorage.setItem('lastPage', url);
         }
+
+        function openAdminPanel() {
+            document.getElementById('userModal').style.display = 'flex';
+            renderUsers();
+        }
+
+        function renderUsers() {
+            const container = document.getElementById('displayUsers');
+            container.innerHTML = users.map(u => `
+                <div class="user-list-item">
+                    <span>👤 ${u.user}</span>
+                    ${u.user !== 'admin' ? `<span class="del-btn" onclick="deleteUser('${u.user}')">حذف</span>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function addNewUser() {
+            const u = document.getElementById('newU').value;
+            const p = document.getElementById('newP').value;
+            if (u && p) {
+                users.push({ user: u, pass: p, role: "user" });
+                localStorage.setItem('sadenUsers', JSON.stringify(users));
+                renderUsers();
+                document.getElementById('newU').value = '';
+                document.getElementById('newP').value = '';
+            }
+        }
+
+        function deleteUser(name) {
+            users = users.filter(x => x.user !== name);
+            localStorage.setItem('sadenUsers', JSON.stringify(users));
+            renderUsers();
+        }
+
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display !== 'none') {
+                checkLogin();
+            }
+        });
     </script>
 </body>
 </html>

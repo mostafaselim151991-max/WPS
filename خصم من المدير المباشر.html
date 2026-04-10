@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نموذج خصم من المدير المباشر - شركة سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --primary: #c00000; --bg: #f0f2f5; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); padding: 20px; margin: 0; }
+        
+        .controls { 
+            position: fixed; right: 20px; top: 20px; width: 320px; 
+            background: white; padding: 20px; border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100;
+        }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: 'Tajawal'; }
+        
+        #letterPage { 
+            width: 210mm; min-height: 297mm; 
+            padding: 40mm 20mm 20mm 20mm; 
+            background: transparent; 
+            margin: 0 auto 0 380px; 
+            position: relative; color: #000; line-height: 1.6;
+            box-sizing: border-box;
+        }
+
+        .date-section { text-align: right; font-weight: bold; font-size: 16px; margin-bottom: 10px; color: red; }
+        .letter-title { text-align: center; text-decoration: underline; color: red; font-size: 26px; font-weight: bold; margin: 20px 0; }
+        
+        h4.section-head { color: red; margin: 20px 0 10px 0; border-right: 4px solid red; padding-right: 10px; }
+
+        .letter-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1.5px solid #000; }
+        .letter-table td { border: 1px solid #000; padding: 12px; text-align: right; }
+        .letter-table td.label { font-weight: bold; width: 20%; background: #f9f9f9; }
+        
+        .note-box { margin: 20px 0; font-size: 15px; font-weight: bold; }
+        .note-box span { color: red; }
+
+        .footer-sigs { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 40px 100px;
+            margin-top: 50px; 
+            text-align: center; 
+            font-weight: bold; 
+        }
+        
+        .btn-download { width: 100%; background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h3 style="margin-top:0">تعبئة نموذج الخصم</h3>
+    <div class="input-group"><label>التاريخ</label><input type="text" id="inDate" placeholder="0000/00/00" oninput="update()"></div>
+    <div class="input-group"><label>اسم الموظف</label><input type="text" id="inName" oninput="update()"></div>
+    <div class="input-group"><label>الإدارة / الفرع</label><input type="text" id="inBranch" oninput="update()"></div>
+    <div class="input-group"><label>رقم الإقامة / الهوية</label><input type="text" id="inId" oninput="update()"></div>
+    <div class="input-group"><label>الوظيفة</label><input type="text" id="inJob" oninput="update()"></div>
+    <div class="input-group"><label>سبب الخصم</label><textarea id="inReason" rows="2" oninput="update()"></textarea></div>
+    <div class="input-group"><label>قيمة الخصم</label><input type="text" id="inValue" oninput="update()"></div>
+    <div class="input-group"><label>الراتب قبل الخصم</label><input type="text" id="inSalaryBefore" oninput="update()"></div>
+    <div class="input-group"><label>الراتب بعد الخصم</label><input type="text" id="inSalaryAfter" oninput="update()"></div>
+    
+    <button class="btn-download" onclick="generatePDF()">تصدير PDF</button>
+</div>
+
+<div id="letterPage">
+    <div class="date-section">التاريخ : <span id="outDate">0000/00/00</span></div>
+    
+    <div class="letter-title">نموذج خصم من المدير المباشر</div>
+
+    <h4 class="section-head">أولاً : بيانات الموظف :</h4>
+    <table class="letter-table">
+        <tr>
+            <td class="label">اسم الموظف :</td>
+            <td id="outName" colspan="3"></td>
+        </tr>
+        <tr>
+            <td class="label">الإدارة / الفرع :</td>
+            <td id="outBranch" colspan="3"></td>
+        </tr>
+        <tr>
+            <td class="label">رقم الإقامة / الهوية :</td>
+            <td id="outId" style="width:30%"></td>
+            <td class="label" style="width:20%">الوظيفة :</td>
+            <td id="outJob"></td>
+        </tr>
+    </table>
+
+    <h4 class="section-head">ثانياً : بيانات الخصم :</h4>
+    <table class="letter-table">
+        <tr>
+            <td class="label">سبب الخصم :</td>
+            <td id="outReason" colspan="3" style="height: 60px; vertical-align: top;"></td>
+        </tr>
+        <tr>
+            <td class="label">قيمة الخصم :</td>
+            <td id="outValue" colspan="3"></td>
+        </tr>
+        <tr>
+            <td class="label">الراتب قبل الخصم :</td>
+            <td id="outSalaryBefore" style="width:30%"></td>
+            <td class="label" style="width:20%">الراتب بعد الخصم :</td>
+            <td id="outSalaryAfter"></td>
+        </tr>
+    </table>
+
+    <div class="note-box">
+        <span>● ملاحظة هامة :</span><br>
+        في حالة تكرار المخالفة من الموظف يحق للإدارة أن تقوم باتخاذ الإجراءات القانونية التي تراها مناسبة في حقه.
+    </div>
+
+    <div class="footer-sigs">
+        <div>مدير الفرع<br><br>...........................</div>
+        <div>الشئون القانونية<br><br>...........................</div>
+        <div>مدير قسم الرواتب وحماية الأجور<br><br>...........................</div>
+        <div>المدير المالي<br><br>...........................</div>
+    </div>
+</div>
+
+<script>
+    function update() {
+        const fields = [
+            'Date', 'Name', 'Branch', 'Id', 'Job', 
+            'Reason', 'Value', 'SalaryBefore', 'SalaryAfter'
+        ];
+        fields.forEach(f => {
+            const val = document.getElementById('in' + f).value;
+            document.getElementById('out' + f).innerText = val || (f === 'Date' ? '0000/00/00' : '');
+        });
+    }
+
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const element = document.getElementById('letterPage');
+        const canvas = await html2canvas(element, { scale: 3, backgroundColor: '#ffffff' });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+        pdf.save(`نموذج_خصم_${document.getElementById('inName').value || 'سادن'}.pdf`);
+    }
+</script>
+
+</body>
+</html>

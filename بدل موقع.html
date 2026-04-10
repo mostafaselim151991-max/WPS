@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نموذج تعميد بدل موقع</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --primary: #c00000; --bg: #f0f2f5; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); padding: 20px; margin: 0; }
+        
+        .controls { 
+            position: fixed; right: 20px; top: 20px; width: 320px; 
+            background: white; padding: 20px; border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .input-group { margin-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 12px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: 'Tajawal'; }
+        
+        #letterPage { 
+            width: 210mm; min-height: 297mm; 
+            padding: 20mm; 
+            background: transparent; 
+            margin: 0 auto 0 380px; 
+            position: relative; color: #000; line-height: 1.6;
+            box-sizing: border-box;
+        }
+
+        .date-section { text-align: right; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .date-section span { color: red; }
+        
+        .letter-title { text-align: center; text-decoration: underline; color: red; font-size: 26px; font-weight: bold; margin: 20px 0; }
+        
+        .dest-container { display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 17px; }
+        .dest-right { font-weight: bold; line-height: 2; }
+        .dest-left { font-weight: bold; line-height: 2; color: red; text-align: left; }
+        
+        .opening { text-align: center; font-weight: bold; margin-bottom: 20px; }
+
+        .request-text { margin-bottom: 20px; font-weight: bold; font-size: 17px; }
+        .request-text span { color: red; border-bottom: 1px dashed red; padding: 0 5px; }
+
+        .letter-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 2px solid #000; }
+        .letter-table td { border: 1px solid #000; padding: 12px; text-align: right; }
+        .letter-table td.label { font-weight: bold; background: #f1f5f9; width: 20%; }
+        .report-status { color: red; font-weight: bold; text-align: center !important; }
+
+        .notes-section { color: red; font-weight: bold; margin-bottom: 20px; }
+
+        .decision-box { border: 2px solid #000; margin-top: 30px; }
+        .decision-header { background: #d99694; border-bottom: 2px solid #000; padding: 8px; text-align: center; font-weight: bold; }
+        .empty-space { height: 120px; }
+
+        .btn-download { width: 100%; background: #c00000; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h3 style="margin-top:0">تعبئة بدل موقع</h3>
+    <div class="input-group"><label>التاريخ</label><input type="text" id="inDate" placeholder="2026/04/10" oninput="update()"></div>
+    <div class="input-group"><label>المبلغ المستحق</label><input type="text" id="inAmount" oninput="update()"></div>
+    <div class="input-group"><label>اسم الموظف</label><input type="text" id="inName" oninput="update()"></div>
+    <div class="input-group"><label>رقم الإقامة</label><input type="text" id="inId" oninput="update()"></div>
+    <div class="input-group"><label>الوظيفة</label><input type="text" id="inJob" oninput="update()"></div>
+    <div class="input-group"><label>المهنة بالإقامة</label><input type="text" id="inProf" oninput="update()"></div>
+    <div class="input-group"><label>اسم الموقع</label><input type="text" id="inSite" oninput="update()"></div>
+    <div class="input-group">
+        <label>تقارير الموقع</label>
+        <select id="inStatus" onchange="update()">
+            <option value="يعمل">يعمل</option>
+            <option value="لا يعمل">لا يعمل</option>
+        </select>
+    </div>
+    
+    <button class="btn-download" onclick="generatePDF()">تصدير PDF</button>
+</div>
+
+<div id="letterPage">
+    <div class="date-section">التاريخ : <span id="outDate">0000/00/00</span></div>
+    
+    <div class="letter-title">خطاب تعميد بدل موقع</div>
+
+    <div class="dest-container">
+        <div class="dest-right">
+            السيد المهندس/ إسلام عزت<br>
+            السيد الأستاذ/ محمود جمال<br>
+            السيد الأستاذ / مصطفى عبده
+        </div>
+        <div class="dest-right">
+            نائب المدير التنفيذي لمجموعة سادن<br>
+            المدير المالي <br>
+            مدير قسم الرواتب وحماية الأجور
+        </div>
+    </div>
+
+    <div class="opening">تحية طيبة وبعد ,,,</div>
+
+    <div class="request-text">
+        برجاء الموافقة على صرف مبلغ ( <span id="outAmount">..........</span> ) قيمة (بدل موقع) للموظف الآتي بياناته :
+    </div>
+
+    <table class="letter-table">
+        <tr>
+            <td class="label">الإسم</td>
+            <td id="outName" style="width:30%"></td>
+            <td class="label">رقم الإقامة</td>
+            <td id="outId" style="width:30%"></td>
+        </tr>
+        <tr>
+            <td class="label">الوظيفة</td>
+            <td id="outJob"></td>
+            <td class="label">المهنة بالإقامة</td>
+            <td id="outProf"></td>
+        </tr>
+        <tr>
+            <td class="label">اسم الموقع</td>
+            <td id="outSite"></td>
+            <td class="label">عمل تقارير بالموقع</td>
+            <td id="outStatus" class="report-status">يعمل</td>
+        </tr>
+    </table>
+
+    <div style="text-align: center; font-weight: bold; margin-bottom: 30px;">ولسيادتكم جزيل الشكر ,,,</div>
+
+    <div class="decision-box">
+        <div class="decision-header">قرار الإدارة المالية</div>
+        <div class="empty-space"></div>
+    </div>
+</div>
+
+<script>
+    function update() {
+        document.getElementById('outDate').innerText = document.getElementById('inDate').value || '2026/04/10';
+        document.getElementById('outAmount').innerText = document.getElementById('inAmount').value || '..........';
+        document.getElementById('outName').innerText = document.getElementById('inName').value;
+        document.getElementById('outId').innerText = document.getElementById('inId').value;
+        document.getElementById('outJob').innerText = document.getElementById('inJob').value;
+        document.getElementById('outProf').innerText = document.getElementById('inProf').value;
+        document.getElementById('outSite').innerText = document.getElementById('inSite').value;
+        document.getElementById('outStatus').innerText = document.getElementById('inStatus').value;
+    }
+
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const element = document.getElementById('letterPage');
+        const canvas = await html2canvas(element, { scale: 3, backgroundColor: '#ffffff' });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+        pdf.save(`بدل_موقع_${document.getElementById('inName').value || 'سادن'}.pdf`);
+    }
+</script>
+
+</body>
+</html>

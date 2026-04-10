@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>خطاب اعتماد صرف عمولة - سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --primary-red: #c00000; --bg-gray: #f8fafc; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg-gray); padding: 20px; margin: 0; }
+        .controls { position: fixed; right: 20px; top: 20px; width: 350px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100; max-height: 90vh; overflow-y: auto; }
+        .input-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #333; }
+        input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: 'Tajawal'; }
+        #letterPage { width: 210mm; min-height: 297mm; padding: 25mm 20mm; background: transparent; margin: 0 auto 0 400px; position: relative; color: #000; line-height: 1.8; box-sizing: border-box; }
+        .date-line { text-align: right; font-weight: bold; font-size: 18px; margin-bottom: 20px; }
+        .date-line span { color: red; }
+        .main-title { text-align: center; text-decoration: underline; color: red; font-size: 28px; font-weight: bold; margin: 30px 0; }
+        .destination { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 18px; }
+        .names-side { font-weight: bold; line-height: 2; }
+        .titles-side { font-weight: bold; line-height: 2; color: red; text-align: left; }
+        .content-text { margin-bottom: 30px; font-size: 18px; font-weight: bold; text-align: justify; }
+        .content-text span { color: red; border-bottom: 1px dashed red; padding: 0 5px; }
+        .footer-sigs { display: flex; justify-content: space-between; margin-top: 60px; text-align: center; font-weight: bold; font-size: 16px; }
+        .btn-pdf { background: var(--primary-red); color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: 'Tajawal'; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h3 style="margin-top:0; color: var(--primary-red);">بيانات اعتماد العمولة</h3>
+    <div class="input-group">
+        <label>التاريخ</label>
+        <input type="text" id="inDate" placeholder="2026/04/10" oninput="update()">
+    </div>
+    <div class="input-group">
+        <label>المبلغ (أرقام مع الهلالات إن وجدت)</label>
+        <input type="number" step="0.01" id="inAmountNum" placeholder="مثلاً: 5000.75" oninput="update()">
+        <p id="helperText" style="font-size: 11px; color: #c00000; margin-top: 5px; font-weight: bold;"></p>
+    </div>
+    <div class="input-group"><label>اسم الفرع</label><input type="text" id="inBranch" oninput="update()"></div>
+    <div class="input-group"><label>عمولة (لـ)</label><input type="text" id="inFor" oninput="update()"></div>
+    <div class="input-group"><label>مدير الفرع المهندس</label><input type="text" id="inManagerName" oninput="update()"></div>
+    <button class="btn-pdf" onclick="generatePDF()">تصدير PDF</button>
+</div>
+
+<div id="letterPage">
+    <div class="date-line">التاريخ : <span id="outDate">000/00/00</span></div>
+    <div class="main-title">خطاب إعتماد صرف عمولة</div>
+    <div class="destination">
+        <div class="names-side">السيد المهندس/ إسلام عزت<br>السيد الأستاذ/ محمود جمال</div>
+        <div class="titles-side">نائب المدير التنفيذي لمجموعة سادن<br>المدير المالي</div>
+    </div>
+    <p style="text-align: center; font-weight: bold; font-size: 19px; margin: 20px 0;">تحية طيبة وبعد ,,,</p>
+    <div class="content-text">
+        فضلاً الموافقة على صرف مبلغ ( <span id="outAmountNum">............</span> ) ريال سعودي ( فقط <span id="outAmountText">........................</span> لا غير ) من فرع ( <span id="outBranch">..........</span> ) قيمة عمولة لـ ( <span id="outFor">....................</span> ) وذلك بمعلومية مدير الفرع المهندس ( <span id="outManagerName">....................</span> ).
+    </div>
+    <p style="text-align: center; font-weight: bold; font-size: 19px; margin-top: 40px;">ولسيادتكم جزيل الشكر ,,,</p>
+    <div class="footer-sigs">
+        <div>مدير الفرع<br><br>...........................</div>
+        <div>المدير المالي<br><br>...........................</div>
+        <div>نائب المدير التنفيذي<br><br>...........................</div>
+    </div>
+</div>
+
+<script>
+    function tafqeet(num) {
+        if (num === "" || isNaN(num)) return "........................";
+        const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة"];
+        const tens = ["", "عشرة", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+        const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
+        
+        function convert(n) {
+            let res = "";
+            if (n >= 1000) {
+                let thousands = Math.floor(n / 1000);
+                res += (thousands === 1 ? "ألف" : thousands === 2 ? "ألفين" : units[thousands] + " آلاف") + " ";
+                n %= 1000;
+            }
+            if (n >= 100) {
+                res += (res !== "" ? "و " : "") + hundreds[Math.floor(n / 100)] + " ";
+                n %= 100;
+            }
+            if (n > 0) {
+                res += (res !== "" ? "و " : "");
+                if (n < 10) res += units[n];
+                else if (n < 20) {
+                    if (n === 10) res += "عشرة";
+                    else if (n === 11) res += "أحد عشر";
+                    else if (n === 12) res += "اثنا عشر";
+                    else res += units[n % 10] + " عشر";
+                } else {
+                    res += units[n % 10] + (n % 10 !== 0 ? " و " : "") + tens[Math.floor(n / 10)];
+                }
+            }
+            return res.trim();
+        }
+
+        let parts = num.toString().split(".");
+        let riyals = parseInt(parts[0]);
+        let halalas = parts.length > 1 ? parseInt(parts[1].substring(0, 2)) : 0;
+
+        let result = convert(riyals) + " ريال سعودي";
+        if (halalas > 0) {
+            result += " و " + convert(halalas) + " هللة";
+        }
+        return result;
+    }
+
+    function update() {
+        const amount = document.getElementById('inAmountNum').value;
+        const textAmount = tafqeet(amount);
+        document.getElementById('outDate').innerText = document.getElementById('inDate').value || '0000/00/00';
+        document.getElementById('outAmountNum').innerText = amount || '............';
+        document.getElementById('outAmountText').innerText = textAmount;
+        document.getElementById('helperText').innerText = textAmount;
+        document.getElementById('outBranch').innerText = document.getElementById('inBranch').value || '..........';
+        document.getElementById('outFor').innerText = document.getElementById('inFor').value || '....................';
+        document.getElementById('outManagerName').innerText = document.getElementById('inManagerName').value || '....................';
+    }
+
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const element = document.getElementById('letterPage');
+        const canvas = await html2canvas(element, { scale: 3, backgroundColor: '#ffffff' });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+        pdf.save(`اعتماد_عمولة_${document.getElementById('inFor').value || 'سادن'}.pdf`);
+    }
+</script>
+</body>
+</html>

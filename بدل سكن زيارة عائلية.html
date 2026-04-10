@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نموذج تعميد بدل سكن زيارة عائلية - شركة سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --primary: #000; --bg: #f0f2f5; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); padding: 20px; margin: 0; }
+        
+        .controls { 
+            position: fixed; right: 20px; top: 20px; width: 320px; 
+            background: white; padding: 20px; border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100;
+        }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+        input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        
+        #letterPage { 
+            width: 210mm; min-height: 297mm; 
+            padding: 40mm 20mm 20mm 20mm; 
+            background: transparent; 
+            margin: 0 auto 0 380px; 
+            position: relative; color: #000; line-height: 1.6;
+            box-sizing: border-box;
+        }
+
+        .date-section { text-align: right; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .date-section span { color: red; }
+        .letter-title { text-align: center; text-decoration: underline; color: red; font-size: 26px; font-weight: bold; margin: 30px 0; }
+        
+        .dest-container { display: flex; justify-content: space-between; margin-bottom: 25px; }
+        .dest-right { font-weight: bold; line-height: 2; flex: 1; font-size: 17px; }
+        .dest-left { font-weight: bold; line-height: 2; color: red; text-align: left; flex: 1; font-size: 17px; }
+        
+        .letter-table { width: 100%; border-collapse: collapse; margin: 20px 0; border: 2px solid #000; background: transparent; }
+        .letter-table td { border: 1px solid #000; padding: 12px; text-align: right; vertical-align: middle; }
+        .letter-table td.label { background: rgba(240, 240, 240, 0.5); font-weight: bold; width: 22%; }
+        
+        .decision-box { border: 2px solid #000; margin-top: 20px; background: transparent; }
+        .decision-header { background: #d99694; border-bottom: 2px solid #000; padding: 8px; text-align: center; font-weight: bold; }
+        .empty-space-large { height: 140px; } 
+        
+        .footer-sigs { display: flex; justify-content: space-between; margin-top: 40px; text-align: center; font-weight: bold; font-size: 13px; }
+        .btn-download { width: 100%; background: #c00000; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h3 style="margin-top:0">تعبئة نموذج بدل سكن</h3>
+    <div class="input-group"><label>التاريخ</label><input type="text" id="inDate" placeholder="2026/04/09" oninput="update()"></div>
+    <div class="input-group"><label>اسم الموظف</label><input type="text" id="inName" oninput="update()"></div>
+    <div class="input-group"><label>رقم الإقامة</label><input type="text" id="inId" oninput="update()"></div>
+    <div class="input-group"><label>الوظيفة</label><input type="text" id="inJob" oninput="update()"></div>
+    <div class="input-group"><label>المهنة بالإقامة</label><input type="text" id="inProf" oninput="update()"></div>
+    <div class="input-group"><label>تاريخ التعيين</label><input type="text" id="inJoinDate" oninput="update()"></div>
+    <div class="input-group"><label>تاريخ السكن الخارجي</label><input type="text" id="inHousingDate" placeholder="00 / 00 / 0000" oninput="update()"></div>
+    <div class="input-group"><label>الفرع</label><input type="text" id="inBranch" oninput="update()"></div>
+    
+    <button class="btn-download" onclick="generatePDF()">تصدير PDF</button>
+</div>
+
+<div id="letterPage">
+    <div class="date-section">التاريخ : <span id="outDate">00/00/0000</span></div>
+    <div class="letter-title">خطاب تعميد بدل سكن زيارة عائلية</div>
+
+    <div class="dest-container">
+        <div class="dest-right">
+            السيد المهندس/ إسلام عزت<br>
+            السيد الأستاذ/ محمود جمال<br>
+            السيد الأستاذ / مصطفى عبده
+        </div>
+        <div class="dest-right">
+            نائب المدير التنفيذي لمجموعة سادن<br>
+            المدير المالي لشركة سادن<br>
+            مدير قسم الرواتب وحماية الأجور
+        </div>
+    </div>
+
+    <p style="text-align: center; font-weight: bold;">تحية طيبة وبعد ,,,</p>
+    <p>برجاء تحديد قيمة (بدل سكن زيارة عائلية) للموظف الأتي بياناته :</p>
+
+    <table class="letter-table">
+        <tr>
+            <td class="label">الإسم</td><td id="outName" style="width:28%"></td>
+            <td class="label">رقم الإقامة</td><td id="outId" style="width:28%"></td>
+        </tr>
+        <tr>
+            <td class="label">الوظيفة</td><td id="outJob"></td>
+            <td class="label">المهنة بالإقامة</td><td id="outProf"></td>
+        </tr>
+        <tr>
+            <td class="label">الفرع</td><td id="outBranch"></td>
+            <td class="label">تاريخ التعيين</td><td id="outJoinDate"></td>
+        </tr>
+    </table>
+    
+    <p>حيث أن الموظف قام بعمل زيارة عائلية ويسكن بسكن خارجي بداية من <span id="outHousingDate" style="font-weight:bold; border-bottom: 1px solid #000;">00 / 00 / 0000</span> :</p>
+
+    <p style="text-align: center; font-weight: bold; margin: 15px 0;">ولسيادتكم جزيل الشكر ,,,</p>
+
+    <div class="decision-box">
+        <div class="decision-header">قرار الإدارة المالية</div>
+        <div class="empty-space-large"></div>
+    </div>
+
+    <div class="footer-sigs">
+        <div>مدير قسم الرواتب وحماية الأجور<br><br>...........................</div>
+        <div>المدير المالي<br><br>...........................</div>
+        <div>نائب المدير التنفيذي<br><br>...........................</div>
+    </div>
+</div>
+
+<script>
+    function update() {
+        document.getElementById('outDate').innerText = document.getElementById('inDate').value || '00/00/0000';
+        document.getElementById('outName').innerText = document.getElementById('inName').value;
+        document.getElementById('outId').innerText = document.getElementById('inId').value;
+        document.getElementById('outJob').innerText = document.getElementById('inJob').value;
+        document.getElementById('outProf').innerText = document.getElementById('inProf').value;
+        document.getElementById('outJoinDate').innerText = document.getElementById('inJoinDate').value;
+        document.getElementById('outBranch').innerText = document.getElementById('inBranch').value;
+        // تحديث تاريخ السكن الخارجي في الفقرة
+        document.getElementById('outHousingDate').innerText = document.getElementById('inHousingDate').value || '00 / 00 / 0000';
+    }
+
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const element = document.getElementById('letterPage');
+        
+        const canvas = await html2canvas(element, { 
+            scale: 3, 
+            backgroundColor: null 
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const w = pdf.internal.pageSize.getWidth();
+        const h = (canvas.height * w) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, w, h);
+        pdf.save(`خطاب_بدل_سكن زيارة_${document.getElementById('inName').value || 'سادن'}.pdf`);
+    }
+</script>
+
+</body>
+</html>

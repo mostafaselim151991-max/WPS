@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نموذج إقرار مصروفات رخصة قيادة - سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --primary-red: #ff0000; }
+        body { font-family: 'Tajawal', sans-serif; background: #ececec; padding: 20px; margin: 0; }
+        
+        .controls { 
+            position: fixed; right: 20px; top: 20px; width: 330px; 
+            background: white; padding: 20px; border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100;
+        }
+        .input-group { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #333; }
+        input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: 'Tajawal'; }
+        
+        #letterPage { 
+            width: 210mm; min-height: 297mm; padding: 30mm 25mm; 
+            background: transparent; 
+            margin: 0 auto 0 400px; 
+            position: relative; color: #000; line-height: 2.5; box-sizing: border-box;
+            border: 1px dashed #ccc; 
+        }
+
+        .header-date { text-align: right; font-weight: bold; font-size: 18px; margin-bottom: 40px; }
+        .red-val { color: red; font-weight: bold; }
+        
+        .main-title { text-align: center; color: red; font-size: 32px; font-weight: bold; margin-bottom: 50px; }
+        .main-title span { border-bottom: 3px solid red; padding-bottom: 5px; }
+
+        .content-text { font-size: 19px; font-weight: bold; text-align: justify; }
+        .dynamic-field { color: red; border-bottom: 1px dotted #000; padding: 0 5px; min-width: 50px; display: inline-block; text-align: center; }
+
+        .footer-section { margin-top: 80px; font-size: 18px; font-weight: bold; float: left; width: 300px; line-height: 2.5; }
+        
+        .btn-pdf { background: var(--primary-red); color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; font-family: 'Tajawal'; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h3 style="margin-top:0; color: var(--primary-red);">بيانات الإقرار</h3>
+    <div class="input-group"><label>التاريخ</label><input type="text" id="inDate" placeholder="2026/04/10" oninput="update()"></div>
+    <div class="input-group"><label>اسم الموظف</label><input type="text" id="inName" oninput="update()"></div>
+    <div class="input-group"><label>رقم الإقامة</label><input type="text" id="inID" oninput="update()"></div>
+    <div class="input-group"><label>الوظيفة</label><input type="text" id="inJob" oninput="update()"></div>
+    <div class="input-group"><label>الفرع</label><input type="text" id="inBranch" oninput="update()"></div>
+    <div class="input-group"><label>تاريخ انتهاء الرخصة</label><input type="text" id="inExp" placeholder="00 / 00 / 00" oninput="update()"></div>
+    <button class="btn-pdf" onclick="generatePDF()">تصدير PDF </button>
+</div>
+
+<div id="letterPage">
+    <div class="header-date">التاريخ : <span id="outDate" class="red-val">2026/04/10</span></div>
+    
+    <div class="main-title"><span>إقرار مصروفات رخصة قيادة</span></div>
+
+    <div class="content-text">
+        اقر أنا / <span id="outName" class="dynamic-field">..............................</span> إقامة رقم <span id="outID" class="dynamic-field">....................</span> والذي أعمل بمهنة <span id="outJob" class="dynamic-field">....................</span> بفرع <span id="outBranch" class="dynamic-field">....................</span> أنه في حالة تركي للعمل قبل إنتهاء مدة الرخصة والتي تنتهي بتاريخ <span id="outExp" class="dynamic-field">/ /</span> فإنني أتحمل كافة مصاريف إستخراج رخصة القيادة والتي قامت الشركة بدفعها مسبقاً .
+    </div>
+
+    <p style="text-align: center; font-weight: bold; font-size: 20px; margin-top: 40px;">وهذا إقرار مني بذلك ,,,</p>
+
+    <div class="footer-section">
+        المقر بما فيه :<br>
+        الاسم : <span id="outNameFooter" class="red-val"></span><br>
+        التوقيع :<br>
+        البصمة :
+    </div>
+</div>
+
+<script>
+    function update() {
+        document.getElementById('outDate').innerText = document.getElementById('inDate').value || '2026/04/10';
+        document.getElementById('outName').innerText = document.getElementById('inName').value || '..............................';
+        document.getElementById('outNameFooter').innerText = document.getElementById('inName').value;
+        document.getElementById('outID').innerText = document.getElementById('inID').value || '....................';
+        document.getElementById('outJob').innerText = document.getElementById('inJob').value || '....................';
+        document.getElementById('outBranch').innerText = document.getElementById('inBranch').value || '....................';
+        document.getElementById('outExp').innerText = document.getElementById('inExp').value || '/ /';
+    }
+
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const element = document.getElementById('letterPage');
+        
+        const canvas = await html2canvas(element, { 
+            scale: 3, 
+            backgroundColor: null,
+            logging: false
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+        pdf.save(`اقرار مصروفات رخصة قيادة${document.getElementById('inName').value || 'موظف'}.pdf`);
+    }
+</script>
+
+</body>
+</html>

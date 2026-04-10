@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>خطاب تعميد مصروفات رخصة قيادة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --primary-red: #ff0000; --bg-gray: #f4f4f9; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg-gray); padding: 20px; margin: 0; }
+        
+        /* لوحة التحكم الجانبية */
+        .controls { 
+            position: fixed; right: 20px; top: 20px; width: 320px; 
+            background: white; padding: 20px; border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100;
+        }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Tajawal'; }
+        
+        /* تصميم الورقة */
+        #letterPage { 
+            width: 210mm; min-height: 297mm; padding: 20mm; 
+            background: transparent; margin: 0 auto 0 380px; 
+            position: relative; color: #000; line-height: 1.8; box-sizing: border-box;
+        }
+
+        .header-date { text-align: right; font-weight: bold; font-size: 18px; margin-bottom: 20px; }
+        /* التاريخ باللون الأحمر */
+        #outDate { color: red; }
+        
+        .main-title { text-align: center; text-decoration: underline; color: red; font-size: 26px; font-weight: bold; margin: 20px 0; }
+        
+        .dest-container { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 16px; font-weight: bold; }
+        .names-col { line-height: 2; }
+        .titles-col { line-height: 2; color: red; text-align: left; }
+        
+        .content-body { font-size: 17px; font-weight: bold; text-align: justify; margin-top: 30px; }
+        
+        /* المدخلات باللون الأحمر مع خط سفلي */
+        .input-data { color: red; border-bottom: 1px dotted #000; padding: 0 5px; }
+
+        .decision-box { border: 2px solid #000; margin-top: 25px; }
+        .decision-head { background: #d99694; border-bottom: 2px solid #000; padding: 5px; text-align: center; font-weight: bold; }
+        .decision-body { height: 70px; }
+
+        .footer-sigs { display: flex; justify-content: space-between; margin-top: 50px; text-align: center; font-weight: bold; font-size: 13px; }
+        
+        .btn-pdf { background: var(--primary-red); color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; font-family: 'Tajawal'; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h3 style="margin-top:0; color: red;">بيانات الرخصة</h3>
+    <div class="input-group">
+        <label>التاريخ</label>
+        <input type="text" id="inDate" placeholder="00/00/0000" oninput="update()">
+    </div>
+    <div class="input-group">
+        <label>نوع الرخصة (خاصة / نقل ثقيل)</label>
+        <input type="text" id="inType" oninput="update()">
+    </div>
+    <div class="input-group">
+        <label>اسم الموظف</label>
+        <input type="text" id="inName" oninput="update()">
+    </div>
+    <div class="input-group">
+        <label>رقم الإقامة</label>
+        <input type="text" id="inID" oninput="update()">
+    </div>
+    <div class="input-group">
+        <label>الفرع</label>
+        <input type="text" id="inBranch" oninput="update()">
+    </div>
+    <button class="btn-pdf" onclick="generatePDF()">تصدير PDF</button>
+</div>
+
+<div id="letterPage">
+    <div class="header-date">التاريخ : <span id="outDate">0000/00/00</span></div>
+    
+    <div class="main-title">خطاب تعميد مصروفات رخصة قيادة</div>
+
+    <div class="dest-container">
+        <div class="names-col">
+            السيد المهندس/ إسلام عزت<br>
+            السيد الأستاذ/ محمود جمال<br>
+            السيد الأستاذ / مصطفى عبده<br>
+            السيد الأستاذ / علي طنطاوي
+        </div>
+        <div class="titles-col">
+            نائب المدير التنفيذي لشركة سادن<br>
+            المدير المالي<br>
+            مدير إدارة الرواتب وحماية الأجور<br>
+            مدير الحركة والتشغيل
+        </div>
+    </div>
+
+    <p style="text-align: center; font-weight: bold; margin: 20px 0;">تحية طيبة وبعد ,,,</p>
+
+    <div class="content-body">
+        برجاء تحديد قيمة ( مصروفات رخصة قيادة ) ( <span id="outType" class="input-data">...........</span> ) للموظف / <span id="outName" class="input-data">..............................</span> إقامة رقم <span id="outID" class="input-data">....................</span> والذي يعمل بفرع <span id="outBranch" class="input-data">....................</span>.
+    </div>
+
+    <p style="text-align: center; font-weight: bold; margin-top: 30px;">ولسيادتكم جزيل الشكر ,,,</p>
+
+    <div class="decision-box">
+        <div class="decision-head">قرار إدارة الحركة</div>
+        <div class="decision-body"></div>
+    </div>
+
+    <div class="decision-box">
+        <div class="decision-head">قرار الإدارة المالية</div>
+        <div class="decision-body"></div>
+    </div>
+
+    <div class="footer-sigs">
+        <div>مدير الحركة والتشغيل<br><br>......................</div>
+        <div>مدير إدارة الرواتب<br><br>......................</div>
+                <div>المدير المالي<br><br>......................</div>
+        <div>نائب المدير التنفيذي<br><br>......................</div>
+    </div>
+</div>
+
+<script>
+    function update() {
+        document.getElementById('outDate').innerText = document.getElementById('inDate').value || '0000/00/00';
+        document.getElementById('outType').innerText = document.getElementById('inType').value || '...........';
+        document.getElementById('outName').innerText = document.getElementById('inName').value || '..............................';
+        document.getElementById('outID').innerText = document.getElementById('inID').value || '....................';
+        document.getElementById('outBranch').innerText = document.getElementById('inBranch').value || '....................';
+    }
+
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const element = document.getElementById('letterPage');
+        const canvas = await html2canvas(element, { scale: 3, backgroundColor: '#ffffff' });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+        pdf.save(`خطاب_رخصة_${document.getElementById('inName').value || 'سادن'}.pdf`);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>منظومة الخطابات الاحترافية - سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --primary-red: #ff0000; --panel-bg: #ffffff; }
+        body { font-family: 'Tajawal', sans-serif; background: #ececec; padding: 20px; margin: 0; display: flex; }
+        
+        /* لوحة التحكم الجانبية */
+        .controls { 
+            width: 380px; background: var(--panel-bg); padding: 20px; border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: fixed; right: 20px; top: 20px; 
+            max-height: 90vh; overflow-y: auto; z-index: 100;
+        }
+        .section-box { background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb; }
+        h4 { margin: 0 0 15px 0; color: var(--primary-red); border-bottom: 2px solid; display: inline-block; }
+        
+        .input-group { margin-bottom: 10px; display: flex; gap: 5px; align-items: center; }
+        input, textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: 'Tajawal'; font-size: 13px; }
+        
+        .btn-add { background: #059669; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-bottom: 10px; }
+        .btn-del { background: #dc2626; color: white; border: none; padding: 5px; border-radius: 4px; cursor: pointer; }
+        
+        /* تصميم الورقة */
+        #letterPage { 
+            width: 210mm; 
+            min-height: 297mm; 
+            padding: 25mm 20mm; 
+            background: transparent; 
+            margin: 0 auto 0 420px; 
+            position: relative; 
+            color: #000; 
+            box-sizing: border-box;
+            border: 1px dashed #ccc; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-date { text-align: right; font-weight: bold; font-size: 18px; margin-bottom: 30px; }
+        .red-txt { color: red; font-weight: bold; }
+        
+        .dest-row { display: flex; justify-content: space-between; font-size: 17px; font-weight: bold; margin-bottom: 8px; }
+        .dest-title { color: red; text-align: left; }
+
+        .main-title { text-align: center; color: red; font-size: 26px; font-weight: bold; margin: 30px 0; text-decoration: underline; }
+        
+        /* ضبط موضوع الخطاب لمنع الخروج عن الحدود */
+        .content-body { 
+            font-size: 19px; 
+            font-weight: bold; 
+            text-align: justify; 
+            white-space: pre-wrap; /* يحافظ على الفراغات وينزل لسطر جديد تلقائياً */
+            word-wrap: break-word; /* يكسر الكلمات الطويلة جداً */
+            overflow-wrap: break-word;
+            max-width: 100%; /* يضمن عدم تجاوز العرض */
+            color: #000; 
+            line-height: 1.8;
+            flex-grow: 1; /* يسمح للنص بأخذ المساحة المتاحة */
+        }
+
+        .footer-sigs { 
+            margin-top: 50px; 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+            text-align: center; 
+            font-weight: bold; 
+            width: 100%;
+        }
+        .sig-item { margin-bottom: 20px; }
+
+        .btn-pdf { background: var(--primary-red); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; font-family: 'Tajawal'; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h3 style="color:red; margin-top:0;">نموذج خطاب متعدد الإستخدام</h3>
+    
+    <div class="section-box">
+        <label>التاريخ</label>
+        <input type="text" id="inDate" placeholder="2026/04/10" oninput="render()">
+        <label style="margin-top:10px; display:block;">عنوان الخطاب</label>
+        <input type="text" id="inTitle" placeholder="أدخل العنوان هنا" oninput="render()">
+    </div>
+
+    <div class="section-box">
+        <h4>الموجه إليهم</h4>
+        <div id="destInputs">
+            <div class="input-group">
+                <input type="text" placeholder="الاسم" class="d-name" oninput="render()">
+                <input type="text" placeholder="الوظيفة" class="d-job" oninput="render()">
+                <button class="btn-del" onclick="removeRow(this)">✕</button>
+            </div>
+        </div>
+        <button class="btn-add" onclick="addRow('destInputs')">+ إضافة شخص</button>
+    </div>
+
+    <div class="section-box">
+        <h4>موضوع الخطاب</h4>
+        <textarea id="inContent" rows="8" placeholder="اكتب نص الخطاب هنا..." oninput="render()"></textarea>
+    </div>
+
+    <div class="section-box">
+        <h4>الموقعون (بالأسفل)</h4>
+        <div id="sigInputs">
+            <div class="input-group">
+                <input type="text" placeholder="المسمى الوظيفي" class="s-job" oninput="render()">
+                <button class="btn-del" onclick="removeRow(this)">✕</button>
+            </div>
+        </div>
+        <button class="btn-add" onclick="addRow('sigInputs')">+ إضافة توقيع</button>
+    </div>
+
+    <button class="btn-pdf" onclick="generatePDF()">تصدير PDF </button>
+</div>
+
+<div id="letterPage">
+    <div class="header-date">التاريخ : <span id="outDate" class="red-txt">2026/04/10</span></div>
+    
+    <div id="outDests"></div>
+
+    <p style="text-align: center; font-weight: bold; font-size: 18px; margin: 20px 0;">تحية طيبة وبعد ,,,</p>
+
+    <div class="main-title" id="outTitle">عنوان الخطاب</div>
+
+    <div class="content-body" id="outContent">محتوى الخطاب سيظهر هنا ملتزماً بحدود الورقة...</div>
+
+    <div class="footer-sigs" id="outSigs"></div>
+</div>
+
+<script>
+    function addRow(containerId) {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = 'input-group';
+        if(containerId === 'destInputs') {
+            div.innerHTML = `<input type="text" placeholder="الاسم" class="d-name" oninput="render()">
+                             <input type="text" placeholder="الوظيفة" class="d-job" oninput="render()">
+                             <button class="btn-del" onclick="removeRow(this)">✕</button>`;
+        } else {
+            div.innerHTML = `<input type="text" placeholder="المسمى الوظيفي" class="s-job" oninput="render()">
+                             <button class="btn-del" onclick="removeRow(this)">✕</button>`;
+        }
+        container.appendChild(div);
+        render();
+    }
+
+    function removeRow(btn) {
+        btn.parentElement.remove();
+        render();
+    }
+
+    function render() {
+        document.getElementById('outDate').innerText = document.getElementById('inDate').value || '2026/04/10';
+        document.getElementById('outTitle').innerText = document.getElementById('inTitle').value || 'عنوان الخطاب';
+        document.getElementById('outContent').innerText = document.getElementById('inContent').value || 'محتوى الخطاب سيظهر هنا...';
+
+        const destsContainer = document.getElementById('outDests');
+        destsContainer.innerHTML = '';
+        document.querySelectorAll('#destInputs .input-group').forEach(group => {
+            const name = group.querySelector('.d-name').value || '................';
+            const job = group.querySelector('.d-job').value || '................';
+            destsContainer.innerHTML += `<div class="dest-row">
+                <div>السيد / ${name}</div>
+                <div class="dest-title">${job}</div>
+            </div>`;
+        });
+
+        const sigsContainer = document.getElementById('outSigs');
+        sigsContainer.innerHTML = '';
+        document.querySelectorAll('#sigInputs .input-group').forEach(group => {
+            const job = group.querySelector('.s-job').value || 'توقيع';
+            sigsContainer.innerHTML += `<div class="sig-item">
+                ${job}<br><br>...........................
+            </div>`;
+        });
+    }
+
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const element = document.getElementById('letterPage');
+        
+        // التقاط الصورة بدقة عالية مع الحفاظ على الشفافية
+        const canvas = await html2canvas(element, { 
+            scale: 3, 
+            backgroundColor: null,
+            useCORS: true 
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        // حساب الأبعاد لضمان الملاءمة
+        const imgWidth = 210; 
+        const pageHeight = 297;  
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.save(`خطاب_سادن_${Date.now()}.pdf`);
+    }
+
+    render();
+</script>
+
+</body>
+</html>
