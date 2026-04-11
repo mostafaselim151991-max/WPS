@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سجل الخطابات المركزي - مجموعة سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #c00000;
+            --secondary: #2d3748;
+            --bg: #f8fafc;
+        }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h2 { margin: 0; color: var(--primary); }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .stat-card span { display: block; font-size: 24px; font-weight: bold; color: var(--secondary); }
+
+        .search-bar {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Tajawal';
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 15px;
+            text-align: right;
+            border-bottom: 1px solid #edf2f7;
+        }
+        th {
+            background-color: var(--secondary);
+            color: white;
+            font-weight: bold;
+        }
+        tr:hover { background-color: #f1f5f9; }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-type { background: #fee2e2; color: #b91c1c; }
+        .badge-branch { background: #e0f2fe; color: #0369a1; }
+
+        .actions { display: flex; gap: 10px; }
+        .btn-del { background: #fee2e2; color: #b91c1c; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-del:hover { background: #fca5a5; }
+        
+        .no-data { text-align: center; padding: 50px; color: #94a3b8; background: white; border-radius: 12px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h2>📋 السجل المركزي للخطابات</h2>
+        <div>
+            <button onclick="exportToExcel()" style="padding: 10px 15px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer; background: white;">تصدير بيانات</button>
+            <button onclick="clearAll()" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer;">مسح السجل بالكامل</button>
+        </div>
+    </header>
+
+    <div class="stats">
+        <div class="stat-card">الخطابات اليوم<span id="todayCount">0</span></div>
+        <div class="stat-card">إجمالي الخطابات<span id="totalCount">0</span></div>
+        <div class="stat-card">أحدث موظف<span id="lastName" style="font-size: 16px;">-</span></div>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="بحث باسم الموظف أو نوع الخطاب..." onkeyup="filterTable()">
+    </div>
+
+    <table id="masterTable">
+        <thead>
+            <tr>
+                <th>تاريخ الإنشاء</th>
+                <th>نوع الخطاب</th>
+                <th>اسم الموظف</th>
+                <th>الفرع</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+    <div id="noData" class="no-data" style="display: none;">لا توجد خطابات محفوظة حالياً في السجل.</div>
+</div>
+
+<script>
+    // وظيفة تحميل البيانات عند فتح الصفحة
+    window.onload = function() {
+        loadMasterData();
+    };
+
+    function loadMasterData() {
+        const tableBody = document.getElementById('tableBody');
+        const history = JSON.parse(localStorage.getItem('saden_master_db') || '[]');
+        if (history.length === 0) {
+            document.getElementById('noData').style.display = 'block';
+            tableBody.innerHTML = '';
+            return;
+        }
+        document.getElementById('noData').style.display = 'none';
+        tableBody.innerHTML = '';
+
+        [...history].reverse().forEach(item => {
+            const row = document.createElement('tr');
+            // تأكد أن هذا الاسم مطابق لاسم ملف النموذج على جهازك
+            let fileUrl = "بدل_الموقع.html"; 
+
+            row.innerHTML = `
+                <td>${item.createdAt}</td>
+                <td><span class="badge badge-type">${item.letterType}</span></td>
+                <td>${item.name}</td>
+                <td><span class="badge badge-branch">${item.branch}</span></td>
+                <td class="actions">
+                    <button onclick="openLetter('${fileUrl}', '${item.name}', 'view')" style="background:#0369a1; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">👁️ عرض</button>
+                    <button onclick="openLetter('${fileUrl}', '${item.name}', 'edit')" style="background:#059669; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">✏️ تعديل</button>
+                    <button class="btn-del" onclick="deleteEntry(${item.id})">حذف</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+        updateStats(history.length, history[history.length-1].name);
+    }
+
+    function openLetter(url, name, mode) {
+        // فحص إذا كان الملف موجود في نفس المجلد
+        // ملاحظة: يجب أن تكون الملفات في نفس المجلد تماماً
+        window.location.href = url + "?viewName=" + encodeURIComponent(name) + "&mode=" + mode;
+    }
+
+    function updateStats(total, last) {
+        document.getElementById('totalCount').innerText = total;
+        document.getElementById('lastName').innerText = last;
+        
+        // حساب عدد خطابات اليوم فقط
+        const todayStr = new Date().toLocaleDateString('ar-EG');
+        const history = JSON.parse(localStorage.getItem('saden_master_db') || '[]');
+        const todayCount = history.filter(i => i.createdAt && i.createdAt.includes(todayStr)).length;
+        document.getElementById('todayCount').innerText = todayCount;
+    }
+
+    function deleteEntry(id) {
+        if (confirm("هل تريد حذف هذا السجل نهائياً؟")) {
+            let history = JSON.parse(localStorage.getItem('saden_master_db') || '[]');
+            history = history.filter(i => i.id !== id);
+            localStorage.setItem('saden_master_db', JSON.stringify(history));
+            loadMasterData();
+        }
+    }
+
+    function clearAll() {
+        if (confirm("⚠️ تحذير: سيتم مسح كافة الخطابات من السجل المركزي. هل أنت متأكد؟")) {
+            localStorage.setItem('saden_master_db', '[]');
+            loadMasterData();
+        }
+    }
+
+    function filterTable() {
+        const input = document.getElementById("searchInput").value.toUpperCase();
+        const rows = document.getElementById("tableBody").getElementsByTagName("tr");
+        for (let row of rows) {
+            row.style.display = row.innerText.toUpperCase().includes(input) ? "" : "none";
+        }
+    }
+
+    function exportToExcel() {
+        alert("يمكنك حالياً نسخ الجدول ولصقه في ملف Excel مباشرة.");
+    }
+</script>
+
+</body>
+</html>

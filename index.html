@@ -107,7 +107,7 @@
         
         <nav class="nav-group">
             <button class="nav-btn" data-url="الإدارةالمالية.html" onclick="loadPage(this, 'الإدارةالمالية.html')">💰 الإدارة المالية</button>
-            <button class="nav-btn" data-url="الموارد البشرية وشئون الموظفين.html" onclick="loadPage(this, 'الموارد البشرية وشئون الموظفين.html')">👥 الموارد البشرية</button>
+            <button class="nav-btn" data-url="الموارد البشرية وشئون الموظفين.html" onclick="loadPage(this, 'الموارد البشرية وشئون الموظفين.html')">👥 الشئون الإدارية</button>
             <button class="nav-btn" data-url="إدارة العمليات.html" onclick="loadPage(this, 'العمليات.html')">⚙️ إدارة العمليات</button>
             <button class="nav-btn" data-url="إدارةالمناقصات.html" onclick="loadPage(this, 'إدارةالمناقصات.html')">📑 إدارة المناقصات</button>
             <button class="nav-btn" data-url="إدارة حركة السيارات.html" onclick="loadPage(this, 'إدارة حركة السيارات.html')">🚚 إدارة حركة السيارات</button>
@@ -122,7 +122,18 @@
                     <button class="nav-btn" data-url="تقسيم مبالغ التصفية.html" onclick="loadPage(this, 'تقسيم مبالغ التصفية.html')">📈 توزيع مبالغ التصفية</button>
                     <button class="nav-btn" data-url="حاسبة مبالغ و ايام عمل موظف.html" onclick="loadPage(this, 'حاسبة.html')">🖩 حاسبة أيام عمل موظف</button>
                     <button class="nav-btn" data-url="حاسبة التأمينات الإجتماعية.html" onclick="loadPage(this, 'حاسبة التأمينات الإجتماعية.html')">🛡️ التأمينات الاجتماعية</button>
-                    <button class="nav-btn" data-url="الخطابات.html" onclick="loadPage(this, 'الخطابات.html')">📜 مركز النماذج والخطابات</button>
+<div class="dropdown">
+    <button class="nav-btn dropdown-toggle" onclick="toggleDropdown('lettersMenu')">
+        <span>💳 الخطابات</span> <span style="font-size: 10px;">▼</span>
+    </button>
+    
+    <div id="lettersMenu" class="dropdown-content">
+        <button class="nav-btn" data-url="نماذج الخطابات.html" onclick="loadPage(this, 'نماذج الخطابات.html')">📂 نماذج الخطابات</button>
+        <button class="nav-btn" data-url="سجل الخطابات.html" onclick="loadPage(this, 'سجل الخطابات.html')">📂 سجل الخطابات</button>
+
+    </div>
+
+
                 </div>
             </div>
         </nav>
