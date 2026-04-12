@@ -153,7 +153,10 @@
         </div>
         
         <nav class="nav-group">
-                        <div class="dropdown">
+                        
+        <button class="nav-btn sub-btn" onclick="loadPage(this, 'dash.html')">⬅️ الصفحة الرئيسية</button>
+
+            <div class="dropdown">
                 <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'fincMenu')">💰 الإدارة المالية</button>
                 <div id="fincMenu" class="dropdown-content">
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ تحت الإنشاء</button>
@@ -363,6 +366,21 @@
             localStorage.setItem('sadenUsers', JSON.stringify(users));
             renderUsers();
         }
+        function showDashboard(btn) {
+    // 1. إزالة النشاط من كل الأزرار وتنشيط زر الرئيسية
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // 2. إظهار الداش بورد (welcome) وإخفاء الـ iframe
+    document.getElementById('welcome').style.display = 'block';
+    const frame = document.getElementById('frame');
+    frame.style.display = 'none';
+    frame.src = ''; // تفريغ الـ iframe لتوفير الرام
+
+    // 3. إغلاق أي قوائم منسدلة مفتوحة (اختياري)
+    document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
+    document.querySelectorAll('.has-submenu').forEach(b => b.classList.remove('active_menu'));
+}
  </script>
 </body>
 </html>

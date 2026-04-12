@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام سادن الذكي 2026 | Saden Pro AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --dark-blue: #0f172a; --primary: #3b82f6; --accent: #8b5cf6;
+            --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+            --glass-bg: rgba(255, 255, 255, 0.9); --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background: #f1f5f9; color: var(--dark-blue); padding: 25px; min-height: 100vh; }
+
+        .dashboard-container { max-width: 1600px; margin: 0 auto; display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+
+        /* ترويسة النظام */
+        .main-header { grid-column: span 12; background: white; padding: 20px 30px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--card-shadow); }
+        .ai-badge { background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; padding: 5px 15px; border-radius: 50px; font-size: 12px; font-weight: bold; }
+
+        /* كروت الإحصائيات الفائقة */
+        .stat-card { grid-column: span 3; background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); border-right: 6px solid var(--primary); transition: 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card.orange { border-right-color: var(--warning); }
+        .stat-card.green { border-right-color: var(--success); }
+        .stat-card.red { border-right-color: var(--danger); }
+        .stat-label { color: #64748b; font-size: 14px; margin-bottom: 5px; }
+        .stat-value { font-size: 32px; font-weight: 700; }
+
+        /* منطقة الذكاء الاصطناعي التنبؤية */
+        .ai-box { grid-column: span 4; background: var(--dark-blue); color: white; padding: 30px; border-radius: 20px; position: relative; overflow: hidden; }
+        .ai-box::after { content: 'AI'; position: absolute; right: -20px; bottom: -20px; font-size: 120px; opacity: 0.05; }
+        .ai-box h3 { font-size: 18px; margin-bottom: 15px; color: #94a3b8; display: flex; align-items: center; gap: 10px; }
+
+        /* الرسوم البيانية */
+        .chart-main { grid-column: span 8; background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); }
+        .chart-secondary { grid-column: span 4; background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); }
+        .chart-third { grid-column: span 4; background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); }
+
+        /* جدول البيانات المتطور */
+        .table-panel { grid-column: span 12; background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: right; padding: 15px; color: #64748b; border-bottom: 2px solid #f1f5f9; font-size: 13px; }
+        td { padding: 18px 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .pulse-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: 8px; }
+        .pulse-green { background: var(--success); box-shadow: 0 0 10px var(--success); }
+
+        @media (max-width: 1200px) { .stat-card { grid-column: span 6; } .chart-main, .chart-secondary, .ai-box, .chart-third { grid-column: span 12; } }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <header class="main-header">
+        <div>
+            <h1 style="font-size: 24px;"> نظام سادن الموحد <span class="ai-badge">PRO AI 2026</span></h1>
+            <p style="color: #64748b; font-size: 14px; margin-top: 5px;">مرحباً بك  النظام يحلل البيانات الآن...</p>
+        </div>
+        <div style="text-align: left;">
+            <button onclick="window.print()" style="padding: 12px 25px; background: #f1f5f9; border:none; border-radius:12px; cursor:pointer; font-weight:700;">تحميل التقرير الكامل</button>
+        </div>
+    </header>
+
+    <div class="stat-card">
+        <p class="stat-label">إجمالي القوة العاملة</p>
+        <p class="stat-value">128</p>
+        <p style="color: var(--success); font-size: 12px; font-weight: 700;">+ 5% استقطاب جديد</p>
+    </div>
+    <div class="stat-card orange">
+        <p class="stat-label">المشاريع النشطة</p>
+        <p class="stat-value">18</p>
+        <p style="color: var(--warning); font-size: 12px; font-weight: 700;">3 بانتظار الاعتماد</p>
+    </div>
+    <div class="stat-card green">
+        <p class="stat-label">كفاءة الأداء العام</p>
+        <p class="stat-value">94%</p>
+        <p style="color: var(--success); font-size: 12px; font-weight: 700;">أعلى من المستهدف</p>
+    </div>
+    <div class="stat-card red">
+        <p class="stat-label">إيرادات العقود</p>
+        <p class="stat-value">4.2M</p>
+        <p style="color: #64748b; font-size: 12px;">ريال سعودي</p>
+    </div>
+
+    <div class="chart-main">
+        <h3 style="margin-bottom: 20px;">تحليل الإنجاز التراكمي للإدارات (يومي)</h3>
+        <canvas id="lineChart" height="100"></canvas>
+    </div>
+
+    <div class="ai-box">
+        <h3>✨ توصيات الذكاء الاصطناعي</h3>
+        <ul style="list-style: none;">
+            <li style="margin-bottom: 15px; border-right: 3px solid var(--primary); padding-right: 15px;">
+                <b>تحسين المسار:</b> قسم الحفر يستهلك وقوداً أعلى بـ 12% من المعتاد. يرجى مراجعة الصيانة الوقائية للحفار رقم 7.
+            </li>
+            <li style="margin-bottom: 15px; border-right: 3px solid var(--success); padding-right: 15px;">
+                <b>فرصة نمو:</b> هناك فائض ميزانية في قسم التسويق يمكن نقله لدعم مناقصة "مشروع القدية 2".
+            </li>
+        </ul>
+    </div>
+
+    <div class="chart-secondary">
+        <h3 style="margin-bottom: 20px; font-size: 16px;">توزيع الميزانية التشغيلية</h3>
+        <canvas id="doughnutChart"></canvas>
+    </div>
+
+    <div class="chart-third">
+        <h3 style="margin-bottom: 20px; font-size: 16px;">مؤشر كفاءة الأقسام</h3>
+        <canvas id="radarChart"></canvas>
+    </div>
+
+    <div class="table-panel">
+        <h3 style="margin-bottom: 20px;">الرقابة المباشرة على الأقسام</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>القسم / الإدارة</th>
+                    <th>مدير الإدارة</th>
+                    <th>نسبة الإنجاز</th>
+                    <th>الحالة</th>
+                    <th>توقيت النبض</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>إدارة المشروعات (الميدان)</b></td>
+                    <td>م. محمد عبده</td>
+                    <td><progress value="92" max="100" style="width: 100px;"></progress> 92%</td>
+                    <td><span class="pulse-dot pulse-green"></span> نشط مستقر</td>
+                    <td>منذ دقيقتين</td>
+                </tr>
+                <tr>
+                    <td><b>الإدارة المالية</b></td>
+                    <td>أ. إسلام عزت</td>
+                    <td><progress value="100" max="100" style="width: 100px;"></progress> 100%</td>
+                    <td><span class="pulse-dot pulse-green" style="background:var(--primary); box-shadow:0 0 10px var(--primary);"></span> مكتمل</td>
+                    <td>منذ ساعة</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // 1. الرسم البياني الخطي (الإنجاز)
+    new Chart(document.getElementById('lineChart'), {
+        type: 'line',
+        data: {
+            labels: ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'],
+            datasets: [{
+                label: 'مستوى الأداء',
+                data: [70, 85, 82, 90, 88, 94],
+                borderColor: '#3b82f6',
+                tension: 0.4,
+                fill: true,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)'
+            }]
+        },
+        options: { plugins: { legend: { display: false } } }
+    });
+
+    // 2. الرسم الدائري (الميزانية)
+    new Chart(document.getElementById('doughnutChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['عمليات', 'رواتب', 'صيانة', 'تسويق'],
+            datasets: [{
+                data: [40, 30, 20, 10],
+                backgroundColor: ['#0f172a', '#3b82f6', '#8b5cf6', '#10b981'],
+                borderWidth: 0
+            }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    // 3. الرسم الراداري (كفاءة الأقسام)
+    new Chart(document.getElementById('radarChart'), {
+        type: 'radar',
+        data: {
+            labels: ['السرعة', 'الجودة', 'التكلفة', 'الأمان', 'الاستدامة'],
+            datasets: [{
+                label: 'الوضع الحالي',
+                data: [90, 95, 80, 100, 85],
+                borderColor: '#8b5cf6',
+                backgroundColor: 'rgba(139, 92, 246, 0.2)'
+            }]
+        },
+        options: { plugins: { legend: { display: false } } }
+    });
+</script>
+
+</body>
+</html>
