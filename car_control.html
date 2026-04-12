@@ -2,110 +2,110 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة حركة السيارات | مجموعة سادن</title>
+    <title>نظام إدارة حركة السيارات | مجموعة سادن</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #3b82f6; --dark: #0f172a; --bg: #f1f5f9;
-            --danger: #ef4444; --warning: #f59e0b; --success: #10b981;
+            --primary: #3b82f6; --dark: #0f172a; --bg: #f8fafc;
+            --danger: #ef4444; --warning: #f59e0b; --success: #10b981; --border: #e2e8f0;
         }
-        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 30px; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 0; }
         
-        .header { margin-bottom: 40px; text-align: center; }
-        .header h1 { color: var(--dark); font-size: 28px; margin-bottom: 10px; }
-        .header p { color: #64748b; font-size: 16px; }
+        /* الهيدر العلوي */
+        .top-header { background: white; padding: 20px 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .top-header h1 { margin: 0; font-size: 22px; color: var(--dark); }
+        .top-header .brand { color: var(--primary); font-weight: 700; }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            max-width: 1200px;
-            margin: 0 auto;
+        /* شريط التبويبات */
+        .tabs-bar { background: white; padding: 0 40px; display: flex; gap: 10px; border-bottom: 1px solid var(--border); sticky; top: 0; z-index: 100; }
+        .tab-btn { 
+            padding: 15px 25px; border: none; background: none; font-family: inherit; 
+            font-size: 15px; font-weight: 700; color: #64748b; cursor: pointer; 
+            transition: 0.3s; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 8px;
         }
+        .tab-btn:hover { color: var(--primary); background: #f1f5f9; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(59, 130, 246, 0.05); }
 
-        .nav-card {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
+        /* محتوى التبويبات */
+        .content-area { padding: 30px 40px; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
 
-        .nav-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-            border-color: var(--primary);
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .icon-circle {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            margin-bottom: 10px;
-        }
+        /* ستايل النافذة المضمنة (IFRAME) لعرض الصفحات */
+        iframe { width: 100%; height: 85vh; border: none; border-radius: 12px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-        .nav-card h3 { margin: 0; color: var(--dark); font-size: 18px; }
-        .nav-card p { margin: 0; color: #94a3b8; font-size: 13px; }
-
-        /* ألوان الأيقونات */
-        .bg-blue { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
-        .bg-green { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .bg-orange { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-        .bg-red { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-        .bg-purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
-
+        .placeholder-card { background: white; padding: 100px; border-radius: 15px; text-align: center; border: 2px dashed var(--border); color: #94a3b8; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🚚 نظام إدارة حركة السيارات</h1>
-        <p>مجموعة سادن الموحدة - لوحة التحكم المركزية</p>
+    <div class="top-header">
+        <h1>🚚 نظام إدارة حركة السيارات <span class="brand">| سادن الموحدة</span></h1>
     </div>
 
-    <div class="dashboard-grid">
+    <div class="tabs-bar">
+        <button class="tab-btn" onclick="openTab(event, 'tab-add')">➕ تسجيل مركبة</button>
+                <button class="tab-btn active" onclick="openTab(event, 'tab-fleet')">📑 أسطول السيارات</button>
+
+        <button class="tab-btn" onclick="openTab(event, 'tab-maintenance')">🛠️ تقارير الصيانة</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-delivery')">🤝 محاضر التسليم</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-accidents')">⚠️ سجل الحوادث</button>
+    </div>
+
+    <div class="content-area">
         
-        <a href="add_car.html" class="nav-card">
-            <div class="icon-circle bg-blue">➕</div>
-            <h3>تسجيل سيارة جديدة</h3>
-            <p>إضافة مركبة جديدة للأرشيف ببياناتها الكاملة</p>
-        </a>
+        <div id="tab-fleet" class="tab-content active">
+            <iframe src="fleet_list.html"></iframe>
+        </div>
 
-        <a href="fleet_list.html" class="nav-card">
-            <div class="icon-circle bg-green">📑</div>
-            <h3>أسطول السيارات</h3>
-            <p>عرض التقرير الشامل وإصدار شهادات البيانات</p>
-        </a>
+        <div id="tab-add" class="tab-content">
+            <iframe src="add_car.html"></iframe>
+        </div>
 
-        <a href="#" class="nav-card">
-            <div class="icon-circle bg-orange">🛠️</div>
-            <h3>تقارير الصيانة</h3>
-            <p>متابعة حالة الورشة وجداول الصيانة الدورية</p>
-        </a>
+        <div id="tab-maintenance" class="tab-content">
+            <div class="placeholder-card">
+                <h2>🛠️ قسم تقارير الصيانة</h2>
+                <p>هذا القسم قيد البرمجة.. سيتم ربطه بجداول الورشة قريباً.</p>
+            </div>
+        </div>
 
-        <a href="#" class="nav-card">
-            <div class="icon-circle bg-purple">🤝</div>
-            <h3>محاضر التسليم والتسلم</h3>
-            <p>توثيق نقل عهدة المركبات بين السائقين والفروع</p>
-        </a>
+        <div id="tab-delivery" class="tab-content">
+            <div class="placeholder-card">
+                <h2>🤝 قسم محاضر التسليم والتسلم</h2>
+                <p>هذا القسم قيد البرمجة.. مخصص لتوثيق نقل عهدة المركبات.</p>
+            </div>
+        </div>
 
-        <a href="#" class="nav-card">
-            <div class="icon-circle bg-red">⚠️</div>
-            <h3>سجل الحوادث</h3>
-            <p>رصد وتوثيق الحوادث المرورية والأضرار الناتجة</p>
-        </a>
+        <div id="tab-accidents" class="tab-content">
+            <div class="placeholder-card">
+                <h2 style="color: var(--danger);">⚠️ سجل الحوادث</h2>
+                <p>هذا القسم قيد البرمجة.. مخصص لرصد وتوثيق الحوادث المرورية.</p>
+            </div>
+        </div>
 
     </div>
+
+    <script>
+        function openTab(evt, tabId) {
+            // إخفاء كافة المحتويات
+            let contents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].classList.remove("active");
+            }
+
+            // إزالة الحالة النشطة من الأزرار
+            let buttons = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove("active");
+            }
+
+            // إظهار التاب الحالي وإضافة كلاس النشاط للزر
+            document.getElementById(tabId).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
 
 </body>
 </html>
