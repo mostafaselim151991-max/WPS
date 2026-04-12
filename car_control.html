@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة حركة السيارات | مجموعة سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6; --dark: #0f172a; --bg: #f1f5f9;
+            --danger: #ef4444; --warning: #f59e0b; --success: #10b981;
+        }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 30px; }
+        
+        .header { margin-bottom: 40px; text-align: center; }
+        .header h1 { color: var(--dark); font-size: 28px; margin-bottom: 10px; }
+        .header p { color: #64748b; font-size: 16px; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .nav-card h3 { margin: 0; color: var(--dark); font-size: 18px; }
+        .nav-card p { margin: 0; color: #94a3b8; font-size: 13px; }
+
+        /* ألوان الأيقونات */
+        .bg-blue { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+        .bg-green { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .bg-orange { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .bg-red { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .bg-purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🚚 نظام إدارة حركة السيارات</h1>
+        <p>مجموعة سادن الموحدة - لوحة التحكم المركزية</p>
+    </div>
+
+    <div class="dashboard-grid">
+        
+        <a href="add_car.html" class="nav-card">
+            <div class="icon-circle bg-blue">➕</div>
+            <h3>تسجيل سيارة جديدة</h3>
+            <p>إضافة مركبة جديدة للأرشيف ببياناتها الكاملة</p>
+        </a>
+
+        <a href="fleet_list.html" class="nav-card">
+            <div class="icon-circle bg-green">📑</div>
+            <h3>أسطول السيارات</h3>
+            <p>عرض التقرير الشامل وإصدار شهادات البيانات</p>
+        </a>
+
+        <a href="#" class="nav-card">
+            <div class="icon-circle bg-orange">🛠️</div>
+            <h3>تقارير الصيانة</h3>
+            <p>متابعة حالة الورشة وجداول الصيانة الدورية</p>
+        </a>
+
+        <a href="#" class="nav-card">
+            <div class="icon-circle bg-purple">🤝</div>
+            <h3>محاضر التسليم والتسلم</h3>
+            <p>توثيق نقل عهدة المركبات بين السائقين والفروع</p>
+        </a>
+
+        <a href="#" class="nav-card">
+            <div class="icon-circle bg-red">⚠️</div>
+            <h3>سجل الحوادث</h3>
+            <p>رصد وتوثيق الحوادث المرورية والأضرار الناتجة</p>
+        </a>
+
+    </div>
+
+</body>
+</html>
