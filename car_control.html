@@ -9,15 +9,24 @@
             --primary: #3b82f6; --dark: #0f172a; --bg: #f8fafc;
             --danger: #ef4444; --warning: #f59e0b; --success: #10b981; --border: #e2e8f0;
         }
-        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* الهيدر العلوي */
         .top-header { background: white; padding: 20px 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .top-header h1 { margin: 0; font-size: 22px; color: var(--dark); }
         .top-header .brand { color: var(--primary); font-weight: 700; }
 
-        /* شريط التبويبات */
-        .tabs-bar { background: white; padding: 0 40px; display: flex; gap: 10px; border-bottom: 1px solid var(--border); sticky; top: 0; z-index: 100; }
+        /* تعديل الـ sticky هنا */
+        .tabs-bar { 
+            background: white; 
+            padding: 0 40px; 
+            display: flex; 
+            gap: 10px; 
+            border-bottom: 1px solid var(--border); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+
         .tab-btn { 
             padding: 15px 25px; border: none; background: none; font-family: inherit; 
             font-size: 15px; font-weight: 700; color: #64748b; cursor: pointer; 
@@ -26,15 +35,13 @@
         .tab-btn:hover { color: var(--primary); background: #f1f5f9; }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(59, 130, 246, 0.05); }
 
-        /* محتوى التبويبات */
-        .content-area { padding: 30px 40px; }
+        .content-area { padding: 20px 40px; }
         .tab-content { display: none; animation: fadeIn 0.4s ease; }
         .tab-content.active { display: block; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ستايل النافذة المضمنة (IFRAME) لعرض الصفحات */
-        iframe { width: 100%; height: 85vh; border: none; border-radius: 12px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        iframe { width: 100%; height: 80vh; border: none; border-radius: 12px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
         .placeholder-card { background: white; padding: 100px; border-radius: 15px; text-align: center; border: 2px dashed var(--border); color: #94a3b8; }
     </style>
@@ -46,18 +53,16 @@
     </div>
 
     <div class="tabs-bar">
+        <button class="tab-btn active" onclick="openTab(event, 'tab-fleet')">📑 أسطول السيارات</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-add')">➕ تسجيل مركبة</button>
-                <button class="tab-btn active" onclick="openTab(event, 'tab-fleet')">📑 أسطول السيارات</button>
-
         <button class="tab-btn" onclick="openTab(event, 'tab-maintenance')">🛠️ تقارير الصيانة</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-delivery')">🤝 محاضر التسليم</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-accidents')">⚠️ سجل الحوادث</button>
     </div>
 
     <div class="content-area">
-        
         <div id="tab-fleet" class="tab-content active">
-            <iframe src="fleet_list.html"></iframe>
+            <iframe src="fleet_list.html" id="frame-fleet"></iframe>
         </div>
 
         <div id="tab-add" class="tab-content">
@@ -84,26 +89,27 @@
                 <p>هذا القسم قيد البرمجة.. مخصص لرصد وتوثيق الحوادث المرورية.</p>
             </div>
         </div>
-
     </div>
 
     <script>
         function openTab(evt, tabId) {
-            // إخفاء كافة المحتويات
             let contents = document.getElementsByClassName("tab-content");
             for (let i = 0; i < contents.length; i++) {
                 contents[i].classList.remove("active");
             }
 
-            // إزالة الحالة النشطة من الأزرار
             let buttons = document.getElementsByClassName("tab-btn");
             for (let i = 0; i < buttons.length; i++) {
                 buttons[i].classList.remove("active");
             }
 
-            // إظهار التاب الحالي وإضافة كلاس النشاط للزر
             document.getElementById(tabId).classList.add("active");
             evt.currentTarget.classList.add("active");
+
+            // تحديث صفحة الأسطول تلقائياً عند الضغط عليها لرؤية الإضافات الجديدة
+            if(tabId === 'tab-fleet') {
+                document.getElementById('frame-fleet').src = document.getElementById('frame-fleet').src;
+            }
         }
     </script>
 
