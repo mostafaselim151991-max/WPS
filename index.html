@@ -79,6 +79,47 @@
         
         #adminTools { margin-top: auto; padding: 15px; background: rgba(0,0,0,0.2); }
         .admin-btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+    
+/* تنسيق لوحة التحكم */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    text-align: center;
+    transition: 0.3s;
+    border-bottom: 4px solid var(--accent);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card i {
+    font-size: 30px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.stat-val {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary);
+    display: block;
+}
+
+.stat-label {
+    color: #64748b;
+    font-size: 14px;
+}
+
     </style>
 </head>
 <body>
@@ -136,6 +177,8 @@
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ الورشة</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ قسم الحفر</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ حركة السيارات</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ قسم الجرد</button>
+
                 </div>
             </div>
 <div class="dropdown">
@@ -163,16 +206,31 @@
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ تحت الإنشاء</button>
                 </div>
             </div>
-
+<div class="dropdown">
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'marketMenu')">🎯 إدارة التسويق</button>
+                <div id="marketMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ تحت الإنشاء</button>
+                </div>
+            </div>
+<div class="dropdown">
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'qcMenu')">⚖️ إدارة الجودة<span style="font-size: 12px; opacity: 0.7; margin-right: 5px;">QC</span></button>
+                <div id="qcMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ تحت الإنشاء </button>
+                </div>
+            </div>
             <div class="dropdown">
-                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'payrollMenu')">💳 إدارة الرواتب وحماية الأجور</button>
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'payrollMenu')">💳 إدارة الرواتب وحماية الأجور<span style="font-size: 12px; opacity: 0.7; margin-right: 5px;">WPS</span></button>
                 <div id="payrollMenu" class="dropdown-content">
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'برنامج التصفية.html')">📂 برنامج التصفية</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'المخالصة.html')">🖋️ المخالصة القانونية</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'تقسيم مبالغ التصفية.html')">📈 توزيع مبالغ التصفية</button>
-                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حاسبة مبالغ و ايام عمل موظف.html')">🖩 حاسبة أيام عمل</button>
-                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حاسبة التأمينات الإجتماعية.html')">🛡️ التأمينات الاجتماعية</button>
-                    
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حاسبة.html')">🖩 حاسبة أيام عمل</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حاسبة التأمينات الإجتماعية.html')">🛡️ التأمينات الاجتماعية <span style="font-size: 12px; opacity: 0.7; margin-right: 5px;">GOSI</span>
+</button>                    
                     <div class="dropdown sub-dropdown">
                         <button class="nav-btn sub-btn has-submenu" onclick="toggleMenu(this, 'subLettersMenu')">✉️ قسم الخطابات</button>
                         <div id="subLettersMenu" class="dropdown-content">
@@ -192,12 +250,42 @@
 
     <main class="main-content">
         <div class="content-container">
-            <div id="welcome" style="text-align:center; margin-top:150px;">
-                <img src="logo.png" class="logo-img" style="opacity:0.3; width:150px;" alt="Logo">
-                <h1>مرحباً بك في النظام الموحد لمجموعة سادن</h1>
-                <p>اختر الإدارة من القائمة الجانبية للبدء</p>
+           <div id="welcome">
+    <div style="text-align:center; padding: 40px 0;">
+        <img src="logo.png" style="width: 120px; margin-bottom: 15px;">
+        <h1 style="color: var(--primary);">نظام مجموعة سادن الموحد</h1>
+        <p style="color: #64748b;">نظرة عامة على أداء الشركة اليوم</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <span>👥</span>
+            <span class="stat-val">120</span>
+            <span class="stat-label">إجمالي الموظفين</span>
+        </div>
+        <div class="stat-card" style="border-color: #10b981;">
+            <span>🏗️</span>
+            <span class="stat-val">15</span>
+            <span class="stat-label">مشاريع قائمة</span>
+        </div>
+        <div class="stat-card" style="border-color: #f59e0b;">
+            <span>🚚</span>
+            <span class="stat-val">8</span>
+            <span class="stat-label">سيارات في الحركة</span>
+        </div>
+        <div class="stat-card" style="border-color: #ef4444;">
+            <span>📑</span>
+            <span class="stat-val">4</span>
+            <span class="stat-label">مناقصات جديدة</span>
+        </div>
+    </div>
+
+    <div style="margin: 0 30px; padding: 20px; background: rgba(59, 130, 246, 0.1); border-radius: 15px; border-right: 5px solid var(--accent);">
+        <h3 style="margin-top: 0;">📢 إعلان إداري</h3>
+       <p>يرجى من جميع مدراء الفروع تحديث بيانات الحفر الأسبوعية قبل يوم الخميس.</p>
+                </div>
             </div>
-            <iframe id="frame" src="" style="display: none;"></iframe>
+            <iframe id="frame"></iframe>
         </div>
     </main>
 
@@ -223,10 +311,13 @@
         function loadPage(btn, url) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            
             document.getElementById('welcome').style.display = 'none';
             const frame = document.getElementById('frame');
-            frame.style.display = 'block'; frame.src = url;
-            event.stopPropagation();
+            frame.style.display = 'block'; 
+            frame.src = url;
+            
+            if(event) event.stopPropagation();
         }
 
         function checkLogin() {
@@ -272,6 +363,6 @@
             localStorage.setItem('sadenUsers', JSON.stringify(users));
             renderUsers();
         }
-    </script>
+ </script>
 </body>
 </html>
