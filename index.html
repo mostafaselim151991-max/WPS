@@ -11,7 +11,11 @@
             --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             --sidebar-grad: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             --white: #ffffff; --glass: rgba(255, 255, 255, 0.8);
+            --danger: #ef4444;
         }
+
+        * { box-sizing: border-box; font-family: 'Tajawal', sans-serif !important; }
+        body { margin: 0; display: flex; height: 100vh; background: var(--bg-gradient); overflow: hidden; }
 
         /* --- شاشة الدخول --- */
         #loginOverlay {
@@ -30,29 +34,24 @@
             width: 100%; padding: 14px; background: var(--accent); color: white;
             border: none; border-radius: 10px; cursor: pointer; font-weight: bold;
         }
-        #loginError { color: #ef4444; font-size: 14px; margin-bottom: 15px; display: none; }
 
         /* --- نافذة الإدارة --- */
         #userModal {
             position: fixed; inset: 0; background: rgba(0,0,0,0.7);
             display: none; align-items: center; justify-content: center; z-index: 10000;
         }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 400px; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 400px; color: #333; }
         .user-list-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .del-btn { color: #ef4444; cursor: pointer; font-weight: bold; background: #fee2e2; padding: 4px 10px; border-radius: 5px; }
+        .del-btn { color: var(--danger); cursor: pointer; background: #fee2e2; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
 
-        /* --- التنسيق العام --- */
-        * { box-sizing: border-box; font-family: 'Tajawal', sans-serif !important; }
-        body { margin: 0; display: flex; height: 100vh; background: var(--bg-gradient); overflow: hidden; }
-
-        .sidebar {
-            width: 320px; background: var(--sidebar-grad); color: white;
-            display: flex; flex-direction: column; padding: 20px 0;
-            overflow-y: auto;
-        }
+        /* --- القائمة الجانبية --- */
+        .sidebar { width: 320px; background: var(--sidebar-grad); color: white; display: flex; flex-direction: column; padding: 20px 0; overflow-y: auto; }
         .sidebar-header { text-align: center; padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .logo { width: 80px; margin-bottom: 10px; }
         
+        /* حل مشكلة الصورة: جعلها تختفي إذا لم توجد ويظهر النص البديل بشكل جميل */
+        .logo-img { width: 80px; height: auto; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; }
+        .logo-img:not([src]), .logo-img[src=""] { display: none; }
+
         .nav-group { padding: 10px 15px; }
         .nav-btn {
             width: 100%; background: transparent; border: none; color: #cbd5e1;
@@ -62,26 +61,33 @@
         }
         .nav-btn:hover, .nav-btn.active { background: var(--accent); color: white; }
 
-        /* تنسيق القائمة المنسدلة */
-        .dropdown-toggle { font-weight: bold; justify-content: space-between; background: rgba(255,255,255,0.05); }
-        .dropdown-container { display: none; background: rgba(0,0,0,0.2); border-radius: 10px; margin: 5px 0 10px; padding: 5px; }
-        .dropdown-container .nav-btn { font-size: 14px; padding: 10px 12px; }
+        /* --- القوائم المنسدلة --- */
+        .has-submenu { justify-content: space-between !important; font-weight: bold; background: rgba(255,255,255,0.05) !important; }
+        .has-submenu::after { content: '\25C0'; font-size: 10px; transition: transform 0.3s ease; }
+        .has-submenu.active_menu::after { transform: rotate(-90deg); }
 
+        .dropdown-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out; background: rgba(0,0,0,0.2); border-radius: 10px; margin: 5px 0; }
+        .dropdown-content.show { max-height: 1200px; border-right: 3px solid var(--accent); padding: 5px 0; }
+
+        .sub-dropdown { margin: 5px 10px !important; background: rgba(255, 255, 255, 0.05) !important; border-radius: 8px; }
+        .sub-btn { width: 95% !important; margin: 2px auto !important; font-size: 13.5px !important; color: #cbd5e1 !important; padding: 10px 15px !important; }
+
+        /* --- المحتوى الرئيسي --- */
+        .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; }
+        .content-container { width: 100%; height: 100%; background: var(--glass); border-radius: 20px; overflow: hidden; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; }
+        
         #adminTools { margin-top: auto; padding: 15px; background: rgba(0,0,0,0.2); }
         .admin-btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
-
-        .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; }
-        .content-container { width: 100%; height: 100%; background: var(--glass); border-radius: 20px; overflow: hidden; }
-        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
     <div id="loginOverlay">
         <div class="login-card">
-            <img src="logo.png" style="width: 80px; margin-bottom: 15px;">
-            <h2>تسجيل الدخول</h2>
-            <div id="loginError">بيانات الدخول غير صحيحة!</div>
+            <img src="logo.png" class="logo-img" alt="Saden Logo">
+            <h2 style="margin-top:0">تسجيل الدخول</h2>
+            <div id="loginError" style="color:var(--danger); display:none; margin-bottom:10px;">خطأ في البيانات!</div>
             <input type="text" id="userInput" placeholder="اسم المستخدم">
             <input type="password" id="passInput" placeholder="كلمة المرور">
             <button onclick="checkLogin()">دخول</button>
@@ -90,50 +96,90 @@
 
     <div id="userModal">
         <div class="modal-content">
-            <h3 style="margin-top:0">إدارة المستخدمين</h3>
-            <input type="text" id="newU" placeholder="اسم المستخدم الجديد" style="width:100%; padding:10px; margin-bottom:10px;">
-            <input type="password" id="newP" placeholder="كلمة المرور" style="width:100%; padding:10px; margin-bottom:15px;">
-            <button onclick="addNewUser()" style="width:100%; padding:10px; background:#10b981; color:white; border:none; border-radius:5px; cursor:pointer;">إضافة</button>
-            <div id="displayUsers" style="margin-top:20px; max-height:150px; overflow-y:auto;"></div>
-            <button onclick="document.getElementById('userModal').style.display='none'" style="margin-top:15px; width:100%; padding:8px;">إغلاق</button>
+            <h3>إدارة الحسابات</h3>
+            <input type="text" id="newU" placeholder="اسم المستخدم" style="width:100%; padding:10px; margin-bottom:10px;">
+            <input type="password" id="newP" placeholder="كلمة المرور" style="width:100%; padding:10px; margin-bottom:10px;">
+            <button onclick="addNewUser()" style="width:100%; padding:10px; background:#10b981; color:white; border:none; border-radius:5px;">إضافة</button>
+            <div id="displayUsers" style="margin-top:15px; max-height:150px; overflow-y:auto;"></div>
+            <button onclick="document.getElementById('userModal').style.display='none'" style="width:100%; margin-top:10px; padding:8px; background:#ddd; border:none; border-radius:5px;">إغلاق</button>
         </div>
     </div>
 
     <aside class="sidebar">
         <div class="sidebar-header">
-            <img src="logo.png" class="logo">
-            <h2 style="font-size: 1.1rem;">شركة سادن المتخصصة للإستشارات الجيولوجية</h2>
+            <img src="logo.png" class="logo-img" alt="Saden Logo">
+            <h2 style="font-size: 1rem; margin:0">شركة سادن المتخصصة للإستشارات الجيولوجية</h2>
         </div>
         
         <nav class="nav-group">
-            <button class="nav-btn" data-url="الإدارةالمالية.html" onclick="loadPage(this, 'الإدارةالمالية.html')">💰 الإدارة المالية</button>
-            <button class="nav-btn" data-url="الموارد البشرية وشئون الموظفين.html" onclick="loadPage(this, 'الموارد البشرية وشئون الموظفين.html')">👥 الشئون الإدارية</button>
-            <button class="nav-btn" data-url="إدارة العمليات.html" onclick="loadPage(this, 'العمليات.html')">⚙️ إدارة العمليات</button>
-            <button class="nav-btn" data-url="إدارةالمناقصات.html" onclick="loadPage(this, 'إدارةالمناقصات.html')">📑 إدارة المناقصات</button>
-            <button class="nav-btn" data-url="إدارة حركة السيارات.html" onclick="loadPage(this, 'إدارة حركة السيارات.html')">🚚 إدارة حركة السيارات</button>
+                        <div class="dropdown">
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'fincMenu')">💰 الإدارة المالية</button>
+                <div id="fincMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ تحت الإنشاء</button>
+                </div>
+            </div>
 
-            <div style="margin-top: 10px;">
-                <button class="nav-btn dropdown-toggle" onclick="toggleDropdown('payrollMenu')">
-                    <span>💳 إدارة الرواتب وحماية الأجور</span> <span>▼</span>
-                </button>
-                <div id="payrollMenu" class="dropdown-container">
-                    <button class="nav-btn" data-url="برنامج التصفية.html" onclick="loadPage(this, 'برنامج التصفية.html')">📂 برنامج التصفية</button>
-                    <button class="nav-btn" data-url="المخالصة.html" onclick="loadPage(this, 'المخالصة.html')">🖋️ المخالصة القانونية</button>
-                    <button class="nav-btn" data-url="تقسيم مبالغ التصفية.html" onclick="loadPage(this, 'تقسيم مبالغ التصفية.html')">📈 توزيع مبالغ التصفية</button>
-                    <button class="nav-btn" data-url="حاسبة مبالغ و ايام عمل موظف.html" onclick="loadPage(this, 'حاسبة.html')">🖩 حاسبة أيام عمل موظف</button>
-                    <button class="nav-btn" data-url="حاسبة التأمينات الإجتماعية.html" onclick="loadPage(this, 'حاسبة التأمينات الإجتماعية.html')">🛡️ التأمينات الاجتماعية</button>
+                                    <div class="dropdown">
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'admMenu')">👥 الشئون الإدارية</button>
+                <div id="admMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ تحت الإنشاء</button>
+                </div>
+            </div>
+
+            <div class="dropdown">
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'opsMenu')">⚙️ إدارة العمليات</button>
+                <div id="opsMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ الورشة</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ قسم الحفر</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ حركة السيارات</button>
+                </div>
+            </div>
 <div class="dropdown">
-    <button class="nav-btn dropdown-toggle" onclick="toggleDropdown('lettersMenu')">
-        <span>💳 الخطابات</span> <span style="font-size: 10px;">▼</span>
-    </button>
-    
-    <div id="lettersMenu" class="dropdown-content">
-        <button class="nav-btn" data-url="نماذج الخطابات.html" onclick="loadPage(this, 'نماذج الخطابات.html')">📂 نماذج الخطابات</button>
-        <button class="nav-btn" data-url="سجل الخطابات.html" onclick="loadPage(this, 'سجل الخطابات.html')">📂 سجل الخطابات</button>
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'branchMenu')">🏢 إدارة الفروع</button>
+                <div id="branchMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ تحت الإنشاء</button>
+                </div>
+            </div>
+<div class="dropdown">
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'projMenu')">🏗️ إدارة المشروعات </button>
+                <div id="projMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ تحت الإنشاء</button>
+                </div>
+            </div>
 
-    </div>
+<div class="dropdown">
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'tenMenu')">📑 إدارة المناقصات</button>
+                <div id="tenMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ تحت الإنشاء</button>
+                </div>
+            </div>
 
-
+            <div class="dropdown">
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'payrollMenu')">💳 إدارة الرواتب وحماية الأجور</button>
+                <div id="payrollMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'برنامج التصفية.html')">📂 برنامج التصفية</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'المخالصة.html')">🖋️ المخالصة القانونية</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'تقسيم مبالغ التصفية.html')">📈 توزيع مبالغ التصفية</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حاسبة مبالغ و ايام عمل موظف.html')">🖩 حاسبة أيام عمل</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حاسبة التأمينات الإجتماعية.html')">🛡️ التأمينات الاجتماعية</button>
+                    
+                    <div class="dropdown sub-dropdown">
+                        <button class="nav-btn sub-btn has-submenu" onclick="toggleMenu(this, 'subLettersMenu')">✉️ قسم الخطابات</button>
+                        <div id="subLettersMenu" class="dropdown-content">
+                            <button class="nav-btn sub-btn" style="width:88% !important" onclick="loadPage(this, 'نماذج الخطابات.html')">📄 نماذج الخطابات</button>
+                            <button class="nav-btn sub-btn" style="width:88% !important" onclick="loadPage(this, 'سجل الخطابات.html')">📑 سجل الخطابات</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -141,124 +187,91 @@
         <div id="adminTools" style="display: none;">
             <button class="admin-btn" onclick="openAdminPanel()">⚙️ إدارة الحسابات</button>
         </div>
-        <button onclick="logout()" style="margin: 10px 15px; padding: 10px; color: #ef4444; border: 1px solid #ef4444; background: none; border-radius: 10px; cursor: pointer;">خروج</button>
+        <button onclick="logout()" style="margin: 10px 15px; padding: 10px; color: var(--danger); border: 1px solid var(--danger); background: none; border-radius: 10px; cursor: pointer;">خروج</button>
     </aside>
 
     <main class="main-content">
         <div class="content-container">
             <div id="welcome" style="text-align:center; margin-top:150px;">
-                <img src="logo.png" style="width: 150px; opacity: 0.5;">
+                <img src="logo.png" class="logo-img" style="opacity:0.3; width:150px;" alt="Logo">
                 <h1>مرحباً بك في النظام الموحد لمجموعة سادن</h1>
-                <p>تم تصميم هذا النظام لتسهيل العملية الإدارية للمجموعة بجميع إداراتها و أقسامها .</p>
-                <div style="margin-top: 20px; color: var(--accent); font-weight: 700;">← اختر الإدارة أو القسم من القائمة للبدء</div>
+                <p>اختر الإدارة من القائمة الجانبية للبدء</p>
             </div>
             <iframe id="frame" src="" style="display: none;"></iframe>
         </div>
     </main>
 
     <script>
-        // مصفوفة المستخدمين بالمسميات الأصلية
-        let users = JSON.parse(localStorage.getItem('sadenUsers')) || [
-            { user: "superadmin", pass: "654321", role: "admin" }
-        ];
+        let users = JSON.parse(localStorage.getItem('sadenUsers')) || [{ user: "superadmin", pass: "654321", role: "admin" }];
 
-        window.onload = function() {
-            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-            const userRole = sessionStorage.getItem('userRole');
-            const lastPage = sessionStorage.getItem('lastPage');
-            
-            if (isLoggedIn === 'true') {
-                document.getElementById('loginOverlay').style.display = 'none';
-                if (userRole === 'admin') {
-                    document.getElementById('adminTools').style.display = 'block';
-                }
-
-                if (lastPage) {
-                    // فتح القائمة المنسدلة تلقائياً إذا كانت الصفحة بداخلها
-                    const menu = document.getElementById('payrollMenu');
-                    if (menu.querySelector(`.nav-btn[data-url="${lastPage}"]`)) {
-                        menu.style.display = 'block';
-                    }
-                    const btn = document.querySelector(`.nav-btn[data-url="${lastPage}"]`);
-                    if (btn) loadPage(btn, lastPage);
-                }
-            }
-        };
-
-        function toggleDropdown(menuId) {
+        function toggleMenu(btn, menuId) {
             const menu = document.getElementById(menuId);
-            menu.style.display = (menu.style.display === "block") ? "none" : "block";
+            const isSubMenu = btn.closest('.dropdown-content') !== null;
+            if (!isSubMenu) {
+                document.querySelectorAll('.dropdown-content').forEach(m => {
+                    if (m.id !== menuId && !m.contains(menu)) {
+                        m.classList.remove('show');
+                        m.previousElementSibling.classList.remove('active_menu');
+                    }
+                });
+            }
+            menu.classList.toggle('show');
+            btn.classList.toggle('active_menu');
+            event.stopPropagation();
+        }
+
+        function loadPage(btn, url) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('welcome').style.display = 'none';
+            const frame = document.getElementById('frame');
+            frame.style.display = 'block'; frame.src = url;
+            event.stopPropagation();
         }
 
         function checkLogin() {
             const u = document.getElementById('userInput').value;
             const p = document.getElementById('passInput').value;
             const found = users.find(x => x.user === u && x.pass === p);
-            
             if (found) {
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('userRole', found.role);
                 location.reload(); 
-            } else {
-                document.getElementById('loginError').style.display = 'block';
+            } else { document.getElementById('loginError').style.display = 'block'; }
+        }
+
+        function logout() { sessionStorage.clear(); location.reload(); }
+
+        window.onload = function() {
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                if (sessionStorage.getItem('userRole') === 'admin') document.getElementById('adminTools').style.display = 'block';
             }
-        }
+        };
 
-        function logout() {
-            sessionStorage.clear();
-            location.reload();
-        }
-
-        function loadPage(btn, url) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            document.getElementById('welcome').style.display = 'none';
-            const frame = document.getElementById('frame');
-            frame.style.display = 'block';
-            frame.src = url;
-
-            sessionStorage.setItem('lastPage', url);
-        }
-
-        function openAdminPanel() {
-            document.getElementById('userModal').style.display = 'flex';
-            renderUsers();
-        }
-
+        function openAdminPanel() { document.getElementById('userModal').style.display = 'flex'; renderUsers(); }
         function renderUsers() {
             const container = document.getElementById('displayUsers');
             container.innerHTML = users.map(u => `
                 <div class="user-list-item">
                     <span>👤 ${u.user}</span>
-                    ${u.user !== 'superadmin' ? `<span class="del-btn" onclick="deleteUser('${u.user}')">حذف</span>` : '<strong>(الأساسي)</strong>'}
+                    ${u.user !== 'superadmin' ? `<span class="del-btn" onclick="deleteUser('${u.user}')">حذف</span>` : '<strong>(أساسي)</strong>'}
                 </div>
             `).join('');
         }
-
         function addNewUser() {
-            const u = document.getElementById('newU').value;
-            const p = document.getElementById('newP').value;
+            const u = document.getElementById('newU').value; const p = document.getElementById('newP').value;
             if (u && p) {
                 users.push({ user: u, pass: p, role: "user" });
                 localStorage.setItem('sadenUsers', JSON.stringify(users));
-                renderUsers();
-                document.getElementById('newU').value = '';
-                document.getElementById('newP').value = '';
+                renderUsers(); document.getElementById('newU').value = ''; document.getElementById('newP').value = '';
             }
         }
-
         function deleteUser(name) {
             users = users.filter(x => x.user !== name);
             localStorage.setItem('sadenUsers', JSON.stringify(users));
             renderUsers();
         }
-
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display !== 'none') {
-                checkLogin();
-            }
-        });
     </script>
 </body>
 </html>
