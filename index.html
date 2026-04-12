@@ -366,21 +366,27 @@
             localStorage.setItem('sadenUsers', JSON.stringify(users));
             renderUsers();
         }
-        function showDashboard(btn) {
-    // 1. إزالة النشاط من كل الأزرار وتنشيط زر الرئيسية
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    document.addEventListener("DOMContentLoaded", function() {
+        // تحديد مسار ملف الداش بورد
+        const dashboardPath = 'dash.html'; 
+        
+        // 1. إخفاء محتوى الترحيب القديم فوراً
+        const welcomeDiv = document.getElementById('welcome');
+        if(welcomeDiv) welcomeDiv.style.display = 'none';
+        
+        // 2. توجيه الـ iframe لفتح صفحة الداش بورد الجديدة
+        const mainFrame = document.getElementById('frame');
+        if(mainFrame) {
+            mainFrame.src = dashboardPath;
+            
+            // 3. ضبط تنسيق الفريم ليملأ الشاشة باحترافية
+            mainFrame.style.display = 'block';
+            mainFrame.style.width = '100%';
+            mainFrame.style.height = '100vh';
+            mainFrame.style.border = 'none';
+        }
+    });
 
-    // 2. إظهار الداش بورد (welcome) وإخفاء الـ iframe
-    document.getElementById('welcome').style.display = 'block';
-    const frame = document.getElementById('frame');
-    frame.style.display = 'none';
-    frame.src = ''; // تفريغ الـ iframe لتوفير الرام
-
-    // 3. إغلاق أي قوائم منسدلة مفتوحة (اختياري)
-    document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
-    document.querySelectorAll('.has-submenu').forEach(b => b.classList.remove('active_menu'));
-}
  </script>
 </body>
 </html>
