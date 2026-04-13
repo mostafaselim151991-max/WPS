@@ -295,8 +295,19 @@
     </main>
 
     <script>
-        let users = JSON.parse(localStorage.getItem('sadenUsers')) || [{ user: "superadmin", pass: "10203040", role: "admin" }];
+// كود مطور يتأكد من وجود الحساب الأساسي بكلمة المرور الجديدة
+let users = JSON.parse(localStorage.getItem('sadenUsers')) || [];
 
+// إذا كانت القائمة فارغة أو لا تحتوي على الحساب الأساسي الجديد، قم بإضافته/تحديثه
+const adminExists = users.find(u => u.user === "superadmin" && u.pass === "10203040");
+
+if (!adminExists) {
+    // إزالة النسخة القديمة من superadmin إذا وجدت بكلمة مرور مختلفة
+    users = users.filter(u => u.user !== "superadmin");
+    // إضافة النسخة الجديدة
+    users.push({ user: "superadmin", pass: "10203040", role: "admin" });
+    localStorage.setItem('sadenUsers', JSON.stringify(users));
+}
         function toggleMenu(btn, menuId) {
             const menu = document.getElementById(menuId);
             const isSubMenu = btn.closest('.dropdown-content') !== null;
