@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>طلب صيانة | مجموعة سادن الموحدة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #3b82f6; 
+            --dark: #1e293b; 
+            --bg: #f8fafc; 
+            --danger: #ef4444; 
+            --warning: #f59e0b; 
+            --success: #10b981; 
+            --border: #e2e8f0;
+            --info-light: #eff6ff;
+        }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); padding: 20px; margin: 0; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .form-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--bg); padding-bottom: 15px; }
+        .header h2 { margin: 0; color: var(--dark); font-size: 20px; }
+        .ticket-no { background: #f1f5f9; padding: 5px 15px; border-radius: 8px; font-weight: 700; color: var(--primary); }
+
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .field { display: flex; flex-direction: column; gap: 8px; }
+        .full-width { grid-column: span 2; }
+
+        label { font-size: 13px; font-weight: 700; color: #475569; }
+        input, select, textarea { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-family: 'Tajawal'; font-size: 14px; outline: none; transition: 0.3s; background: white; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+        .car-details-box {
+            grid-column: span 2;
+            background: var(--info-light);
+            border: 1px dashed var(--primary);
+            border-radius: 12px;
+            padding: 15px;
+            display: none; 
+            grid-template-columns: repeat(5, 1fr); /* تم التعديل ليناسب 5 خانات */
+            gap: 15px;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .detail-item { display: flex; flex-direction: column; gap: 4px; }
+        .detail-item span { font-size: 11px; color: #64748b; font-weight: bold; }
+        .detail-item strong { font-size: 14px; color: var(--dark); }
+
+        .btn-submit { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 16px; width: 100%; margin-top: 20px; transition: 0.3s; }
+        .btn-submit:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-card">
+        <div class="header">
+            <h2>🛠️ إنشاء طلب صيانة جديد - سادن</h2>
+            <div class="ticket-no" id="orderNo">MNT-0000</div>
+        </div>
+
+        <div class="grid">
+            <div class="field">
+                <label>تاريخ الطلب</label>
+                <input type="date" id="orderDate">
+            </div>
+
+            <div class="field">
+                <label>المركبة المعنية (رقم اللوحة)</label>
+                <select id="carSelect" onchange="autoFillVehicleData()">
+                    <option value="">-- اختر السيارة --</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>السائق الحالي</label>
+                <input type="text" id="driverName" readonly style="background: #f8fafc; color: #64748b;">
+            </div>
+
+            <div id="carDetailsBox" class="car-details-box">
+                <div class="detail-item"><span>الماركة</span><strong id="view-brand">-</strong></div>
+                <div class="detail-item"><span>الموديل</span><strong id="view-model">-</strong></div>
+                <div class="detail-item"><span>سنة الصنع</span><strong id="view-year">-</strong></div>
+                <div class="detail-item"><span>اللون</span><strong id="view-color">-</strong></div>
+                <div class="detail-item"><span>الفرع التابع له</span><strong id="view-branch" style="color: var(--primary);">-</strong></div>
+            </div>
+
+            <div class="field full-width">
+                <label>نوع الصيانة المطلوبة (خيارات شاملة)</label>
+                <select id="maintenanceType">
+                    <optgroup label="✨ الصيانات الدورية">
+                        <option value="تغيير زيت وفلتر (5000 كم)">تغيير زيت وفلتر (5000 كم)</option>
+                        <option value="تغيير زيت وفلتر (10000 كم)">تغيير زيت وفلتر (10000 كم)</option>
+                        <option value="تغيير زيت وفلتر (20000 كم)">تغيير زيت وفلتر (20000 كم)</option>
+                        <option value="تغيير زيت القير (الناقل)">تغيير زيت القير (الناقل)</option>
+                        <option value="تغيير بواجي (شمعات الاحتراق)">تغيير بواجي (شمعات الاحتراق)</option>
+                        <option value="تغيير فلاتر (هواء/مكيف/بنزين)">تغيير فلاتر (هواء/مكيف/بنزين)</option>
+                        <option value="فحص دوري شامل">فحص دوري شامل</option>
+                    </optgroup>
+                    <optgroup label="⚙️ نظام المحرك والميكانيكا">
+                        <option value="إصلاح عطل في الماكينة">إصلاح عطل في الماكينة</option>
+                        <option value="إصلاح عطل في القير">إصلاح عطل في القير</option>
+                        <option value="نظام التبريد (رديتر/طرمبة ماء)">نظام التبريد (رديتر/طرمبة ماء)</option>
+                        <option value="إصلاح العادم (الشكمان)">إصلاح العادم (الشكمان)</option>
+                        <option value="تهريب زيوت أو سوائل">تهريب زيوت أو سوائل</option>
+                    </optgroup>
+                    <optgroup label="🛑 الفرامل والعفشة">
+                        <option value="تغيير فحمات وهوبات">تغيير فحمات وهوبات</option>
+                        <option value="إصلاح نظام ABS">إصلاح نظام ABS</option>
+                        <option value="تغيير مساعدات">تغيير مساعدات</option>
+                        <option value="وزن أذرعة ومقصات">وزن أذرعة ومقصات</option>
+                    </optgroup>
+                    <optgroup label="⚡ الكهرباء والتكييف">
+                        <option value="تغيير البطارية">تغيير البطارية</option>
+                        <option value="إصلاح الدينامو/السلف">إصلاح الدينامو/السلف</option>
+                        <option value="فحص وإصلاح التكييف (فريون)">فحص وإصلاح التكييف (فريون)</option>
+                        <option value="تغيير لمبات وإنارة">تغيير لمبات وإنارة</option>
+                        <option value="برمجة وحذف أعطال">برمجة وحذف أعطال</option>
+                    </optgroup>
+                    <optgroup label="🚗 الهيكل والإطارات">
+                        <option value="طقم إطارات (كفرات)">طقم إطارات (كفرات)</option>
+                        <option value="ترصيص وميزان">ترصيص وميزان</option>
+                        <option value="سمكرة ودهان">سمكرة ودهان</option>
+                        <option value="زجاج أمامى/خلفى">زجاج أمامى/خلفى</option>
+                    </optgroup>
+                    <option value="أخرى">أخرى (يرجى الشرح في الوصف)</option>
+                </select>
+            </div>
+
+            <div class="field full-width">
+                <label>سبب العطل (مربع حوارى للشرح)</label>
+                <textarea id="faultReason" rows="2" placeholder="اشرح هنا كيف حدث العطل أو ما هو التشخيص المبدئي..."></textarea>
+            </div>
+
+            <div class="field">
+                <label>قراءة العداد الحالية</label>
+                <input type="number" id="currentKM" placeholder="أدخل الممشى الحالي">
+            </div>
+
+            <div class="field">
+                <label>جهة الصيانة</label>
+                <select id="workshopLocation" onchange="toggleExternalWorkshop()">
+                    <option value="ورشة الرياض">ورشة الرياض</option>
+                    <option value="ورشة جده">ورشة جده</option>
+                    <option value="ورشة خميس مشيط">ورشة خميس مشيط</option>
+                    <option value="ورشة خارجية">ورشة خارجية ⬅️</option>
+                </select>
+            </div>
+
+            <div class="field" id="externalWorkshopField" style="display: none;">
+                <label>اسم الورشة الخارجية</label>
+                <input type="text" id="externalWorkshopName" placeholder="اكتب اسم الورشة">
+            </div>
+
+            <div class="field">
+                <label>مستوى الاستعجال</label>
+                <select id="priority">
+                    <option value="عادي">عادي</option>
+                    <option value="متوسط">متوسط</option>
+                    <option value="عاجل">عاجل جداً ⚠️</option>
+                </select>
+            </div>
+
+            <div class="field full-width">
+                <label>تفاصيل إضافية للملاحظات</label>
+                <textarea id="issueDescription" rows="3" placeholder="اكتب أي تفاصيل أخرى تود إبلاغ الإدارة بها..."></textarea>
+            </div>
+
+            <button class="btn-submit" onclick="saveMaintenanceOrder()">إرسال الطلب وحفظ البيانات ✅</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let globalFleet = [];
+
+    window.onload = function() {
+        globalFleet = JSON.parse(localStorage.getItem('saden_fleet_db')) || [];
+        const select = document.getElementById('carSelect');
+        select.innerHTML = '<option value="">-- اختر السيارة --</option>';
+        
+        globalFleet.forEach(car => {
+            let option = document.createElement('option');
+            option.value = car.plate;
+            option.text = `${car.brand} - ${car.plate}`;
+            select.appendChild(option);
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const editIndex = urlParams.get('edit');
+
+        if (editIndex !== null) {
+            const logs = JSON.parse(localStorage.getItem('saden_maintenance_db')) || [];
+            const data = logs[editIndex];
+            
+            if (data) {
+                document.getElementById('orderNo').innerText = data.orderNo;
+                document.getElementById('orderDate').value = data.date || "";
+                document.getElementById('carSelect').value = data.plate;
+                autoFillVehicleData(); 
+                document.getElementById('currentKM').value = data.km;
+                document.getElementById('maintenanceType').value = data.type;
+                document.getElementById('faultReason').value = data.reason || "";
+                document.getElementById('workshopLocation').value = data.workshop || "ورشة الرياض";
+                document.getElementById('priority').value = data.priority || "عادي";
+                document.getElementById('issueDescription').value = data.desc || "";
+
+                if(data.workshop === 'ورشة خارجية') {
+                    toggleExternalWorkshop();
+                    document.getElementById('externalWorkshopName').value = data.externalName || "";
+                }
+
+                const submitBtn = document.querySelector('.btn-submit');
+                submitBtn.innerText = "تحديث البيانات المعدلة 🔄";
+                submitBtn.style.background = "#f59e0b";
+                submitBtn.onclick = () => updateOrder(editIndex);
+            }
+        } else {
+            document.getElementById('orderDate').valueAsDate = new Date();
+            document.getElementById('orderNo').innerText = "MNT-" + Math.floor(1000 + Math.random() * 9000);
+        }
+    };
+
+    function autoFillVehicleData() {
+        const plate = document.getElementById('carSelect').value;
+        const infoBox = document.getElementById('carDetailsBox');
+        const car = globalFleet.find(c => c.plate === plate);
+
+        if (car) {
+            document.getElementById('driverName').value = car.driver || "غير مسجل";
+            document.getElementById('view-brand').innerText = car.brand || '-';
+            document.getElementById('view-model').innerText = car.model || '-';
+            document.getElementById('view-year').innerText = car.year || '-';
+            document.getElementById('view-color').innerText = car.color || '-';
+            // جلب الفرع من بيانات الأسطول
+            document.getElementById('view-branch').innerText = car.branch || 'غير محدد';
+            infoBox.style.display = 'grid';
+        } else {
+            infoBox.style.display = 'none';
+            document.getElementById('driverName').value = "";
+        }
+    }
+
+    function toggleExternalWorkshop() {
+        const ws = document.getElementById('workshopLocation').value;
+        document.getElementById('externalWorkshopField').style.display = (ws === 'ورشة خارجية') ? 'flex' : 'none';
+    }
+
+    function updateOrder(index) {
+        let db = JSON.parse(localStorage.getItem('saden_maintenance_db')) || [];
+        
+        db[index] = {
+            ...db[index],
+            date: document.getElementById('orderDate').value,
+            plate: document.getElementById('carSelect').value,
+            km: document.getElementById('currentKM').value,
+            type: document.getElementById('maintenanceType').value,
+            reason: document.getElementById('faultReason').value,
+            workshop: document.getElementById('workshopLocation').value,
+            externalName: document.getElementById('externalWorkshopName').value,
+            priority: document.getElementById('priority').value,
+            desc: document.getElementById('issueDescription').value,
+            status: "تم التعديل"
+        };
+
+        localStorage.setItem('saden_maintenance_db', JSON.stringify(db));
+        alert("تم تحديث الطلب بنجاح! ✅");
+        window.location.href = 'maintenance_logs.html';
+    }
+
+    function saveMaintenanceOrder() {
+        const workshop = document.getElementById('workshopLocation').value;
+        const plate = document.getElementById('carSelect').value;
+        // العثور على بيانات السيارة بالكامل لحفظ الفرع مع الطلب في السجل
+        const car = globalFleet.find(c => c.plate === plate);
+
+        const orderData = {
+            id: Date.now(),
+            orderNo: document.getElementById('orderNo').innerText,
+            date: document.getElementById('orderDate').value,
+            plate: plate,
+            driver: document.getElementById('driverName').value,
+            branch: car ? car.branch : 'غير محدد', // حفظ الفرع في بيانات الطلب
+            km: document.getElementById('currentKM').value,
+            type: document.getElementById('maintenanceType').value,
+            reason: document.getElementById('faultReason').value,
+            workshop: workshop,
+            externalName: workshop === 'ورشة خارجية' ? document.getElementById('externalWorkshopName').value : '',
+            priority: document.getElementById('priority').value,
+            desc: document.getElementById('issueDescription').value,
+            status: 'جديد'
+        };
+
+        if(!orderData.plate) return alert("يرجى اختيار السيارة أولاً");
+        
+        let db = JSON.parse(localStorage.getItem('saden_maintenance_db')) || [];
+        db.push(orderData);
+        localStorage.setItem('saden_maintenance_db', JSON.stringify(db));
+
+        alert("تم إرسال طلب الصيانة بنجاح! ✅");
+        window.location.href = 'maintenance_logs.html';
+    }
+</script>
+</body>
+</html>

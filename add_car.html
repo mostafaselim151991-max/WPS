@@ -5,7 +5,7 @@
     <title>تسجيل مركبة | مجموعة سادن الموحدة</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #3b82f6; --dark: #0f172a; --bg: #f8fafc; --gold: #fef3c7; }
+        :root { --primary: #3b82f6; --dark: #0f172a; --bg: #f8fafc; --success: #10b981; }
         body { font-family: 'Tajawal', sans-serif; background: var(--bg); padding: 20px; }
         .form-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); max-width: 1200px; margin: 0 auto; }
         .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
@@ -14,14 +14,14 @@
         label { font-size: 12px; font-weight: 700; color: #475569; }
         input, select { padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .btn-save { grid-column: span 4; background: var(--primary); color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 16px; margin-top: 20px; }
-        .btn-save:hover { background: #2563eb; }
+        .btn-save { grid-column: span 4; background: var(--primary); color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 16px; margin-top: 20px; transition: 0.3s; }
+        .btn-edit-mode { background: var(--success) !important; }
     </style>
 </head>
 <body>
 
 <div class="form-card">
-    <h2 style="text-align: center; margin-bottom: 30px; color: var(--dark);">📋 نموذج تسجيل مركبة - نظام سادن الموحد</h2>
+    <h2 id="page-title" style="text-align: center; margin-bottom: 30px; color: var(--dark);">📋 نموذج تسجيل مركبة - نظام سادن الموحد</h2>
     
     <div class="grid-container">
         <div class="section-head">البيانات الفنية والتعريفية</div>
@@ -31,7 +31,7 @@
         <div class="field"><label>اللون الأساسي</label><input type="text" id="color"></div>
         <div class="field"><label>رقم اللوحة</label><input type="text" id="plate"></div>
         <div class="field"><label>نوع الوقود</label>
-            <select id="fuel"><option>ديزل</option><option>بنزين</option></select>
+            <select id="fuel"><option value="ديزل">ديزل</option><option value="بنزين">بنزين</option></select>
         </div>
         <div class="field"><label>السجل</label><input type="text" id="record_no"></div>
         <div class="field"><label>الفرع المستخدم</label><input type="text" id="branch"></div>
@@ -47,14 +47,53 @@
         <div class="field"><label>كارت المتابعة</label><input type="text" id="follow_card" placeholder="رقم الكارت"></div>
         <div class="field" style="grid-column: span 2;"><label>محضر تسليم</label><input type="text" id="delivery_report" placeholder="رقم أو مرجع المحضر"></div>
 
-        <button class="btn-save" onclick="saveToFleet()">حفظ المركبة في قاعدة البيانات المركزية</button>
+        <button class="btn-save" id="btn-save" onclick="saveToFleet()">حفظ المركبة في قاعدة البيانات المركزية</button>
     </div>
 </div>
 
 <script>
+    window.onload = function() {
+        const editIndex = sessionStorage.getItem('edit_car_index');
+        
+        if (editIndex !== null) {
+            const fleet = JSON.parse(localStorage.getItem('saden_fleet_db')) || [];
+            const car = fleet[editIndex];
+
+            if (car) {
+                document.getElementById('page-title').innerText = "🔄 تعديل بيانات المركبة";
+                const saveBtn = document.getElementById('btn-save');
+                saveBtn.innerText = "تحديث وحفظ التغييرات";
+                saveBtn.classList.add('btn-edit-mode');
+
+                // ملء الحقول بالبيانات المخزنة
+                document.getElementById('brand').value = car.brand || '';
+                document.getElementById('model_type').value = car.model || '';
+                document.getElementById('year').value = car.year || '';
+                document.getElementById('color').value = car.color || '';
+                document.getElementById('plate').value = car.plate || '';
+                document.getElementById('fuel').value = car.fuel || 'ديزل';
+                document.getElementById('record_no').value = car.record || '';
+                document.getElementById('branch').value = car.branch || '';
+                
+                // التواريخ
+                document.getElementById('registration_end').value = car.reg_end || '';
+                document.getElementById('test_end').value = car.test_end || '';
+                document.getElementById('insurance_date').value = car.ins_date || '';
+                document.getElementById('op_card_end').value = car.op_end || '';
+
+                // العهدة
+                document.getElementById('driver').value = car.driver || '';
+                document.getElementById('follow_card').value = car.follow_card || '';
+                document.getElementById('delivery_report').value = car.delivery || '';
+            }
+        }
+    };
+
     function saveToFleet() {
+        const editIndex = sessionStorage.getItem('edit_car_index');
+        let fleet = JSON.parse(localStorage.getItem('saden_fleet_db')) || [];
+
         const vehicle = {
-            id: Date.now(),
             brand: document.getElementById('brand').value,
             model: document.getElementById('model_type').value,
             year: document.getElementById('year').value,
@@ -69,19 +108,23 @@
             op_end: document.getElementById('op_card_end').value,
             driver: document.getElementById('driver').value,
             follow_card: document.getElementById('follow_card').value,
-            delivery: document.getElementById('delivery_report').value
+            delivery: document.getElementById('delivery_report').value,
+            id: editIndex !== null ? fleet[editIndex].id : Date.now()
         };
 
         if(!vehicle.plate || !vehicle.brand) return alert("يرجى إدخال الماركة ورقم اللوحة");
 
-        let fleet = JSON.parse(localStorage.getItem('saden_fleet_db')) || [];
-        fleet.push(vehicle);
-        localStorage.setItem('saden_fleet_db', JSON.stringify(fleet));
+        if (editIndex !== null) {
+            fleet[editIndex] = vehicle;
+            sessionStorage.removeItem('edit_car_index');
+        } else {
+            fleet.push(vehicle);
+        }
 
-        alert("تم الحفظ بنجاح. سيتم توجيهك لجدول الأسطول.");
+        localStorage.setItem('saden_fleet_db', JSON.stringify(fleet));
+        alert("تم حفظ البيانات بنجاح ✅");
         window.location.href = 'fleet_list.html';
     }
 </script>
-
 </body>
 </html>

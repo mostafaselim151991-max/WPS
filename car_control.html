@@ -5,46 +5,161 @@
     <title>نظام إدارة حركة السيارات | مجموعة سادن</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #3b82f6; --dark: #0f172a; --bg: #f8fafc;
-            --danger: #ef4444; --warning: #f59e0b; --success: #10b981; --border: #e2e8f0;
-        }
-        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 0; overflow-x: hidden; }
-        
-        .top-header { background: white; padding: 20px 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .top-header h1 { margin: 0; font-size: 22px; color: var(--dark); }
-        .top-header .brand { color: var(--primary); font-weight: 700; }
+    :root {
+        /* ألوان أغمق بلمسة احترافية */
+        --primary: #60a5fa; 
+        --dark-header: #202124; /* لون خلفية التابات (كروم غامق) */
+        --bg-content: #ffffff; 
+        --tab-inactive: #35363a; 
+        --tab-active: #ffffff; 
+        --tab-hover: #3c4043;
+        --border-line: #1c1d20;
+    }
+    body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 0; }
 
-        /* تعديل الـ sticky هنا */
-        .tabs-bar { 
-            background: white; 
-            padding: 0 40px; 
-            display: flex; 
-            gap: 10px; 
-            border-bottom: 1px solid var(--border); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-        }
+    /* الهيدر العلوي */
+    .top-header { background: white; padding: 10px 25px; border-bottom: 1px solid var(--border); }
+    .top-header h1 { margin: 0; font-size: 18px; color: var(--dark); }
+    .top-header .brand { color: var(--primary); font-weight: 700; }
 
-        .tab-btn { 
-            padding: 15px 25px; border: none; background: none; font-family: inherit; 
-            font-size: 15px; font-weight: 700; color: #64748b; cursor: pointer; 
-            transition: 0.3s; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 8px;
-        }
-        .tab-btn:hover { color: var(--primary); background: #f1f5f9; }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(59, 130, 246, 0.05); }
+    /* شريط التابات على طريقة كروم */
+    .tabs-bar { 
+        background: white; 
+        padding: 8px 10px 0 10px; 
+        display: flex; 
+        align-items: flex-end; /* لضمان التصاق التاب بالأسفل */
+        gap: 0; 
+        border-bottom: 1px solid var(--border); 
+        position: sticky; 
+        top: 0; 
+        z-index: 100;
+        height: 45px;
+    }
 
-        .content-area { padding: 20px 40px; }
-        .tab-content { display: none; animation: fadeIn 0.4s ease; }
-        .tab-content.active { display: block; }
+    .tab-btn { 
+        position: relative;
+        padding: 8px 30px; 
+        border: none; 
+        background: transparent; 
+        font-family: inherit; 
+        font-size: 13px; 
+        font-weight: 600; 
+        color: #5f6368; 
+        cursor: pointer; 
+        transition: 0.2s; 
+        height: 34px;
+        display: flex; 
+        align-items: center; 
+        gap: 8px;
+        z-index: 1;
+        border-radius: 10px 10px 0 0; /* زوايا علوية فقط */
+    }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    /* تأثير الخلفية عند الحوم (Hover) */
+    .tab-btn:hover:not(.active) { 
+        background-color: var(--tab-hover); 
+        color: #ffffff;
+    }
 
-        iframe { width: 100%; height: 80vh; border: none; border-radius: 12px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    /* التاب النشط (Active Chrome Style) */
+    .tab-btn.active { 
+        background: var(--tab-active); 
+        color: var(--primary); 
+        box-shadow: 0 -1px 2px rgba(0,0,0,0.1);
+        z-index: 2;
+    }
 
-        .placeholder-card { background: white; padding: 100px; border-radius: 15px; text-align: center; border: 2px dashed var(--border); color: #94a3b8; }
-    </style>
+    /* رسم الزوايا الدائرية السفلية (التريك بتاع كروم) */
+    .tab-btn.active::before, .tab-btn.active::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        width: 16px;
+        height: 16px;
+        background: transparent;
+        pointer-events: none;
+    }
+    .tab-btn.active::before {
+        right: -16px;
+        border-bottom-left-radius: 16px;
+        box-shadow: -8px 0 0 0 var(--tab-active);
+    }
+    .tab-btn.active::after {
+        left: -16px;
+        border-bottom-right-radius: 16px;
+        box-shadow: 8px 0 0 0 var(--tab-active);
+    }
+
+    /* منطقة المحتوى */
+    .content-area { 
+        background: white; /* المحتوى مكمل للتاب النشط */
+        height: calc(100vh - 100px);
+    }
+    .tab-content { display: none; height: 100%; }
+    .tab-content.active { display: block; }
+
+    iframe { width: 100%; height: 100%; border: none; }
+
+    .placeholder-card { padding: 100px; text-align: center; color: #94a3b8; }
+    /* الحاوية الأساسية */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* القائمة المخفية */
+.dropdown-content {
+    display: none; /* مخفية افتراضياً */
+    position: absolute;
+    background-color: #ffffff;
+    min-width: 220px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.15);
+    z-index: 9999;
+    border-radius: 8px;
+    top: 100%; /* تظهر مباشرة تحت الزرار */
+    right: 0;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    margin-top: -2px; /* لضمان عدم وجود فراغ يغلق القائمة عند تحريك الماوس */
+}
+
+/* روابط القائمة */
+.dropdown-content a {
+    color: #334155;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 1px solid #f1f5f9;
+    transition: 0.2s;
+    text-align: right;
+}
+
+/* تأثير الوقوف على الخيارات */
+.dropdown-content a:hover {
+    background-color: #eff6ff;
+    color: #3b82f6;
+}
+
+/* السحر هنا: عند الوقوف على حاوية الـ dropdown تظهر القائمة */
+.dropdown:hover .dropdown-content {
+    display: block;
+    animation: fadeIn 0.2s ease-in;
+}
+
+/* تحسين شكل الزرار عند فتح القائمة */
+.dropdown:hover .tab-btn {
+    background-color: #f1f5f9;
+    color: #3b82f6;
+}
+
+/* أنيميشن خفيف للظهور */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
 </head>
 <body>
 
@@ -55,8 +170,15 @@
     <div class="tabs-bar">
         <button class="tab-btn active" onclick="openTab(event, 'tab-fleet')">📑 أسطول السيارات</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-add')">➕ تسجيل مركبة</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-maintenance')">🛠️ تقارير الصيانة</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-delivery')">🤝 محاضر التسليم</button>
+<div class="dropdown">
+    <button class="tab-btn" id="maintenance-btn" onclick="openTab(event, 'tab-maintenance')">
+        🛠️ صيانة السيارات ▼
+    </button>
+    <div class="dropdown-content">
+        <a href="#" onclick="switchMaintenanceFrame('maintenance_request.html', event)">🆕 إنشاء طلب صيانة جديد</a>
+        <a href="#" onclick="switchMaintenanceFrame('maintenance_record.html', event)">📜 سجل طلبات الصيانة</a>
+    </div>
+</div>        <button class="tab-btn" onclick="openTab(event, 'tab-delivery')">🤝 محاضر التسليم</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-accidents')">⚠️ سجل الحوادث</button>
     </div>
 
@@ -70,11 +192,7 @@
         </div>
 
         <div id="tab-maintenance" class="tab-content">
-            <div class="placeholder-card">
-                <h2>🛠️ قسم تقارير الصيانة</h2>
-                <p>هذا القسم قيد البرمجة.. سيتم ربطه بجداول الورشة قريباً.</p>
-            </div>
-        </div>
+  <iframe src="maintenance_request.html"></iframe>        </div>
 
         <div id="tab-delivery" class="tab-content">
             <div class="placeholder-card">
@@ -111,6 +229,19 @@
                 document.getElementById('frame-fleet').src = document.getElementById('frame-fleet').src;
             }
         }
+        function switchMaintenanceFrame(pageUrl, event) {
+    event.preventDefault(); // منع القفز لأعلى الصفحة
+    
+    // تفعيل تاب الصيانة الرئيسي
+    const maintBtn = document.getElementById('maintenance-btn');
+    openTab({ currentTarget: maintBtn }, 'tab-maintenance');
+    
+    // تغيير الصفحة داخل الـ iframe
+    const iframe = document.querySelector('#tab-maintenance iframe');
+    if (iframe) {
+        iframe.src = pageUrl;
+    }
+}
     </script>
 
 </body>

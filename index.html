@@ -369,25 +369,37 @@
             renderUsers();
         }
     document.addEventListener("DOMContentLoaded", function() {
-        // تحديد مسار ملف الداش بورد
-        const dashboardPath = 'dash.html'; 
-        
-        // 1. إخفاء محتوى الترحيب القديم فوراً
-        const welcomeDiv = document.getElementById('welcome');
-        if(welcomeDiv) welcomeDiv.style.display = 'none';
-        
-        // 2. توجيه الـ iframe لفتح صفحة الداش بورد الجديدة
-        const mainFrame = document.getElementById('frame');
-        if(mainFrame) {
-            mainFrame.src = dashboardPath;
-            
-            // 3. ضبط تنسيق الفريم ليملأ الشاشة باحترافية
-            mainFrame.style.display = 'block';
-            mainFrame.style.width = '100%';
-            mainFrame.style.height = '100vh';
-            mainFrame.style.border = 'none';
-        }
-    });
+    const welcomeDiv = document.getElementById('welcome');
+    if(welcomeDiv) welcomeDiv.style.display = 'none';
+
+    const mainFrame = document.getElementById('frame');
+    
+    // 1. التحقق إذا كان هناك صفحة محفوظة سابقاً في الجلسة
+    const savedPage = sessionStorage.getItem('lastOpenPage');
+    const dashboardPath = 'dash.html';
+
+    if(mainFrame) {
+        // 2. إذا وجدنا صفحة محفوظة نفتحها، وإلا نفتح الداش بورد (لأول مرة فقط)
+        mainFrame.src = savedPage ? savedPage : dashboardPath;
+        mainFrame.style.display = 'block';
+    }
+});
+
+// 3. تعديل دالة التحميل لحفظ اسم الصفحة عند الضغط عليها
+function loadPage(btn, url) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    document.getElementById('welcome').style.display = 'none';
+    const frame = document.getElementById('frame');
+    frame.style.display = 'block'; 
+    frame.src = url;
+
+    // حفظ الرابط الحالي في الذاكرة المؤقتة للمتصفح
+    sessionStorage.setItem('lastOpenPage', url);
+    
+    if(event) event.stopPropagation();
+}
 
  </script>
 </body>

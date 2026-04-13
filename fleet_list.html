@@ -5,24 +5,50 @@
     <title>أسطول السيارات | مجموعة سادن الموحدة</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #3b82f6; --dark: #0f172a; --bg: #f8fafc; --border: #e2e8f0; }
+        :root { --primary: #3b82f6; --dark: #0f172a; --bg: #f8fafc; --border: #e2e8f0; --danger: #ef4444; --warning: #f59e0b; --success: #10b981; }
         body { font-family: 'Tajawal', sans-serif; background: var(--bg); padding: 20px; margin: 0; }
         .container { max-width: 1300px; margin: 0 auto; }
         .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .btn-add { background: var(--primary); color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 700; transition: 0.3s; }
+        .btn-add { background: var(--primary); color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 700; transition: 0.3s; display: inline-block; }
         .table-card { background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border); }
         table { width: 100%; border-collapse: collapse; text-align: right; }
         th { background: #f1f5f9; padding: 15px; font-size: 13px; color: #64748b; border-bottom: 2px solid var(--border); }
         td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--dark); }
-        .btn-view { background: #f1f5f9; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 20px; width: 85%; max-width: 1000px; position: relative; }
-        .close-modal { position: absolute; left: 20px; top: 20px; font-size: 24px; cursor: pointer; }
-        .detail-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
-        .detail-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
-        .detail-item label { display: block; font-size: 11px; color: #94a3b8; font-weight: 700; }
+        
+        /* أزرار العمليات */
+        .btn-action { padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; border: none; transition: 0.2s; font-size: 12px; margin: 2px; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-view { background: #eff6ff; color: var(--primary); border: 1px solid #dbeafe; }
+        .btn-edit { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .btn-delete { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .btn-action:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        /* مودال التفاصيل */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 2% auto; padding: 0; border-radius: 20px; width: 90%; max-width: 900px; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
+        
+        /* تنسيق كارت البيانات للطباعة */
+        .card-header { background: var(--dark); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .card-body { padding: 30px; }
+        .close-modal { color: white; font-size: 28px; cursor: pointer; transition: 0.3s; }
+        .close-modal:hover { color: var(--danger); }
+        
+        .info-section { margin-bottom: 25px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .section-title { background: #f8fafc; padding: 10px 20px; font-weight: 700; color: var(--primary); border-bottom: 1px solid var(--border); font-size: 15px; display: flex; align-items: center; gap: 10px; }
+        
+        .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+        .detail-item { padding: 15px 20px; border: 0.5px solid #f1f5f9; }
+        .detail-item label { display: block; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 4px; }
         .detail-item span { font-size: 14px; color: var(--dark); font-weight: 700; }
-        .section-label { grid-column: span 4; background: #f8fafc; padding: 5px 10px; font-weight: 700; color: var(--primary); margin-top: 10px; border-radius: 5px; }
+
+        .print-footer { padding: 20px 30px; background: #f8fafc; text-align: left; border-top: 1px solid var(--border); }
+        .btn-print { background: var(--success); color: white; padding: 10px 25px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; }
+
+        @media print {
+            body * { visibility: hidden; }
+            .modal-content, .modal-content * { visibility: visible; }
+            .modal-content { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; margin: 0; }
+            .btn-print, .close-modal { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -30,7 +56,7 @@
 <div class="container">
     <div class="header-section">
         <h1>🚚 أسطول السيارات المسجلة</h1>
-        <a href="add_car.html" class="btn-add">+ تسجيل مركبة جديدة</a>
+        <a href="add_car.html" class="btn-add" onclick="sessionStorage.removeItem('edit_car_index')">+ تسجيل مركبة جديدة</a>
     </div>
 
     <div class="table-card">
@@ -40,7 +66,7 @@
                     <th>الماركة / الطراز</th>
                     <th>رقم اللوحة</th>
                     <th>الفرع</th>
-                    <th>المستخدم (السائق)</th>
+                    <th>السائق</th>
                     <th>الإجراءات</th>
                 </tr>
             </thead>
@@ -51,11 +77,33 @@
 
 <div id="detailsModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeModal()">&times;</span>
-        <h2 style="border-right: 5px solid var(--primary); padding-right: 15px;">الملف الكامل لبيانات المركبة</h2>
-        <div id="fullDetails" class="detail-grid"></div>
-        <div style="margin-top: 30px; text-align: left;">
-            <button class="btn-view" onclick="window.print()" style="background:var(--primary); color:white;">طباعة التقرير 🖨️</button>
+        <div class="card-header">
+            <div>
+                <h2 style="margin:0; font-size: 20px;">📇 كارت بيانات المركبة</h2>
+                <small style="opacity: 0.8;">مجموعة سادن الموحدة - نظام الإدارة الذكي</small>
+            </div>
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+        </div>
+        
+        <div class="card-body" id="printableCard">
+            <div class="info-section">
+                <div class="section-title">🚛 البيانات الفنية والتعريفية</div>
+                <div class="detail-grid" id="techDetails"></div>
+            </div>
+
+            <div class="info-section">
+                <div class="section-title">📄 التراخيص والمستندات القانونية</div>
+                <div class="detail-grid" id="docDetails"></div>
+            </div>
+
+            <div class="info-section">
+                <div class="section-title">👤 بيانات العهدة والمتابعة</div>
+                <div class="detail-grid" id="userDetails"></div>
+            </div>
+        </div>
+
+        <div class="print-footer">
+            <button class="btn-print" onclick="window.print()">طباعة الكارت 🖨️</button>
         </div>
     </div>
 </div>
@@ -64,54 +112,79 @@
     function loadFleet() {
         const fleet = JSON.parse(localStorage.getItem('saden_fleet_db')) || [];
         const tableBody = document.getElementById('fleetTableBody');
-        
-        if(fleet.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:50px;">لا توجد مركبات مسجلة</td></tr>';
-            return;
-        }
-
-        tableBody.innerHTML = fleet.map((car, index) => `
+        tableBody.innerHTML = fleet.length === 0 ? '<tr><td colspan="5" style="text-align:center; padding:50px;">لا توجد مركبات</td></tr>' : 
+        fleet.map((car, index) => `
             <tr>
                 <td><b>${car.brand}</b> - ${car.model}</td>
-                <td><span style="font-weight:700;">${car.plate}</span></td>
+                <td><span style="font-weight:700; background:#f1f5f9; padding:4px 8px; border-radius:6px;">${car.plate}</span></td>
                 <td>${car.branch || '---'}</td>
                 <td>${car.driver || '---'}</td>
-                <td><button class="btn-view" onclick="showDetails(${index})">عرض كافة البيانات 🔍</button></td>
+                <td>
+                    <button class="btn-action btn-view" onclick="showDetails(${index})">📝 تفاصيل السيارة</button>
+                    <button class="btn-action btn-edit" onclick="editCar(${index})">تعديل</button>
+                    <button class="btn-action btn-delete" onclick="deleteCar(${index})">حذف</button>
+                </td>
             </tr>
         `).join('');
+    }
+
+    function editCar(index) {
+        sessionStorage.setItem('edit_car_index', index);
+        window.location.href = 'add_car.html';
+    }
+
+    function deleteCar(index) {
+        if(confirm('هل أنت متأكد من حذف هذه المركبة نهائياً من النظام؟')) {
+            let fleet = JSON.parse(localStorage.getItem('saden_fleet_db')) || [];
+            fleet.splice(index, 1);
+            localStorage.setItem('saden_fleet_db', JSON.stringify(fleet));
+            loadFleet();
+        }
     }
 
     function showDetails(index) {
         const fleet = JSON.parse(localStorage.getItem('saden_fleet_db'));
         const car = fleet[index];
-        const container = document.getElementById('fullDetails');
         
-        // ربط كافة الحقول من صفحة add_car.html
-        const structure = [
-            {type: 'head', label: 'البيانات التعريفية'},
+        // تعبئة البيانات الفنية
+        const techFields = [
             {label: 'الماركة', val: car.brand}, {label: 'الطراز', val: car.model}, 
             {label: 'سنة الصنع', val: car.year}, {label: 'اللون', val: car.color},
-            {label: 'رقم اللوحة', val: car.plate}, {label: 'الوقود', val: car.fuel},
-            {label: 'السجل', val: car.record}, {label: 'الفرع المستخدم', val: car.branch},
-            
-            {type: 'head', label: 'المستندات والتواريخ'},
-            {label: 'انتهاء رخصة السير', val: car.reg_end}, {label: 'انتهاء الفحص', val: car.test_end},
-            {label: 'تاريخ التأمين', val: car.ins_date}, {label: 'انتهاء كرت التشغيل', val: car.op_end},
-            
-            {type: 'head', label: 'العهدة والمتابعة'},
+            {label: 'رقم اللوحة', val: car.plate}, {label: 'نوع الوقود', val: car.fuel},
+            {label: 'رقم السجل', val: car.record}, {label: 'الفرع', val: car.branch}
+        ];
+        document.getElementById('techDetails').innerHTML = techFields.map(f => `
+            <div class="detail-item"><label>${f.label}</label><span>${f.val || '---'}</span></div>
+        `).join('');
+
+        // تعبئة المستندات
+        const docFields = [
+            {label: 'انتهاء الرخصة', val: car.reg_end}, {label: 'انتهاء الفحص', val: car.test_end},
+            {label: 'تاريخ التأمين', val: car.ins_date}, {label: 'انتهاء كرت التشغيل', val: car.op_end}
+        ];
+        document.getElementById('docDetails').innerHTML = docFields.map(f => `
+            <div class="detail-item"><label>${f.label}</label><span>${f.val || '---'}</span></div>
+        `).join('');
+
+        // تعبئة العهدة
+        const userFields = [
             {label: 'السائق الحالي', val: car.driver}, {label: 'كارت المتابعة', val: car.follow_card},
             {label: 'محضر التسليم', val: car.delivery}
         ];
-
-        container.innerHTML = structure.map(item => {
-            if(item.type === 'head') return `<div class="section-label">${item.label}</div>`;
-            return `<div class="detail-item"><label>${item.label}</label><span>${item.val || '---'}</span></div>`;
-        }).join('');
+        document.getElementById('userDetails').innerHTML = userFields.map(f => `
+            <div class="detail-item"><label>${f.label}</label><span>${f.val || '---'}</span></div>
+        `).join('');
 
         document.getElementById('detailsModal').style.display = 'block';
     }
 
     function closeModal() { document.getElementById('detailsModal').style.display = 'none'; }
+    
+    // إغلاق المودال عند الضغط خارجه
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('detailsModal')) closeModal();
+    }
+
     window.onload = loadFleet;
 </script>
 </body>
