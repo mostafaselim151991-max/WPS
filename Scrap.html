@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>سادن | إدارة الخردة والكهنة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --primary: #1e293b; --accent: #f59e0b; --success: #10b981; --danger: #ef4444; --bg: #f1f5f9; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #334155; }
+        
+        /* Header */
+        .header { background: var(--primary); color: white; padding: 20px 30px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .branch-tabs { display: flex; gap: 8px; background: rgba(255,255,255,0.1); padding: 5px; border-radius: 12px; }
+        .tab { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; color: white; background: transparent; font-family: inherit; font-weight: bold; transition: 0.3s; }
+        .tab.active { background: var(--accent); color: var(--primary); }
+
+        .main-grid { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        /* Forms */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-family: inherit; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit; transition: 0.2s; }
+        .btn-add { background: var(--success); color: white; }
+        .btn-issue { background: var(--primary); color: white; margin-top: 5px; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: right; padding: 12px; background: #f8fafc; color: #64748b; font-size: 0.85rem; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; }
+        .unit-badge { background: #e2e8f0; padding: 2px 8px; border-radius: 5px; font-size: 0.75rem; margin-right: 5px; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; border-radius: 20px; width: 90%; max-width: 450px; }
+        .total-preview { background: #fff7ed; padding: 15px; border-radius: 12px; border: 1px solid #fed7aa; margin: 15px 0; text-align: center; }
+
+        /* PDF Template (Hidden) */
+        #pdf-template { background: white; padding: 50px; width: 800px; position: absolute; left: -9999px; color: #000; }
+        .pdf-header { text-align: center; border-bottom: 3px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
+        .pdf-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 12px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <h2 style="margin:0">🏭 إدارة خردة ورشة سادن</h2>
+            <small id="current-branch-text" style="color: var(--accent); font-weight:bold;">فرع خميس مشيط</small>
+        </div>
+        <div class="branch-tabs">
+            <button class="tab active" onclick="switchBranch('خميس مشيط', this)">خميس مشيط</button>
+            <button class="tab" onclick="switchBranch('الرياض', this)">الرياض</button>
+            <button class="tab" onclick="switchBranch('جدة', this)">جدة</button>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <div class="card">
+            <h3 style="margin-top:0">📥 توريد خردة / عهدة</h3>
+            <div class="form-group">
+                <label>نوع المادة:</label>
+                <input type="text" id="in-name" placeholder="مثال: حديد سكراب، خشب، بطاريات">
+            </div>
+            <div class="form-group">
+                <label>وحدة القياس:</label>
+                <select id="in-unit">
+                    <option value="كجم">وزن (كجم)</option>
+                    <option value="عدد">كمية (عدد)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الكمية الموردة:</label>
+                <input type="number" id="in-qty" placeholder="0.00">
+            </div>
+            <button class="btn btn-add" onclick="addStock()">إضافة للمخزن اليدوي</button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0">📊 رصيد ساحة الخردة</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>المادة</th>
+                        <th>الرصيد الحالي</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="stock-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="issueModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0">💰 إذن بيع وصرف خردة</h3>
+            <div class="form-group">
+                <label>المادة:</label>
+                <input type="text" id="modal-item-name" readonly style="background:#f1f5f9">
+            </div>
+            <div class="form-group">
+                <label>اسم المشتري / الجهة:</label>
+                <input type="text" id="modal-buyer" placeholder="مثال: مصنع إعادة التدوير">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                <div class="form-group">
+                    <label>الكمية:</label>
+                    <input type="number" id="modal-qty" oninput="calculateTotal()" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label>السعر للوحدة:</label>
+                    <input type="number" id="modal-price" oninput="calculateTotal()" placeholder="0.00">
+                </div>
+            </div>
+            <div class="total-preview">
+                الإجمالي النهائي: <b id="modal-total-label" style="font-size:20px; color:var(--accent)">0.00</b> ريال
+            </div>
+            <button class="btn btn-add" style="background:var(--primary)" onclick="processIssue()">تأكيد العملية وتحميل الـ PDF 📥</button>
+            <button class="btn" style="background:none; color:#94a3b8" onclick="closeModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <div id="pdf-template">
+        <div class="pdf-header">
+            <h2>ورشة سادن المتخصصة للصيانة</h2>
+            <p> مخازن الخردة بورشة سادن</p>
+            <h3 style="background:#000; color:#fff; display:inline-block; padding:5px 20px; margin-top:10px;">إذن مغادرة وبيع خردة</h3>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <div>رقم السند: <b id="pdf-ref">---</b></div>
+            <div>التاريخ: <b id="pdf-date">---</b></div>
+        </div>
+        <div style="margin-bottom:20px;">الفرع: <b id="pdf-branch">---</b></div>
+        <div style="margin-bottom:20px;">يُصرف للسادة: <b id="pdf-buyer-name">---</b></div>
+        
+        <table class="pdf-table">
+            <thead>
+                <tr style="background:#eee">
+                    <th>نوع الخردة</th>
+                    <th>الكمية</th>
+                    <th>سعر الوحدة</th>
+                    <th>الإجمالي (ريال)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="pdf-item">---</td>
+                    <td id="pdf-qty-val">---</td>
+                    <td id="pdf-price-val">---</td>
+                    <td id="pdf-total-val">---</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="text-align:left; margin-top:20px; font-size:18px;">
+            الإجمالي النهائي: <b id="pdf-final-sum">---</b> ريال فقط لا غير.
+        </div>
+
+        <div style="margin-top:60px; display:flex; justify-content:space-between; text-align:center">
+            <div>أمين العهدة / المحاسب<br><br>........................</div>
+            <div>المستلم / المشتري<br><br>........................</div>
+        </div>
+    </div>
+
+<script>
+    let currentBranch = "خميس مشيط";
+    let activeItem = "";
+
+    function initDB() {
+        if(!localStorage.getItem('saden_scrap_v4')) {
+            const db = { "خميس مشيط": {}, "الرياض": {}, "جدة": {} };
+            localStorage.setItem('saden_scrap_v4', JSON.stringify(db));
+        }
+        renderTable();
+    }
+
+    function switchBranch(branch, btn) {
+        currentBranch = branch;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('current-branch-text').innerText = `فرع ${branch}`;
+        renderTable();
+    }
+
+    function addStock() {
+        const name = document.getElementById('in-name').value.trim();
+        const unit = document.getElementById('in-unit').value;
+        const qty = parseFloat(document.getElementById('in-qty').value) || 0;
+
+        if(!name || qty <= 0) return alert("يرجى إكمال البيانات");
+
+        let db = JSON.parse(localStorage.getItem('saden_scrap_v4'));
+        if(!db[currentBranch][name]) db[currentBranch][name] = { qty: 0, unit: unit };
+        db[currentBranch][name].qty += qty;
+
+        localStorage.setItem('saden_scrap_v4', JSON.stringify(db));
+        document.getElementById('in-name').value = "";
+        document.getElementById('in-qty').value = "";
+        renderTable();
+    }
+
+    function renderTable() {
+        const db = JSON.parse(localStorage.getItem('saden_scrap_v4'));
+        const stock = db[currentBranch];
+        const tbody = document.getElementById('stock-table-body');
+        tbody.innerHTML = "";
+
+        for(let item in stock) {
+            const data = stock[item];
+            if(data.qty <= 0) continue;
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${item}</strong></td>
+                    <td><b>${data.qty}</b> <span class="unit-badge">${data.unit}</span></td>
+                    <td><button class="btn btn-issue" onclick="openModal('${item}')" style="width:auto; padding:5px 15px;">إصدار إذن صرف</button></td>
+                </tr>
+            `;
+        }
+    }
+
+    function openModal(item) {
+        activeItem = item;
+        document.getElementById('modal-item-name').value = item;
+        document.getElementById('issueModal').style.display = 'block';
+    }
+
+    function calculateTotal() {
+        const q = parseFloat(document.getElementById('modal-qty').value) || 0;
+        const p = parseFloat(document.getElementById('modal-price').value) || 0;
+        document.getElementById('modal-total-label').innerText = (q * p).toFixed(2);
+    }
+
+    function closeModal() { document.getElementById('issueModal').style.display = 'none'; }
+
+    async function processIssue() {
+        const buyer = document.getElementById('modal-buyer').value;
+        const qty = parseFloat(document.getElementById('modal-qty').value) || 0;
+        const price = parseFloat(document.getElementById('modal-price').value) || 0;
+        const total = (qty * price).toFixed(2);
+
+        let db = JSON.parse(localStorage.getItem('saden_scrap_v4'));
+        const itemData = db[currentBranch][activeItem];
+
+        if(!buyer || qty <= 0) return alert("يرجى إكمال بيانات الصرف");
+        if(qty > itemData.qty) return alert("الكمية غير متوفرة!");
+
+        // 1. خصم من المخزن
+        db[currentBranch][activeItem].qty -= qty;
+        localStorage.setItem('saden_scrap_v4', JSON.stringify(db));
+
+        // 2. تعبئة الـ PDF
+        document.getElementById('pdf-ref').innerText = "SCR-" + Date.now().toString().slice(-6);
+        document.getElementById('pdf-date').innerText = new Date().toLocaleDateString('ar-SA');
+        document.getElementById('pdf-branch').innerText = currentBranch;
+        document.getElementById('pdf-buyer-name').innerText = buyer;
+        document.getElementById('pdf-item').innerText = activeItem;
+        document.getElementById('pdf-qty-val').innerText = qty + " " + itemData.unit;
+        document.getElementById('pdf-price-val').innerText = price.toFixed(2);
+        document.getElementById('pdf-total-val').innerText = total;
+        document.getElementById('pdf-final-sum').innerText = total;
+
+        // 3. توليد وحفظ PDF
+        const element = document.getElementById('pdf-template');
+        html2canvas(element, { scale: 2 }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            pdf.addImage(imgData, 'PNG', 0, 0, 210, (canvas.height * 210) / canvas.width);
+            pdf.save(`إذن_خردة_${buyer}.pdf`);
+            
+            closeModal();
+            renderTable();
+            alert("تم الصرف وتحميل الإذن بنجاح ✅");
+        });
+    }
+
+    initDB();
+</script>
+</body>
+</html>

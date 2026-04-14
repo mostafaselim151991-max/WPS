@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة متابعة الورشة | مجموعة سادن الموحدة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #3b82f6; --dark: #0f172a; --bg: #f8fafc; 
+            --border: #e2e8f0; --danger: #ef4444; --warning: #f59e0b; --success: #10b981; 
+        }
+
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        
+        .tabs-header { background: var(--dark); padding: 10px 20px 0; display: flex; gap: 8px; position: sticky; top: 0; z-index: 100; }
+        .tab-link { 
+            padding: 12px 25px; border: none; background: #1e293b; color: #94a3b8; 
+            cursor: pointer; border-radius: 10px 10px 0 0; font-weight: bold; font-family: 'Tajawal'; transition: 0.3s;
+        }
+        .tab-link.active { background: var(--bg); color: var(--primary); }
+
+        .tab-body { display: none; padding: 25px; animation: fadeIn 0.3s ease-in; }
+        .tab-body.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f1f5f9; padding: 15px; font-size: 13px; color: #64748b; border-bottom: 2px solid var(--border); text-align: center; }
+        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 14px; text-align: center; color: var(--dark); }
+
+        .plate-badge { background: #f1f5f9; padding: 4px 10px; border-radius: 6px; font-weight: 700; border: 1px solid #cbd5e1; }
+        
+        .btn { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; border: none; font-family: 'Tajawal'; font-size: 12px; }
+        .btn-update { background: var(--primary); color: white; }
+
+        .workshop-panel { 
+            display: none; background: #fffbeb; border: 2px solid var(--warning); 
+            padding: 25px; border-radius: 15px; margin-top: 25px; 
+        }
+        .update-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .full { grid-column: span 3; }
+        label { display: block; font-size: 13px; font-weight: bold; color: #92400e; margin-bottom: 8px; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #dbeafe; border-radius: 8px; font-family: inherit; box-sizing: border-box; }
+        
+        .total-display { 
+            background: #1e293b; color: white; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; border-radius: 10px; 
+        }
+        .btn-submit { background: var(--success); color: white; padding: 15px; width: 100%; border-radius: 10px; margin-top: 20px; font-size: 16px; font-weight: bold; cursor: pointer; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="tabs-header">
+    <button class="tab-link active" onclick="switchTab(event, 'fleet-section')">🚚 قائمة المركبات</button>
+    <button class="tab-link" onclick="switchTab(event, 'maint-section')">🔧 متابعة طلبات الصيانة</button>
+    <button class="tab-link" onclick="switchTab(event, 'factory-section')">🏭 أوامر الإنتاج (التصنيع)</button>
+    <button class="tab-link" onclick="switchTab(event, 'store')">📦 المخازن </button>
+    <button class="tab-link" onclick="switchTab(event, 'Scrap')">♻️ الخردة </button>
+
+</div>
+
+<div id="fleet-section" class="tab-body active">
+    <div class="main-card">
+        <h2 style="margin-top:0">📑 أسطول سيارات المجموعة</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>الماركة / الطراز</th>
+                    <th>رقم اللوحة</th>
+                    <th>الفرع التابع</th>
+                    <th>السائق الحالي</th>
+                    <th>سنة الصنع</th>
+                </tr>
+            </thead>
+            <tbody id="fleetListBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="maint-section" class="tab-body">
+    <div class="main-card">
+        <h2 style="margin-top:0">📋 سجل الصيانة والعمليات</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>رقم الطلب</th>
+                    <th>اللوحة</th>
+                    <th>نوع العطل</th>
+                    <th>الحالة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="maintListBody"></tbody>
+        </table>
+
+        <div id="updateFormPanel" class="workshop-panel">
+            <h3 id="targetOrder" style="margin-top:0; color:#b45309;">📍 تحديث بيانات الإصلاح</h3>
+            <div class="update-grid">
+                <div class="full">
+                    <label>وصف العطل النهائي:</label>
+                    <textarea id="diag_input" rows="3"></textarea>
+                </div>
+                <div><label>تكلفة قطع الغيار:</label><input type="number" id="cost_parts" oninput="calculateSum()"></div>
+                <div><label>أجرة اليد:</label><input type="number" id="cost_labor" oninput="calculateSum()"></div>
+                <div class="total-display"><label style="color:#cbd5e1">الإجمالي</label><span id="final_sum">0.00</span></div>
+            </div>
+            <button class="btn-submit" onclick="confirmWorkshopUpdate()">✅ اعتماد التكلفة</button>
+        </div>
+    </div>
+</div>
+
+<div id="factory-section" class="tab-body">
+    <div class="main-card" style="padding: 0; overflow: hidden; height: 85vh; border: none;">
+        <iframe src="factory_orders.html" style="width: 100%; height: 100%; border: none; border-radius: 15px;"></iframe>
+    </div>
+</div>
+
+<div id="store" class="tab-body">
+    <div class="main-card" style="padding: 0; overflow: hidden; height: 85vh; border: none;">
+        <iframe src="store.html" style="width: 100%; height: 100%; border: none; border-radius: 15px;"></iframe>
+    </div>
+</div>
+<div id="Scrap" class="tab-body">
+    <div class="main-card" style="padding: 0; overflow: hidden; height: 85vh; border: none;">
+        <iframe src="Scrap.html" style="width: 100%; height: 100%; border: none; border-radius: 15px;"></iframe>
+    </div>
+</div>
+
+<script>
+    let activeIndex = null;
+
+    function switchTab(e, sectionId) {
+        document.querySelectorAll('.tab-body').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        e.currentTarget.classList.add('active');
+    }
+
+    function refreshFleet() {
+        const fleetData = JSON.parse(localStorage.getItem('saden_fleet_db')) || [];
+        const tbody = document.getElementById('fleetListBody');
+        tbody.innerHTML = fleetData.map(car => `
+            <tr>
+                <td><b>${car.brand}</b> ${car.model}</td>
+                <td><span class="plate-badge">${car.plate}</span></td>
+                <td>${car.branch || '---'}</td>
+                <td>${car.driver || '---'}</td>
+                <td>${car.year || '---'}</td>
+            </tr>
+        `).join('') || '<tr><td colspan="5">لا توجد مركبات مسجلة</td></tr>';
+    }
+
+    function refreshMaint() {
+        const maintData = JSON.parse(localStorage.getItem('saden_maintenance_db')) || [];
+        const tbody = document.getElementById('maintListBody');
+        tbody.innerHTML = maintData.map((item, index) => `
+            <tr>
+                <td>#${item.orderNo}</td>
+                <td><b>${item.plate}</b></td>
+                <td>${item.type}</td>
+                <td><span style="color:${item.status === 'جديد' ? '#3b82f6' : '#10b981'}; font-weight:bold;">${item.status}</span></td>
+                <td><button class="btn btn-update" onclick="openUpdateBox(${index})">✍️ تحديث</button></td>
+            </tr>
+        `).join('') || '<tr><td colspan="5">لا توجد طلبات</td></tr>';
+    }
+
+    function openUpdateBox(index) {
+        const data = JSON.parse(localStorage.getItem('saden_maintenance_db'));
+        activeIndex = index;
+        document.getElementById('targetOrder').innerText = `📍 تحديث الطلب #${data[index].orderNo}`;
+        document.getElementById('updateFormPanel').style.display = 'block';
+    }
+
+    function calculateSum() {
+        const p = parseFloat(document.getElementById('cost_parts').value) || 0;
+        const l = parseFloat(document.getElementById('cost_labor').value) || 0;
+        document.getElementById('final_sum').innerText = (p + l).toFixed(2);
+    }
+
+    function confirmWorkshopUpdate() {
+        let data = JSON.parse(localStorage.getItem('saden_maintenance_db'));
+        data[activeIndex].status = "تم الإصلاح";
+        localStorage.setItem('saden_maintenance_db', JSON.stringify(data));
+        alert("تم الحفظ ✅");
+        document.getElementById('updateFormPanel').style.display = 'none';
+        refreshMaint();
+    }
+
+    window.onload = () => {
+        refreshFleet();
+        refreshMaint();
+    };
+</script>
+
+</body>
+</html>

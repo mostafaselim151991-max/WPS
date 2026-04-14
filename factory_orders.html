@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>المصنع | إصدار أمر إنتاج وترحيل للمخزن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --primary: #1e293b; --accent: #0284c7; --bg: #f1f5f9; --border: #cbd5e1; --success: #10b981; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        
+        .container { max-width: 950px; margin: 0 auto; }
+        .form-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid var(--accent); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: var(--primary); font-size: 13px; }
+        select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; box-sizing: border-box; background: #f8fafc; }
+        input[readonly] { background: #f1f5f9; font-weight: bold; color: #475569; cursor: not-allowed; }
+        .total-field { background: #e0f2fe !important; color: #0369a1 !important; border: 2px solid var(--accent); }
+        
+        .btn-generate { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-generate:hover { background: var(--primary); transform: translateY(-2px); }
+
+        /* ستايل الـ PDF المخفي */
+        #pdf-template { background: white; padding: 50px; width: 800px; position: absolute; left: -9999px; color: #000; }
+        .pdf-header { text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .pdf-title { font-size: 26px; font-weight: bold; background: #333; color: #fff; padding: 5px 40px; border-radius: 5px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #eee; padding: 8px 0; }
+        .tax-summary-box { margin-top: 20px; border: 1.5px solid #000; padding: 15px; border-radius: 8px; }
+        .signature-section { margin-top: 60px; display: flex; justify-content: space-between; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-card">
+        <h2 style="text-align:center; color: var(--primary);">🏭 قسم التصنيع - أمر تشغيل وترحيل للمخزن</h2>
+        
+        <div class="form-grid">
+            <div class="full-width">
+                <label>اسم العميل / الجهة الطالبة:</label>
+                <input type="text" id="prod_customer" placeholder="ادخل اسم العميل">
+            </div>
+            
+            <div class="full-width">
+                <label>المنتج المطلوب تصنيعه:</label>
+                <select id="prod_item">
+                    <option>سلندرات</option><option>حفارة</option><option>أنبال</option>
+                    <option>دماغ كور</option><option>دماغ دبل كور</option>
+                    <option>سكاكين حفر عادية</option><option>سكاكين حفر الماظ</option>
+                    <option>سويفل</option><option>كور متر</option><option>كور متر ونص</option>
+                    <option>SPT</option><option>كيسنج</option><option>سكاكين كيسنج</option><option>دماغ كيسنج</option>
+                    <option>صناديق عينات</option><option>صناديق حفر</option><option>طرمبات مياه</option>
+                </select>
+            </div>
+
+            <div>
+                <label>الكمية المصنعة:</label>
+                <input type="number" id="prod_qty" value="1" min="1" oninput="calculateTotal()">
+            </div>
+            <div>
+                <label>سعر الوحدة (ريال):</label>
+                <input type="number" id="unit_price" placeholder="0.00" oninput="calculateTotal()">
+            </div>
+
+            <div class="full-width">
+                <label>الورشة المصنعة (المخزن المستلم):</label>
+                <select id="prod_workshop">
+                    <option value="خميس مشيط">ورشة خميس مشيط</option>
+                    <option value="الرياض">ورشة الرياض</option>
+                    <option value="جدة">ورشة جدة</option>
+                </select>
+            </div>
+
+            <div class="full-width">
+                <label>الإجمالي (بدون ضريبة):</label>
+                <input type="text" id="sub_total" readonly value="0.00">
+            </div>
+
+            <div class="full-width">
+                <label>الضريبة (15%):</label>
+                <input type="text" id="tax_amount" readonly value="0.00">
+            </div>
+            
+            <div class="full-width">
+                <label>الإجمالي النهائي (شامل الضريبة):</label>
+                <input type="text" id="total_price" readonly class="total-field" value="0.00">
+            </div>
+        </div>
+
+        <button class="btn-generate" onclick="processProductionOrder()">إصدار الأمر وترحيل الكمية للمخزن 💾📄</button>
+    </div>
+</div>
+
+<div id="pdf-template">
+    <div class="pdf-header">
+        <h1>ورشة سادن المتخصصة للصيانة</h1>
+        <p>Saden Specialized Maintenance Workshop</p>
+        <div class="pdf-title">أمر تشغيل وإنتاج</div>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-weight: bold;">
+        <div>رقم الأمر: <span id="pdf_order_no">---</span></div>
+        <div>التاريخ: <span id="pdf_date">---</span></div>
+    </div>
+
+    <div class="info-row"><span>الجهة المستفيدة (العميل):</span> <b id="pdf_cust">---</b></div>
+    <div class="info-row"><span>المنتج المطلوب:</span> <b id="pdf_item_name">---</b></div>
+    <div class="info-row"><span>الكمية المطلوبة:</span> <b id="pdf_q">---</b></div>
+    <div class="info-row"><span>سعر الوحدة:</span> <b><span id="pdf_unit">0.00</span> ريال</b></div>
+    
+    <div class="tax-summary-box">
+        <div class="info-row"><span>الورشة المصنعة:</span> <b id="pdf_ws">---</b></div>
+        <div class="info-row" style="border:none"><span>الإجمالي (بدون ضريبة):</span> <b id="pdf_sub">0.00</b> ريال</div>
+        <div class="info-row" style="border:none"><span>الضريبة (15%):</span> <b id="pdf_tax">0.00</b> ريال</div>
+        <div class="info-row" style="border-top: 2px solid #000; padding-top: 10px; margin-top: 5px;">
+            <span style="font-size: 18px; font-weight: bold;">الإجمالي النهائي (شامل الضريبة):</span> 
+            <b style="font-size: 22px;"><span id="pdf_total">0.00</span> ريال</b>
+        </div>
+    </div>
+
+    <p style="margin-top: 25px;">بناءً على هذا الأمر، تم الانتهاء من عملية التصنيع وترحيل الكمية آلياً للمخزن المذكور.</p>
+
+    <div class="signature-section">
+        <div style="width: 250px;">
+            <p>ختم واعتماد الورشة</p>
+            <div style="height: 100px; border: 1px dashed #ccc; margin-top: 10px;"></div>
+        </div>
+        <div style="width: 250px;">
+            <p>المدير العام للورش</p>
+            <p style="font-size: 12px; color: #555;">يعتمد,,</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculateTotal() {
+        const qty = parseFloat(document.getElementById('prod_qty').value) || 0;
+        const unit = parseFloat(document.getElementById('unit_price').value) || 0;
+        
+        const subTotal = qty * unit;
+        const tax = subTotal * 0.15;
+        const finalTotal = subTotal + tax;
+
+        document.getElementById('sub_total').value = subTotal.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('tax_amount').value = tax.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('total_price').value = finalTotal.toLocaleString('en-US', {minimumFractionDigits: 2});
+    }
+
+    // الوظيفة الأساسية: إصدار الـ PDF + ترحيل للمخزن
+    function processProductionOrder() {
+        const customer = document.getElementById('prod_customer').value;
+        const price = document.getElementById('unit_price').value;
+        const qty = parseInt(document.getElementById('prod_qty').value);
+        const item = document.getElementById('prod_item').value;
+        const workshop = document.getElementById('prod_workshop').value;
+
+        if(!customer || !price || price <= 0 || qty <= 0) {
+            alert("⚠️ يرجى إكمال جميع البيانات بشكل صحيح قبل الإصدار");
+            return;
+        }
+
+        // 1. ترحيل الكمية للمخزن (localStorage)
+        updateStockDatabase(workshop, item, qty);
+
+        // 2. تعبئة بيانات الـ PDF
+        document.getElementById('pdf_order_no').innerText = "PROD-" + Date.now().toString().slice(-6);
+        document.getElementById('pdf_date').innerText = new Date().toLocaleDateString('ar-SA');
+        document.getElementById('pdf_cust').innerText = customer;
+        document.getElementById('pdf_ws').innerText = "ورشة " + workshop;
+        document.getElementById('pdf_item_name').innerText = item;
+        document.getElementById('pdf_q').innerText = qty;
+        document.getElementById('pdf_unit').innerText = parseFloat(price).toFixed(2);
+        document.getElementById('pdf_sub').innerText = document.getElementById('sub_total').value;
+        document.getElementById('pdf_tax').innerText = document.getElementById('tax_amount').value;
+        document.getElementById('pdf_total').innerText = document.getElementById('total_price').value;
+
+        // 3. توليد وحفظ الملف
+        const element = document.getElementById('pdf-template');
+        html2canvas(element, { scale: 2 }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`Order_${customer}_${item}.pdf`);
+            
+            alert(`تم ترحيل عدد (${qty}) قطعة من (${item}) لمخزن ${workshop} بنجاح ✅`);
+        });
+    }
+
+    // وظيفة الربط مع قاعدة بيانات المخزن
+    function updateStockDatabase(branch, itemName, quantity) {
+        // جلب بيانات المخزن الحالية
+        let db = JSON.parse(localStorage.getItem('saden_production_stock'));
+
+        // التأكد من وجود قاعدة البيانات، إذا لم توجد ننشئها
+        if(!db) {
+            db = {"خميس مشيط": {}, "الرياض": {}, "جدة": {}};
+        }
+
+        // تحديث الكمية (إضافة الكمية المصنعة الجديدة للموجود سابقاً)
+        const currentQty = db[branch][itemName] || 0;
+        db[branch][itemName] = currentQty + quantity;
+
+        // حفظ التحديث في المتصفح
+        localStorage.setItem('saden_production_stock', JSON.stringify(db));
+    }
+</script>
+
+</body>
+</html>

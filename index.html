@@ -179,7 +179,7 @@
             <div class="dropdown">
                 <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'opsMenu')">⚙️ إدارة العمليات</button>
                 <div id="opsMenu" class="dropdown-content">
-                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ الورشة</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'workshop.html')">⬅️ الورشة</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ قسم الحفر</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'car_control.html')">⬅️ حركة السيارات</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ قسم الجرد</button>
@@ -189,7 +189,7 @@
 <div class="dropdown">
                 <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'branchMenu')">🏢 إدارة الفروع</button>
                 <div id="branchMenu" class="dropdown-content">
-                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ تحت الإنشاء</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'maintenance_request.html')">⬅️ طلب صيانة سيارة</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ تحت الإنشاء</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ تحت الإنشاء</button>
                 </div>
@@ -300,6 +300,7 @@ let users = JSON.parse(localStorage.getItem('sadenUsers')) || [];
 
 // إذا كانت القائمة فارغة أو لا تحتوي على الحساب الأساسي الجديد، قم بإضافته/تحديثه
 const adminExists = users.find(u => u.user === "superadmin" && u.pass === "10203040");
+
 
 if (!adminExists) {
     // إزالة النسخة القديمة من superadmin إذا وجدت بكلمة مرور مختلفة

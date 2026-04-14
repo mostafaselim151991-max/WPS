@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مخزن سادن | نظام جرد وإصدار أذونات الصرف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --primary: #0284c7; --dark: #0f172a; --bg: #f1f5f9; --success: #10b981; --danger: #ef4444; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        
+        .header-bar { background: var(--dark); color: white; padding: 20px 30px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .branch-nav { display: flex; gap: 12px; }
+        .branch-tab { padding: 10px 25px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; font-family: inherit; background: #334155; color: #94a3b8; transition: 0.3s; }
+        .branch-tab.active { background: var(--primary); color: white; }
+
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 24px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .icon-circle { width: 60px; height: 60px; background: #f0f9ff; border-radius: 15px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+        
+        .stock-control { display: flex; align-items: center; justify-content: center; gap: 15px; background: #f8fafc; border-radius: 12px; padding: 8px; margin-bottom: 12px; }
+        .stock-value { font-size: 22px; font-weight: bold; color: var(--dark); }
+        
+        /* Modal Style */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 2% auto; padding: 25px; border-radius: 20px; width: 90%; max-width: 500px; text-align: right; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 16px; }
+        .total-box { background: #f0f9ff; padding: 15px; border-radius: 12px; border: 1px solid #bae6fd; margin-top: 15px; }
+
+        .btn-submit { background: var(--success); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: inherit; font-size: 16px; }
+        
+        /* PDF Template (Hidden) */
+        #pdf-template { background: white; padding: 50px; width: 800px; position: absolute; left: -9999px; color: #000; }
+        .pdf-header { text-align: center; border-bottom: 3px solid #000; margin-bottom: 25px; padding-bottom: 15px; }
+        .pdf-header h2 { margin: 0; font-size: 28px; }
+        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 12px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <div>
+            <h2 style="margin:0">🏭 إدارة مخازن سادن</h2>
+            <span id="current-location" style="color: #38bdf8; font-weight: bold;">📍 مخزن خميس مشيط</span>
+        </div>
+        <div class="branch-nav">
+            <button class="branch-tab active" onclick="switchBranch('خميس مشيط', this)">خميس مشيط</button>
+            <button class="branch-tab" onclick="switchBranch('الرياض', this)">الرياض</button>
+            <button class="branch-tab" onclick="switchBranch('جدة', this)">جدة</button>
+        </div>
+    </div>
+
+    <div class="products-grid" id="pos-grid"></div>
+
+    <div id="issueModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; color: var(--dark);">📄 إنشاء إذن صرف مواد</h3>
+            
+            <div class="form-group">
+                <label>اسم العميل / الجهة المستلمة:</label>
+                <input type="text" id="cust_name" placeholder="مثال: شركة المقاولات الحديثة">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                    <label>المنتج:</label>
+                    <input type="text" id="prod_name_readonly" readonly style="background:#f1f5f9; font-weight:bold;">
+                </div>
+                <div class="form-group">
+                    <label>الكمية المراد صرفها:</label>
+                    <input type="number" id="issue_qty" oninput="calculateIssue()" placeholder="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>سعر الوحدة (ريال):</label>
+                <input type="number" id="unit_price" oninput="calculateIssue()" placeholder="0.00">
+            </div>
+
+            <div class="total-box">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <span>الإجمالي (قبل الضريبة):</span>
+                    <b id="lbl_subtotal">0.00</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; color: #64748b;">
+                    <span>الضريبة (15%):</span>
+                    <b id="lbl_tax">0.00</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-top: 1px solid #bae6fd; padding-top:10px; margin-top:10px; font-size:18px; color: var(--primary);">
+                    <span>الإجمالي النهائي:</span>
+                    <b id="lbl_total">0.00</b>
+                </div>
+            </div>
+
+            <button class="btn-submit" onclick="processAndDownloadPDF()">تأكيد الصرف وتحميل الإذن 📥</button>
+            <button onclick="closeModal()" style="width:100%; background:none; border:none; color:#94a3b8; cursor:pointer; margin-top:15px; font-family:inherit;">إلغاء العملية</button>
+        </div>
+    </div>
+
+    <div id="pdf-template">
+        <div class="pdf-header">
+            <h2>ورشة سادن المتخصصة للصيانة</h2>
+            <p style="font-size: 18px;">Saden Specialized Maintenance Workshop</p>
+            <h3 style="background:#000; color:#fff; display:inline-block; padding:8px 30px; border-radius:5px; margin-top:10px;">إذن صرف مواد من المخزن</h3>
+        </div>
+        
+        <div style="display:flex; justify-content:space-between; margin-bottom:30px; font-size:18px;">
+            <div>رقم الإذن: <b id="pdf_no">---</b></div>
+            <div>التاريخ: <b id="pdf_date">---</b></div>
+        </div>
+
+        <div style="margin-bottom: 20px; font-size: 18px;">
+            صرف لجهة: <b id="pdf_cust_display">---</b>
+        </div>
+
+        <table class="pdf-table">
+            <thead>
+                <tr style="background:#f1f5f9;">
+                    <th>البيان (اسم المنتج)</th>
+                    <th>الكمية</th>
+                    <th>سعر الوحدة</th>
+                    <th>الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="pdf_item" style="text-align:right; padding-right:15px;">---</td>
+                    <td id="pdf_qty">0</td>
+                    <td id="pdf_price">0.00</td>
+                    <td id="pdf_sub">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-right:auto; width:300px; margin-top:30px; font-size:18px; border: 2px solid #000; padding: 15px; border-radius: 10px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span>الضريبة (15%):</span> <b id="pdf_tax_val">0.00</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-top:2px solid #000; padding-top:10px; font-size:22px;">
+                <span>الإجمالي النهائي:</span> <b id="pdf_total_val">0.00</b>
+            </div>
+        </div>
+
+        <div style="margin-top:80px; display:flex; justify-content:space-between; text-align:center; font-size: 18px;">
+            <div>
+                <p>أمين المخزن</p>
+                <br>
+                <span>................................</span>
+            </div>
+            <div>
+                <p>المستلم (العميل)</p>
+                <b id="pdf_cust_sign">---</b>
+                <br><br>
+                <span>................................</span>
+            </div>
+        </div>
+        <div style="text-align:center; margin-top:100px; font-size:12px; color:#555; border-top:1px solid #eee; padding-top:10px;">
+            يعتبر هذه اذن الصرف مستنداً رسمياً لصرف المنتجات والمواد من مستودعات ورشة سادن.
+        </div>
+    </div>
+
+<script>
+    let currentBranch = "خميس مشيط";
+    const productTypes = [
+        {name: "سلندرات", icon: "🧪"}, {name: "حفارة", icon: "🚜"}, {name: "أنبال", icon: "🔨"},
+        {name: "دماغ كور", icon: "🛢️"}, {name: "دماغ دبل كور", icon: "🔄"},
+        {name: "سكاكين حفر عادية", icon: "⛏️"}, {name: "سكاكين حفر الماظ", icon: "💎"},
+        {name: "سويفل", icon: "🔗"}, {name: "كور متر", icon: "📏"}, {name: "كور متر ونص", icon: "📐"},
+        {name: "SPT", icon: "🧪"}, {name: "كيسنج", icon: "🏗️"}, {name: "سكاكين كيسنج", icon: "⚔️"},
+        {name: "دماغ كيسنج", icon: "🔩"}, {name: "صناديق عينات", icon: "📦"},
+        {name: "صناديق حفر", icon: "📥"}, {name: "طرمبات مياه", icon: "💧"}
+    ];
+
+    function initStorage() {
+        if(!localStorage.getItem('saden_production_stock')) {
+            let db = {};
+            ["خميس مشيط", "الرياض", "جدة"].forEach(b => {
+                db[b] = {}; productTypes.forEach(p => db[b][p.name] = 0);
+            });
+            localStorage.setItem('saden_production_stock', JSON.stringify(db));
+        }
+    }
+
+    function switchBranch(branch, btn) {
+        currentBranch = branch;
+        document.querySelectorAll('.branch-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('current-location').innerText = `📍 مخزن ${branch}`;
+        renderGrid();
+    }
+
+    function calculateIssue() {
+        const q = parseFloat(document.getElementById('issue_qty').value) || 0;
+        const p = parseFloat(document.getElementById('unit_price').value) || 0;
+        const sub = q * p;
+        const tax = sub * 0.15;
+        const total = sub + tax;
+        
+        document.getElementById('lbl_subtotal').innerText = sub.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('lbl_tax').innerText = tax.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('lbl_total').innerText = total.toLocaleString('en-US', {minimumFractionDigits: 2});
+    }
+
+    function openIssueModal(name) {
+        document.getElementById('prod_name_readonly').value = name;
+        document.getElementById('issue_qty').value = "";
+        document.getElementById('unit_price').value = "";
+        calculateIssue();
+        document.getElementById('issueModal').style.display = "block";
+    }
+
+    function closeModal() { document.getElementById('issueModal').style.display = "none"; }
+
+    function processAndDownloadPDF() {
+        const cust = document.getElementById('cust_name').value;
+        const item = document.getElementById('prod_name_readonly').value;
+        const qty = parseInt(document.getElementById('issue_qty').value) || 0;
+        const price = parseFloat(document.getElementById('unit_price').value) || 0;
+        
+        let db = JSON.parse(localStorage.getItem('saden_production_stock'));
+        
+        if (!cust) return alert("⚠️ يرجى إدخال اسم العميل");
+        if (qty <= 0) return alert("⚠️ يرجى إدخال كمية صحيحة");
+        if (price <= 0) return alert("⚠️ يرجى إدخال سعر الوحدة");
+        if (qty > db[currentBranch][item]) return alert("⚠️ الكمية المطلوبة غير متوفرة في المخزن حالياً!");
+
+        // خصم من المخزن
+        db[currentBranch][item] -= qty;
+        localStorage.setItem('saden_production_stock', JSON.stringify(db));
+
+        // تعبئة الـ PDF
+        document.getElementById('pdf_no').innerText = "ISS-" + Date.now().toString().slice(-6);
+        document.getElementById('pdf_date').innerText = new Date().toLocaleDateString('ar-SA');
+        document.getElementById('pdf_cust_display').innerText = cust;
+        document.getElementById('pdf_item').innerText = item;
+        document.getElementById('pdf_qty').innerText = qty;
+        document.getElementById('pdf_price').innerText = price.toFixed(2);
+        document.getElementById('pdf_sub').innerText = document.getElementById('lbl_subtotal').innerText;
+        document.getElementById('pdf_tax_val').innerText = document.getElementById('lbl_tax').innerText;
+        document.getElementById('pdf_total_val').innerText = document.getElementById('lbl_total').innerText;
+        document.getElementById('pdf_cust_sign').innerText = cust;
+
+        // توليد الملف مع تحسين الجودة
+        const element = document.getElementById('pdf-template');
+        html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgWidth = 210;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.save(`إذن_صرف_${cust}.pdf`);
+            
+            alert(`تم صرف ${qty} من ${item} بنجاح ✅`);
+            closeModal();
+            renderGrid();
+        });
+    }
+
+    function renderGrid() {
+        const db = JSON.parse(localStorage.getItem('saden_production_stock'));
+        const branchStock = db[currentBranch];
+        const grid = document.getElementById('pos-grid');
+        grid.innerHTML = productTypes.map(p => {
+            const qty = branchStock[p.name] || 0;
+            const isLow = qty <= 0;
+            return `
+                <div class="product-card" style="border: 2px solid ${isLow ? '#fee2e2' : 'transparent'}">
+                    <div class="icon-circle">${p.icon}</div>
+                    <div class="product-name">${p.name}</div>
+                    <div class="stock-control">
+                        <span class="stock-value" style="color: ${isLow ? '#ef4444' : '#0f172a'}">${qty}</span>
+                    </div>
+                    <button class="btn-issue" 
+                        style="background:${isLow ? '#94a3b8' : 'var(--dark)'}; color:white; border:none; width:100%; padding:12px; border-radius:8px; cursor:${isLow ? 'not-allowed' : 'pointer'}; font-weight:bold; font-family:inherit;" 
+                        onclick="${isLow ? '' : `openIssueModal('${p.name}')`}"
+                        ${isLow ? 'disabled' : ''}>
+                        📄 إجراء إذن صرف
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    initStorage(); 
+    renderGrid();
+</script>
+</body>
+</html>
