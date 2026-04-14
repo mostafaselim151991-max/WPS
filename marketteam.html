@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>سادن | إدارة أفراد التسويق</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #3b82f6; --dark: #0f172a; --bg: #f8fafc; 
+            --border: #e2e8f0; --accent: #020470; --success: #10b981; --danger: #ef4444;
+        }
+
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        
+        /* الهيدر */
+        .header { 
+            background: var(--dark); padding: 15px 30px; 
+            display: flex; justify-content: space-between; 
+            align-items: center; color: white; position: sticky; top: 0; z-index: 1000;
+        }
+        
+        .container { padding: 30px; max-width: 1400px; margin: auto; }
+
+        /* شريط الإحصائيات والبحث */
+        .top-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 30px; gap: 20px;
+        }
+
+        .stats-bar { 
+            background: white; padding: 15px 25px; border-radius: 15px; 
+            border: 1px solid var(--border); display: flex; gap: 40px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02); flex-grow: 1;
+        }
+        .stat-item { display: flex; flex-direction: column; gap: 5px; }
+        .stat-item span { color: #64748b; font-size: 13px; }
+        .stat-item b { font-size: 18px; color: var(--accent); }
+
+        /* خانة البحث الصغيرة */
+        .search-container { width: 250px; }
+        .search-input { 
+            width: 100%; padding: 12px 15px; border-radius: 10px; 
+            border: 1px solid var(--border); outline: none; 
+            font-family: 'Tajawal'; font-size: 13px; transition: 0.3s;
+        }
+
+        /* شبكة الكروت */
+        .staff-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 20px; 
+        }
+        
+        .staff-card { 
+            background: white; border-radius: 15px; border: 1px solid var(--border); 
+            padding: 20px; position: relative; transition: 0.3s; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .staff-card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.08); }
+        
+        .badge { 
+            position: absolute; left: 15px; top: 15px; padding: 4px 12px; 
+            border-radius: 20px; font-size: 11px; font-weight: bold;
+        }
+        .type-field { background: #dcfce7; color: #166534; }
+        .type-office { background: #e0f2fe; color: #0369a1; }
+
+        .job-id-label { font-size: 11px; color: var(--primary); font-weight: bold; margin-bottom: 2px; display: block; }
+        .staff-name { font-size: 19px; font-weight: bold; color: var(--accent); margin-bottom: 10px; border-bottom: 2px solid #f1f5f9; padding-bottom: 5px; }
+        .info-row { font-size: 13px; color: #475569; margin-bottom: 8px; display: flex; gap: 8px; align-items: center; }
+        
+        .skills-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 15px; }
+        .skill-tag { background: #f1f5f9; color: #64748b; padding: 3px 10px; border-radius: 6px; font-size: 11px; border: 1px solid #e2e8f0; }
+
+        .card-actions { 
+            display: flex; justify-content: space-between; margin-top: 20px; 
+            padding-top: 15px; border-top: 1px solid #f1f5f9; gap: 10px;
+        }
+        .btn-text { background: none; border: none; cursor: pointer; font-family: 'Tajawal'; font-weight: bold; font-size: 13px; }
+
+        /* مودال ملف الإنجاز (الجديد) */
+        .ach-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; backdrop-filter: blur(5px); }
+        .ach-content { background: white; width: 900px; margin: 3% auto; border-radius: 20px; height: 80vh; overflow-y: auto; padding: 30px; }
+        .plan-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .plan-box { background: #f8fafc; border: 1px solid var(--border); padding: 15px; border-radius: 12px; }
+        .task-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: white; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 5px; font-size: 12px; }
+        .done { text-decoration: line-through; color: #94a3b8; }
+
+        /* المودال الأساسي */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 2000; backdrop-filter: blur(4px); }
+        .modal-content { background: white; width: 750px; margin: 2% auto; border-radius: 20px; overflow: hidden; animation: slideIn 0.3s ease; }
+        .modal-header { background: var(--accent); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .form-body { padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        input, select, textarea { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-family: 'Tajawal'; outline: none; }
+        .btn-submit { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2 style="margin:0">👥 سادن | إدارة فريق التسويق</h2>
+        <button onclick="openAddModal()" style="background:var(--success); color:white; border:none; padding:12px 24px; border-radius:10px; cursor:pointer; font-weight:bold;">➕ إضافة فرد جديد</button>
+    </div>
+
+    <div class="container">
+        <div class="top-row">
+            <div class="stats-bar">
+                <div class="stat-item"><span>إجمالي الفريق</span><b id="totalCount">0</b></div>
+                <div class="stat-item"><span>ميداني</span><b id="fieldCount" style="color:var(--success)">0</b></div>
+                <div class="stat-item"><span>مكتبي</span><b id="officeCount" style="color:var(--primary)">0</b></div>
+            </div>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="ابحث بالاسم أو الرقم الوظيفي..." onkeyup="searchStaff()">
+            </div>
+        </div>
+        <div class="staff-grid" id="staffContainer"></div>
+    </div>
+
+    <div id="achievementModal" class="ach-modal">
+        <div class="ach-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--bg); padding-bottom:15px;">
+                <h2 id="achStaffTitle" style="margin:0; color:var(--accent)"></h2>
+                <button onclick="closeAchModal()" style="background:var(--danger); color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer;">إغلاق الملف ✕</button>
+            </div>
+            <div class="plan-grid">
+                <div class="plan-box">
+                    <h4>📅 خطة يومية</h4>
+                    <input type="text" id="dayInput" style="width:70%;" placeholder="مهمة...">
+                    <button onclick="addTask('daily')" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:5px;">+</button>
+                    <div id="dailyList" style="margin-top:15px;"></div>
+                </div>
+                <div class="plan-box">
+                    <h4>🗓️ خطة أسبوعية</h4>
+                    <input type="text" id="weekInput" style="width:70%;" placeholder="مهمة...">
+                    <button onclick="addTask('weekly')" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:5px;">+</button>
+                    <div id="weekList" style="margin-top:15px;"></div>
+                </div>
+                <div class="plan-box">
+                    <h4>📊 خطة شهرية</h4>
+                    <input type="text" id="monthInput" style="width:70%;" placeholder="هدف...">
+                    <button onclick="addTask('monthly')" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:5px;">+</button>
+                    <div id="monthList" style="margin-top:15px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="staffModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle" style="margin:0">بيانات فرد تسويق جديد</h3>
+                <span style="cursor:pointer; font-size: 24px;" onclick="closeModal()">✕</span>
+            </div>
+            <div class="form-body">
+                <input type="text" id="job_id" placeholder="الرقم الوظيفي">
+                <input type="text" id="name" placeholder="الاسم بالكامل">
+                <input type="text" id="id_num" placeholder="رقم الهوية">
+                <input type="date" id="h_date">
+                <select id="region">
+                    <option>الجنوبية</option><option>الشمالية</option><option>الشرقية والوسطى</option><option>الغربية</option>
+                </select>
+                <select id="type">
+                    <option value="field">ميداني</option><option value="office">مكتبي</option>
+                </select>
+                <input type="text" id="mobile" placeholder="رقم الجوال">
+                <input type="email" id="email" placeholder="البريد الإلكتروني">
+                <textarea id="skills" style="grid-column: span 2;" rows="3" placeholder="المهارات - افصل بفاصلة"></textarea>
+            </div>
+            <button class="btn-submit" id="saveBtn" onclick="saveData()">حفظ البيانات</button>
+        </div>
+    </div>
+
+<script>
+    let staffData = JSON.parse(localStorage.getItem('saden_marketing_team')) || [];
+    let currentEditIndex = -1;
+    let currentAchIdx = -1;
+
+    function renderCards(filteredData = null) {
+        const container = document.getElementById('staffContainer');
+        container.innerHTML = "";
+        const data = filteredData || staffData;
+
+        data.forEach((staff, index) => {
+            const realIndex = staffData.findIndex(s => s.job_id === staff.job_id);
+            container.innerHTML += `
+                <div class="staff-card">
+                    <span class="badge ${staff.type === 'field' ? 'type-field' : 'type-office'}">${staff.type === 'field' ? 'ميداني' : 'مكتبي'}</span>
+                    <span class="job-id-label">رقم وظيفي: ${staff.job_id || '---'}</span>
+                    <div class="staff-name">${staff.name}</div>
+                    <div class="info-row"><b>🆔 الهوية:</b> ${staff.id_num}</div>
+                    <div class="info-row"><b>📍 المنطقة:</b> ${staff.region}</div>
+                    <div class="info-row"><b>📅 التعيين:</b> ${staff.h_date}</div>
+                    <div class="info-row"><b>📞 الجوال:</b> ${staff.mobile}</div>
+                    <div class="info-row"><b>📧 البريد:</b> ${staff.email}</div>
+                    <div class="skills-container">
+                        ${staff.skills.split(',').map(s => s.trim() ? `<span class="skill-tag">${s.trim()}</span>` : '').join('')}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-text" style="color:var(--success)" onclick="openAchModal(${realIndex})">📁 ملف الإنجاز</button>
+                        <button class="btn-text" style="color:var(--primary)" onclick="openEditModal(${realIndex})">📝 تعديل</button>
+                        <button class="btn-text" style="color:var(--danger)" onclick="deleteStaff(${realIndex})">✕ حذف</button>
+                    </div>
+                </div>
+            `;
+        });
+        updateStats();
+    }
+
+    // وظائف ملف الإنجاز (تم إضافتها بدون لمس saveData الأصلية)
+    function openAchModal(idx) {
+        currentAchIdx = idx;
+        const s = staffData[idx];
+        if(!s.plans) s.plans = { daily: [], weekly: [], monthly: [] };
+        document.getElementById('achStaffTitle').innerText = "ملف إنجاز: " + s.name;
+        renderTasks();
+        document.getElementById('achievementModal').style.display = 'block';
+    }
+
+    function renderTasks() {
+        const s = staffData[currentAchIdx];
+        const types = {daily: 'dailyList', weekly: 'weekList', monthly: 'monthList'};
+        for(let type in types) {
+            const div = document.getElementById(types[type]);
+            div.innerHTML = "";
+            s.plans[type].forEach((t, i) => {
+                div.innerHTML += `
+                    <div class="task-item">
+                        <span class="${t.done ? 'done' : ''}" onclick="toggleTask('${type}', ${i})" style="cursor:pointer">${t.text}</span>
+                        <span onclick="delTask('${type}', ${i})" style="color:red; cursor:pointer">✕</span>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    function addTask(type) {
+        const val = document.getElementById(type === 'daily' ? 'dayInput' : type === 'weekly' ? 'weekInput' : 'monthInput').value;
+        if(!val) return;
+        staffData[currentAchIdx].plans[type].push({text: val, done: false});
+        localStorage.setItem('saden_marketing_team', JSON.stringify(staffData));
+        renderTasks();
+        document.getElementById(type === 'daily' ? 'dayInput' : type === 'weekly' ? 'weekInput' : 'monthInput').value = "";
+    }
+
+    function toggleTask(type, i) { staffData[currentAchIdx].plans[type][i].done = !staffData[currentAchIdx].plans[type][i].done; localStorage.setItem('saden_marketing_team', JSON.stringify(staffData)); renderTasks(); }
+    function delTask(type, i) { staffData[currentAchIdx].plans[type].splice(i, 1); localStorage.setItem('saden_marketing_team', JSON.stringify(staffData)); renderTasks(); }
+    function closeAchModal() { document.getElementById('achievementModal').style.display = 'none'; }
+
+    // بقية الوظائف زي ما هي بالظبط من كودك
+    function searchStaff() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = staffData.filter(s => s.name.toLowerCase().includes(query) || (s.job_id && s.job_id.toString().includes(query)));
+        renderCards(filtered);
+    }
+
+    function updateStats() {
+        document.getElementById('totalCount').innerText = staffData.length;
+        document.getElementById('fieldCount').innerText = staffData.filter(s => s.type === 'field').length;
+        document.getElementById('officeCount').innerText = staffData.filter(s => s.type === 'office').length;
+    }
+
+    function openAddModal() { currentEditIndex = -1; clearFields(); document.getElementById('staffModal').style.display = 'block'; }
+    function openEditModal(index) {
+        currentEditIndex = index;
+        const s = staffData[index];
+        document.getElementById('job_id').value = s.job_id || '';
+        document.getElementById('name').value = s.name;
+        document.getElementById('id_num').value = s.id_num;
+        document.getElementById('h_date').value = s.h_date;
+        document.getElementById('region').value = s.region;
+        document.getElementById('type').value = s.type;
+        document.getElementById('mobile').value = s.mobile;
+        document.getElementById('email').value = s.email;
+        document.getElementById('skills').value = s.skills;
+        document.getElementById('staffModal').style.display = 'block';
+    }
+
+    function closeModal() { document.getElementById('staffModal').style.display = 'none'; }
+
+    function saveData() {
+        const obj = {
+            job_id: document.getElementById('job_id').value,
+            name: document.getElementById('name').value,
+            id_num: document.getElementById('id_num').value,
+            h_date: document.getElementById('h_date').value,
+            region: document.getElementById('region').value,
+            type: document.getElementById('type').value,
+            mobile: document.getElementById('mobile').value,
+            email: document.getElementById('email').value,
+            skills: document.getElementById('skills').value,
+            plans: currentEditIndex === -1 ? {daily: [], weekly: [], monthly: []} : (staffData[currentEditIndex].plans || {daily: [], weekly: [], monthly: []})
+        };
+        if(!obj.name || !obj.id_num || !obj.job_id) return alert("بيانات أساسية مطلوبة");
+        if(currentEditIndex === -1) staffData.push(obj); else staffData[currentEditIndex] = obj;
+        localStorage.setItem('saden_marketing_team', JSON.stringify(staffData));
+        renderCards(); closeModal();
+    }
+
+    function deleteStaff(index) { if(confirm("حذف الموظف؟")) { staffData.splice(index, 1); localStorage.setItem('saden_marketing_team', JSON.stringify(staffData)); renderCards(); } }
+    function clearFields() { document.querySelectorAll('.modal input, .modal textarea').forEach(i => i.value = ""); }
+
+    renderCards();
+</script>
+</body>
+</html>

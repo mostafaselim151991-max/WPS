@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>سادن | CRM إدارة المناطق والعملاء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #3b82f6; --dark: #0f172a; --bg: #f8fafc; 
+            --border: #e2e8f0; --white: #ffffff; --accent: #020470;
+            --south: #1e3a8a; --north: #334155; --east: #0369a1; --west: #374151;
+        }
+
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--dark); }
+        
+        /* الهيدر */
+        .header { background: var(--dark); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 1000; }
+        
+        .container { padding: 25px; max-width: 1500px; margin: auto; }
+
+        /* شبكة المناطق */
+        .regions-wrapper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .region-card { background: white; border-radius: 15px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .region-title { padding: 10px; color: white; text-align: center; font-weight: bold; font-size: 14px; }
+        .branches-list { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        
+        .btn-branch { 
+            background: #f8fafc; color: var(--dark); border: 1px solid var(--border); 
+            padding: 10px; border-radius: 10px; cursor: pointer; font-family: 'Tajawal';
+            font-size: 13px; font-weight: 600; transition: 0.2s;
+        }
+        .btn-branch:hover { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
+        .btn-branch.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* منطقة الجدول */
+        .main-section { background: white; border-radius: 15px; padding: 20px; border: 1px solid var(--border); display: none; animation: fadeIn 0.4s; }
+        
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+
+        .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1400px; font-size: 12px; }
+        th { background: #f1f5f9; padding: 10px; border: 1px solid var(--border); color: #475569; }
+        td { padding: 8px; border: 1px solid var(--border); text-align: center; }
+
+        /* المودال ونموذج الإضافة */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; backdrop-filter: blur(3px); }
+        .modal-content { background: white; width: 850px; margin: 3% auto; border-radius: 15px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        
+        .modal-header { background: var(--accent); color: white; padding: 15px 20px; display: flex; justify-content: space-between; }
+        .form-grid { padding: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        
+        .field-group { display: flex; flex-direction: column; gap: 5px; }
+        .field-group label { font-size: 12px; font-weight: bold; color: #64748b; }
+        .field-group input, .field-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; outline: none; }
+        .field-group input:focus { border-color: var(--primary); }
+        
+        .full-row { grid-column: span 3; }
+        .section-tag { grid-column: span 3; background: #f1f5f9; padding: 8px; border-radius: 5px; font-weight: bold; font-size: 13px; margin-top: 10px; }
+
+        .btn-save { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2 style="margin:0">CRM قاعدة بيانات العملاء</h2>
+        <button onclick="openModal()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">➕ إضافة عميل جديد</button>
+    </div>
+
+    <div class="container">
+        <div class="regions-wrapper">
+            <div class="region-card">
+                <div class="region-title" style="background:var(--south)">المنطقة الجنوبية</div>
+                <div class="branches-list">
+                    <button class="btn-branch" onclick="selectBranch('خميس مشيط', this)">خميس مشيط</button>
+                    <button class="btn-branch" onclick="selectBranch('مختبر أمانة عسير', this)">مختبر أمانة عسير</button>
+                    <button class="btn-branch" onclick="selectBranch('جيزان', this)">جيزان</button>
+                    <button class="btn-branch" onclick="selectBranch('نجران', this)">نجران</button>
+                    <button class="btn-branch" onclick="selectBranch('بيشة', this)">بيشة</button>
+                </div>
+            </div>
+            <div class="region-card">
+                <div class="region-title" style="background:var(--north)">المنطقة الشمالية</div>
+                <div class="branches-list">
+                    <button class="btn-branch" onclick="selectBranch('حائل', this)">حائل</button>
+                    <button class="btn-branch" onclick="selectBranch('سكاكا', this)">سكاكا</button>
+                    <button class="btn-branch" onclick="selectBranch('تبوك', this)">تبوك</button>
+                    <button class="btn-branch" onclick="selectBranch('المدينة المنورة', this)">المدينة المنورة</button>
+                </div>
+            </div>
+            <div class="region-card">
+                <div class="region-title" style="background:var(--east)">الشرقية والوسطى</div>
+                <div class="branches-list">
+                    <button class="btn-branch" onclick="selectBranch('الرياض', this)">الرياض</button>
+                    <button class="btn-branch" onclick="selectBranch('الدمام', this)">الدمام</button>
+                    <button class="btn-branch" onclick="selectBranch('حفر الباطن', this)">حفر الباطن</button>
+                    <button class="btn-branch" onclick="selectBranch('القصيم', this)">القصيم</button>
+                </div>
+            </div>
+            <div class="region-card">
+                <div class="region-title" style="background:var(--west)">المنطقة الغربية</div>
+                <div class="branches-list">
+                    <button class="btn-branch" onclick="selectBranch('مكة المكرمة', this)">مكة المكرمة</button>
+                    <button class="btn-branch" onclick="selectBranch('جدة', this)">جدة</button>
+                    <button class="btn-branch" onclick="selectBranch('الطائف', this)">الطائف</button>
+                    <button class="btn-branch" onclick="selectBranch('الباحة', this)">الباحة</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-section" id="dataSection">
+            <div class="section-header">
+                <h3 id="activeTitle" style="margin:0; color:var(--accent)">اسم الفرع</h3>
+                <input type="text" placeholder="بحث سريع..." style="padding:8px; width:250px; border-radius:5px; border:1px solid #ddd;">
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">م</th>
+                            <th rowspan="2">اسم الشركة</th>
+                            <th colspan="4">بيانات جهة الاتصال</th>
+                            <th rowspan="2">الهاتف الثابت</th>
+                            <th rowspan="2">البريد الإلكتروني</th>
+                            <th colspan="3">العنوان</th>
+                            <th rowspan="2">حالة التواصل</th>
+                            <th rowspan="2">ملاحظات</th>
+                        </tr>
+                        <tr>
+                            <th>جهة الاتصال</th>
+                            <th>نوع الجهة</th>
+                            <th>المسمى الوظيفي</th>
+                            <th>رقم الجوال</th>
+                            <th>المدينة</th>
+                            <th>المنطقة</th>
+                            <th>الحي</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin:0">إضافة عميل جديد للقاعدة</h3>
+                <span style="cursor:pointer" onclick="closeModal()">✕</span>
+            </div>
+            <div class="form-grid">
+                <div class="field-group full-row"><label>اسم الشركة</label><input type="text" id="comp_name"></div>
+                
+                <div class="section-tag">👤 بيانات جهة الاتصال</div>
+                <div class="field-group"><label>اسم الشخص (جهة الاتصال)</label><input type="text" id="contact_p"></div>
+                <div class="field-group"><label>نوع الجهة</label>
+                    <select id="contact_type"><option>حكومي</option><option>خاص</option><option>فرد</option></select>
+                </div>
+                <div class="field-group"><label>المسمى الوظيفي</label><input type="text" id="job_title"></div>
+                <div class="field-group"><label>رقم الجوال</label><input type="text" id="mobile_num"></div>
+                <div class="field-group"><label>الهاتف الثابت</label><input type="text" id="tel_num"></div>
+                <div class="field-group"><label>البريد الإلكتروني</label><input type="email" id="email_add"></div>
+
+                <div class="section-tag">📍 العنوان والموقع</div>
+                <div class="field-group"><label>المدينة</label><input type="text" id="city"></div>
+                <div class="field-group"><label>المنطقة</label><input type="text" id="region"></div>
+                <div class="field-group"><label>الحي</label><input type="text" id="district"></div>
+                <div class="field-group full-row"><label>موقع ويب</label><input type="text" id="website"></div>
+
+                <div class="section-tag">📝 الحالة والمتابعة</div>
+                <div class="field-group full-row"><label>حالة التواصل مع العميل</label><input type="text" id="status"></div>
+                <div class="field-group full-row"><label>ملاحظات</label><input type="text" id="notes"></div>
+            </div>
+            <button class="btn-save" onclick="saveNewClient()">حفظ بيانات العميل في الفرع</button>
+        </div>
+    </div>
+
+<script>
+    let currentBranch = "";
+    let database = JSON.parse(localStorage.getItem('saden_db_v4')) || [];
+
+    function selectBranch(name, btn) {
+        currentBranch = name;
+        document.querySelectorAll('.btn-branch').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('dataSection').style.display = 'block';
+        document.getElementById('activeTitle').innerText = "📍 قاعدة بيانات فرع: " + name;
+        renderTable();
+    }
+
+    function renderTable() {
+        const filtered = database.filter(d => d.branch === currentBranch);
+        const tbody = document.getElementById('clientsBody');
+        if(filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="13" style="padding:40px; color:gray">لا توجد بيانات لهذا الفرع بعد</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = filtered.map((d, i) => `
+            <tr>
+                <td>${i+1}</td>
+                <td style="font-weight:bold">${d.comp_name}</td>
+                <td>${d.contact_p}</td>
+                <td>${d.contact_type}</td>
+                <td>${d.job_title}</td>
+                <td>${d.mobile_num}</td>
+                <td>${d.tel_num}</td>
+                <td>${d.email_add}</td>
+                <td>${d.city}</td>
+                <td>${d.region}</td>
+                <td>${d.district}</td>
+                <td><span style="background:#dcfce7; color:#166534; padding:3px 8px; border-radius:5px">${d.status}</span></td>
+                <td>${d.notes}</td>
+            </tr>
+        `).join('');
+    }
+
+    function openModal() {
+        if(!currentBranch) return alert("يرجى اختيار فرع أولاً");
+        document.getElementById('addModal').style.display = 'block';
+    }
+    function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+
+    function saveNewClient() {
+        const data = {
+            branch: currentBranch,
+            comp_name: document.getElementById('comp_name').value,
+            contact_p: document.getElementById('contact_p').value,
+            contact_type: document.getElementById('contact_type').value,
+            job_title: document.getElementById('job_title').value,
+            mobile_num: document.getElementById('mobile_num').value,
+            tel_num: document.getElementById('tel_num').value,
+            email_add: document.getElementById('email_add').value,
+            city: document.getElementById('city').value,
+            region: document.getElementById('region').value,
+            district: document.getElementById('district').value,
+            status: document.getElementById('status').value,
+            notes: document.getElementById('notes').value
+        };
+
+        if(!data.comp_name) return alert("اسم الشركة مطلوب");
+
+        database.push(data);
+        localStorage.setItem('saden_db_v4', JSON.stringify(database));
+        renderTable();
+        closeModal();
+        // مسح الحقول بعد الحفظ
+        document.querySelectorAll('.form-grid input').forEach(i => i.value = "");
+    }
+</script>
+</body>
+</html>
