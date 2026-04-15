@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام سادن المتكامل | HRMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #0284c7; --secondary: #0ea5e9; --navy: #1e293b; --bg: #f8fafc; --text: #334155; --border: #e2e8f0; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); }
+        .container { max-width: 1100px; margin: auto; }
+        
+        header { text-align: center; margin-bottom: 40px; border-bottom: 3px solid var(--primary); display: inline-block; width: 100%; padding-bottom: 15px; }
+        header h1 { margin: 0; color: var(--navy); font-size: 28px; }
+        header p { margin: 5px 0 0; color: #64748b; }
+
+        .section-box { background: white; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 15px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .section-header { background: #fff; padding: 18px 25px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; border-right: 6px solid var(--primary); }
+        .section-header:hover { background: #f1f5f9; }
+        .section-header h3 { margin: 0; font-size: 18px; color: var(--navy); display: flex; align-items: center; gap: 10px; }
+        .section-content { padding: 25px; display: none; border-top: 1px solid var(--border); background: #fafbfc; }
+        .section-content.active { display: block; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .field { display: flex; flex-direction: column; }
+        .field label { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #475569; }
+        .field input, .field select, .field textarea { padding: 11px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Tajawal'; font-size: 14px; outline: none; transition: 0.3s; }
+        .field input:focus, .field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1); }
+        
+        .full-row { grid-column: 1 / -1; }
+        .badge-pro { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+
+        .form-actions { margin-top: 30px; display: flex; justify-content: center; gap: 20px; }
+        .btn { padding: 15px 50px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-family: 'Tajawal'; font-size: 17px; transition: 0.3s; }
+        .btn-save { background: var(--navy); color: white; box-shadow: 0 4px 14px rgba(30, 41, 59, 0.3); }
+        
+        .file-upload { border: 2px dashed var(--border); padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>نظام إدارة الموارد البشرية | HRMS</h1>
+        <p>نموذج إدخال ملف الموظف الكامل</p>
+    </header>
+
+    <form id="masterEmployeeForm">
+        
+        <div class="section-box">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>👤 أولاً: البيانات الأساسية</h3>
+                <span>➖</span>
+            </div>
+            <div class="section-content active">
+                <div class="grid">
+                    <div class="field"><label>الرقم الوظيفي</label><input type="text" id="emp_number"></div>
+                    <div class="field"><label>اسم الموظف</label><input type="text" id="emp_name"></div>
+                    <div class="field"><label>رقم الإقامة / الهوية</label><input type="text" id="id_number"></div>
+                    <div class="field"><label>رقم جواز السفر</label><input type="text" id="pass_number"></div>
+                    <div class="field"><label>الجنسية</label><input type="text" id="emp_national"></div>
+                    <div class="field"><label>الجنس</label><select id="gender"><option>ذكر</option><option>أنثى</option></select></div>
+                    <div class="field"><label>تاريخ الميلاد</label><input type="date" id="date_birth" onchange="calculateAge()"></div>
+                    <div class="field"><label>العمر</label><input type="text" id="age" readonly></div>
+                    <div class="field"><label>المهنة في الإقامة</label><input type="text" id="id_job"></div>
+                    <div class="field"><label>الكفالة</label><input type="text" id="company_name"></div>
+                    <div class="field"><label>رقم رخصة القيادة</label><input type="text" id="drive_lic"></div>
+                    <div class="field"><label>الديانة</label><select id="religion"><option>مسلم</option><option>غير مسلم</option></select></div>
+                    <div class="field"><label>الحالة الاجتماعية</label>
+                        <select id="social_status">
+                            <option>أعزب / آنسة</option><option>متزوج / متزوجة</option><option>مطلق / مطلقة</option><option>أرمل / أرملة</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>🎓 ثانيًا: بيانات الدراسة</h3>
+                <span>➕</span>
+            </div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>الدرجة العلمية</label><select><option>بكالوريوس</option><option>ليسانس</option><option>دبلوم</option><option>أخرى</option></select></div>
+                    <div class="field"><label>الجامعة</label><input type="text"></div>
+                    <div class="field"><label>الكلية</label><input type="text"></div>
+                    <div class="field"><label>سنة التخرج</label><input type="number"></div>
+                    <div class="field"><label>التقدير</label><select><option>إمتياز</option><option>جيد جداً</option><option>جيد</option><option>مقبول</option></select></div>
+                    <div class="field"><label>دبلومة في</label><input type="text"></div>
+                    <div class="field"><label>ماجستير في</label><input type="text"></div>
+                    <div class="field"><label>دكتوراه في</label><input type="text"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>🏢 ثالثًا: البيانات الوظيفية</h3>
+                <span>➕</span>
+            </div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>المسمى الوظيفي</label><input type="text" id="company_job"></div>
+                    <div class="field"><label>تاريخ الإلتحاق</label><input type="date"></div>
+                    <div class="field"><label>تاريخ المباشرة (بعد الإجازة)</label><input type="date"></div>
+                    <div class="field"><label>الإدارة</label><select><option>الموارد البشرية</option><option>المالية</option><option>التشغيل</option></select></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>💰 رابعًا: البيانات المالية</h3>
+                <span>➕</span>
+            </div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>الراتب الأساسي</label><input type="number"></div>
+                    <div class="field"><label>بدل السكن</label><input type="number"></div>
+                    <div class="field"><label>بدل النقل</label><input type="number"></div>
+                    <div class="field full-row"><label>رقم الآيبان (IBAN)</label><input type="text" id="iban"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>⏱️ خامسًا: الحضور والإجازات</h3>
+                <span>➕</span>
+            </div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>نظام الدوام</label><select><option>ثابت</option><option>شفتات</option></select></div>
+                    <div class="field"><label>رصيد الإجازات</label><input type="number" value="30"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>📄 سادسًا: بيانات العقود</h3>
+                <span>➕</span>
+            </div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>نوع العقد</label><select><option>محدد</option><option>غير محدد</option></select></div>
+                    <div class="field"><label>بداية العقد</label><input type="date"></div>
+                    <div class="field"><label>نهاية العقد</label><input type="date"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>📊 سابعًا: التقييم والأداء</h3>
+                <span>➕</span>
+            </div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>آخر تقييم (%)</label><input type="number"></div>
+                    <div class="field full-row"><label>ملاحظات</label><textarea rows="2"></textarea></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>🏥 ثامنًا: التأمينات والمرفقات</h3>
+                <span>➕</span>
+            </div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>رقم التأمينات GOSI</label><input type="text"></div>
+                    <div class="field full-row"><div class="file-upload">ارفع المرفقات هنا</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-save">💾 حفظ كافة البيانات</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleSection(header) {
+        const content = header.nextElementSibling;
+        const icon = header.querySelector('span');
+        if (content.style.display === "block" || content.classList.contains('active')) {
+            content.style.display = "none";
+            content.classList.remove('active');
+            icon.innerText = "➕";
+        } else {
+            content.style.display = "block";
+            icon.innerText = "➖";
+        }
+    }
+
+    function calculateAge() {
+        const birthDate = new Date(document.getElementById('date_birth').value);
+        if (birthDate) {
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            document.getElementById('age').value = age + " سنة";
+        }
+    }
+</script>
+</body>
+</html>
