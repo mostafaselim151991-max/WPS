@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>سادن ERP | دليل الحسابات الاحترافي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --navy: #0f172a; --blue: #2563eb; --light-bg: #f8fafc; --border: #e2e8f0; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--light-bg); margin: 0; padding: 20px; color: #1e293b; }
+        
+        .container { max-width: 1000px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 25px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--navy); padding-bottom: 15px; margin-bottom: 20px; }
+        
+        /* تصميم الشجرة */
+        .coa-tree, .coa-tree ul { list-style: none; padding-right: 25px; margin: 0; }
+        .coa-tree ul { display: none; border-right: 1px dashed #cbd5e1; } /* مخفية افتراضياً */
+        
+        .node-content { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; }
+        .node-content:hover { background: #f1f5f9; }
+        
+        .toggle-btn { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; background: #e2e8f0; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .toggle-btn.open { background: var(--navy); color: white; }
+
+        .acc-code { font-family: monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: var(--blue); font-weight: bold; min-width: 50px; text-align: center; }
+        .acc-name { font-weight: 500; flex-grow: 1; }
+        .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+        .main-bg { background: #dbeafe; color: #1e40af; } /* رئيسي */
+        .sub-bg { background: #dcfce7; color: #166534; }  /* فرعي */
+
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-body { background: white; width: 400px; padding: 25px; border-radius: 12px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Tajawal'; box-sizing: border-box; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-family: 'Tajawal'; font-weight: bold; transition: 0.3s; }
+        .btn-add { background: var(--navy); color: white; }
+        .btn-save { background: var(--blue); color: white; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h2 style="margin:0">دليل الحسابات الشجري</h2>
+            <small>نظام سادن للاستشارات الجيولوجية</small>
+        </div>
+        <button class="btn btn-add" onclick="openModal()">➕ إضافة حساب جديد</button>
+    </div>
+
+    <div id="treeRoot" class="coa-tree">
+        </div>
+</div>
+
+<div class="modal" id="accModal">
+    <div class="modal-body">
+        <h3>إضافة حساب للدليل</h3>
+        <div class="form-group">
+            <label>الحساب الأب</label>
+            <select id="parentSelect"></select>
+        </div>
+        <div class="form-group">
+            <label>اسم الحساب</label>
+            <input type="text" id="accName" placeholder="مثلاً: مجمع إهلاك السيارات">
+        </div>
+        <div class="form-group">
+            <label>كود الحساب (سيتم البناء على الأب)</label>
+            <input type="text" id="accCode">
+        </div>
+        <div class="form-group">
+            <label>نوع الحساب</label>
+            <select id="accType">
+                <option value="رئيسي">حساب رئيسي (تجميعي)</option>
+                <option value="فرعي">حساب فرعي (حركة مالية)</option>
+            </select>
+        </div>
+        <button class="btn btn-save" onclick="saveAccount()">حفظ في الدليل</button>
+        <button class="btn" onclick="closeModal()" style="width:100%; margin-top:10px; background:#f1f5f9;">إلغاء</button>
+    </div>
+</div>
+
+<script>
+    // شجرة الحسابات الكاملة لشركة سادن
+    let coa = JSON.parse(localStorage.getItem('saden_coa_final')) || [
+        { id: 1, code: '1', name: 'الأصول', parent: 0, type: 'رئيسي' },
+        { id: 2, code: '11', name: 'أصول غير متداولة', parent: 1, type: 'رئيسي' },
+        { id: 3, code: '111', name: 'أصول ثابتة', parent: 2, type: 'رئيسي' },
+        { id: 4, code: '11101', name: 'سيارات ومعدات نقل', parent: 3, type: 'فرعي' },
+        { id: 5, code: '112', name: 'مجمعات الإهلاك', parent: 2, type: 'رئيسي' },
+        { id: 6, code: '12', name: 'أصول متداولة', parent: 1, type: 'رئيسي' },
+        { id: 7, code: '121', name: 'البنوك والسناديق', parent: 6, type: 'رئيسي' },
+        { id: 8, code: '12101', name: 'مصرف الراجحي', parent: 7, type: 'فرعي' },
+        { id: 9, code: '122', name: 'العملاء والذمم', parent: 6, type: 'رئيسي' },
+        { id: 10, code: '123', name: 'العهد المستديمة', parent: 6, type: 'فرعي' },
+        
+        { id: 20, code: '2', name: 'الخصوم', parent: 0, type: 'رئيسي' },
+        { id: 21, code: '21', name: 'خصوم متداولة', parent: 20, type: 'رئيسي' },
+        { id: 22, code: '211', name: 'الموردون', parent: 21, type: 'فرعي' },
+        { id: 23, code: '212', name: 'ضريبة القيمة المضافة', parent: 21, type: 'فرعي' },
+        
+        { id: 30, code: '3', name: 'حقوق الملكية', parent: 0, type: 'رئيسي' },
+        { id: 31, code: '31', name: 'رأس المال', parent: 30, type: 'رئيسي' },
+        { id: 32, code: '32', name: 'أرباح مبقاة', parent: 30, type: 'رئيسي' },
+
+        { id: 40, code: '4', name: 'الإيرادات', parent: 0, type: 'رئيسي' },
+        { id: 41, code: '41', name: 'إيرادات النشاط الجيولوجي', parent: 40, type: 'فرعي' },
+
+        { id: 50, code: '5', name: 'المصروفات', parent: 0, type: 'رئيسي' },
+        { id: 51, code: '51', name: 'تكاليف النشاط (مباشرة)', parent: 50, type: 'رئيسي' },
+        { id: 52, code: '52', name: 'مصاريف إدارية (غير مباشرة)', parent: 50, type: 'رئيسي' }
+    ];
+
+    function renderTree() {
+        const root = document.getElementById('treeRoot');
+        const select = document.getElementById('parentSelect');
+        root.innerHTML = "";
+        select.innerHTML = '<option value="0">حساب مستوى أول</option>';
+
+        function buildHTML(pid) {
+            const children = coa.filter(item => item.parent == pid).sort((a,b) => a.code.localeCompare(b.code));
+            if (children.length === 0) return "";
+
+            let html = "<ul>";
+            children.forEach(item => {
+                const hasChildren = coa.some(child => child.parent == item.id);
+                select.innerHTML += `<option value="${item.id}">${item.code} - ${item.name}</option>`;
+                
+                html += `
+                    <li>
+                        <div class="node-content" onclick="toggleNode(this)">
+                            ${hasChildren ? '<span class="toggle-btn">+</span>' : '<span style="width:20px"></span>'}
+                            <span class="acc-code">${item.code}</span>
+                            <span class="acc-name">${item.name}</span>
+                            <span class="badge ${item.type === 'رئيسي' ? 'main-bg' : 'sub-bg'}">${item.type}</span>
+                        </div>
+                        ${buildHTML(item.id)}
+                    </li>
+                `;
+            });
+            html += "</ul>";
+            return html;
+        }
+
+        root.innerHTML = buildHTML(0).replace("<ul>", '<ul style="display:block; padding:0">');
+    }
+
+    function toggleNode(element) {
+        const ul = element.nextElementSibling;
+        const btn = element.querySelector('.toggle-btn');
+        if (ul && ul.tagName === 'UL') {
+            const isHidden = ul.style.display === 'none' || ul.style.display === '';
+            ul.style.display = isHidden ? 'block' : 'none';
+            if(btn) {
+                btn.innerText = isHidden ? '-' : '+';
+                btn.classList.toggle('open', isHidden);
+            }
+        }
+    }
+
+    function openModal() { document.getElementById('accModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('accModal').style.display = 'none'; }
+
+    function saveAccount() {
+        const acc = {
+            id: Date.now(),
+            name: document.getElementById('accName').value,
+            code: document.getElementById('accCode').value,
+            parent: parseInt(document.getElementById('parentSelect').value),
+            type: document.getElementById('accType').value
+        };
+        if(!acc.name || !acc.code) return alert("يرجى إدخال الاسم والكود");
+        coa.push(acc);
+        localStorage.setItem('saden_coa_final', JSON.stringify(coa));
+        renderTree();
+        closeModal();
+    }
+
+    renderTree();
+</script>
+</body>
+</html>
