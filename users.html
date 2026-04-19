@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة مستخدمي سادن | صلاحيات الإدارات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --navy: #0f172a; --blue: #2563eb; --border: #e2e8f0; --gray-bg: #f8fafc; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--gray-bg); padding: 20px; }
+        
+        .user-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 25px; max-width: 900px; margin: auto; }
+        .header { border-bottom: 2px solid var(--navy); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
+
+        /* منطقة الصلاحيات (Checkboxes) */
+        .permissions-area { 
+            background: #f1f5f9; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1;
+            margin-top: 10px;
+        }
+        .permissions-title { font-weight: bold; color: var(--navy); margin-bottom: 15px; border-right: 4px solid var(--blue); padding-right: 10px; }
+        
+        .dept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .dept-item { 
+            display: flex; align-items: center; gap: 10px; background: white; 
+            padding: 10px; border-radius: 6px; border: 1px solid var(--border);
+            transition: 0.2s; cursor: pointer;
+        }
+        .dept-item:hover { border-color: var(--blue); background: #eff6ff; }
+        .dept-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+
+        .btn-save { background: var(--navy); color: white; padding: 12px 30px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; }
+        
+        /* جدول المستخدمين الحاليين */
+        .user-table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        .user-table th { background: #e2e8f0; padding: 12px; text-align: right; font-size: 13px; }
+        .user-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .badge { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="user-card">
+    <div class="header">
+        <h2 style="margin:0">إدارة المستخدمين والصلاحيات</h2>
+        <small>تحديد وصول الإدارات - شركة سادن</small>
+    </div>
+
+    <div class="form-grid">
+        <div class="form-group">
+            <label>اسم المستخدم الكامل</label>
+            <input type="text" id="userName" placeholder="مثلاً: أحمد محمد">
+        </div>
+        <div class="form-group">
+            <label>المسمى الوظيفي</label>
+            <select id="userRole">
+                <option>محاسب مشاريع</option>
+                <option>مدير إداري</option>
+                <option>مهندس موقع</option>
+                <option>مدير مالي</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="permissions-area">
+        <div class="permissions-title">تحديد الإدارات المتاحة للمستخدم (تظهر في القائمة)</div>
+        <div class="dept-grid">
+            <label class="dept-item"><input type="checkbox" class="dept-check" value="الحسابات العامة"> الحسابات العامة</label>
+            <label class="dept-item"><input type="checkbox" class="dept-check" value="إدارة المشاريع"> إدارة المشاريع</label>
+            <label class="dept-item"><input type="checkbox" class="dept-check" value="شؤون الموظفين"> شؤون الموظفين</label>
+            <label class="dept-item"><input type="checkbox" class="dept-check" value="المشتريات والمخازن"> المشتريات والمخازن</label>
+            <label class="dept-item"><input type="checkbox" class="dept-check" value="التقارير الختامية"> التقارير الختامية</label>
+            <label class="dept-item"><input type="checkbox" class="dept-check" value="إدارة الأصول"> إدارة الأصول</label>
+        </div>
+    </div>
+
+    <button class="btn-save" onclick="saveUser()">حفظ المستخدم وصلاحياته ✅</button>
+
+    <table class="user-table">
+        <thead>
+            <tr>
+                <th>المستخدم</th>
+                <th>الوظيفة</th>
+                <th>الإدارات المتاحة</th>
+                <th>الإجراء</th>
+            </tr>
+        </thead>
+        <tbody id="userList">
+            <tr>
+                <td>إسلام عزت</td>
+                <td>المدير العام</td>
+                <td><span class="badge">كل الإدارات</span></td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function saveUser() {
+        const name = document.getElementById('userName').value;
+        const role = document.getElementById('userRole').value;
+        
+        // تجميع الإدارات المختارة
+        let selectedDepts = [];
+        document.querySelectorAll('.dept-check:checked').forEach(cb => {
+            selectedDepts.push(cb.value);
+        });
+
+        if(!name || selectedDepts.length === 0) {
+            alert("يرجى إدخال الاسم واختيار إدارة واحدة على الأقل!");
+            return;
+        }
+
+        const tbody = document.getElementById('userList');
+        const row = `
+            <tr>
+                <td>${name}</td>
+                <td>${role}</td>
+                <td>${selectedDepts.map(d => `<span class="badge">${d}</span>`).join('')}</td>
+                <td><button onclick="this.parentElement.parentElement.remove()" style="color:red; border:none; background:none; cursor:pointer">حذف</button></td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+
+        // تصفير النموذج
+        document.getElementById('userName').value = "";
+        document.querySelectorAll('.dept-check').forEach(cb => cb.checked = false);
+        alert("تم إنشاء المستخدم وتحديد صلاحياته بنجاح!");
+    }
+</script>
+
+</body>
+</html>

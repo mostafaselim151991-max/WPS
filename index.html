@@ -135,16 +135,38 @@
         </div>
     </div>
 
-    <div id="userModal">
-        <div class="modal-content">
-            <h3>إدارة الحسابات</h3>
-            <input type="text" id="newU" placeholder="اسم المستخدم" style="width:100%; padding:10px; margin-bottom:10px;">
-            <input type="password" id="newP" placeholder="كلمة المرور" style="width:100%; padding:10px; margin-bottom:10px;">
-            <button onclick="addNewUser()" style="width:100%; padding:10px; background:#10b981; color:white; border:none; border-radius:5px;">إضافة</button>
-            <div id="displayUsers" style="margin-top:15px; max-height:150px; overflow-y:auto;"></div>
-            <button onclick="document.getElementById('userModal').style.display='none'" style="width:100%; margin-top:10px; padding:8px; background:#ddd; border:none; border-radius:5px;">إغلاق</button>
+    <div id="userModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; z-index:10000;">
+    <div class="modal-content" style="background: white; padding: 25px; border-radius: 15px; width: 700px; max-height: 90vh; overflow-y: auto; direction: rtl;">
+        <h3 id="modalTitle" style="border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">إضافة مستخدم وصلاحيات جديدة</h3>
+        
+        <input type="hidden" id="editUserId"> <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+            <div>
+                <label>اسم المستخدم:</label>
+                <input type="text" id="newU" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            </div>
+            <div>
+                <label>كلمة المرور:</label>
+                <input type="password" id="newP" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            </div>
         </div>
+
+        <div id="permissionsSection" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
+            <strong style="display:block; margin-bottom:10px; color: #1e293b;">تحديد صلاحيات الوصول للإدارات والتابات:</strong>
+            <div id="dynamicPermissionsList">
+                </div>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button id="saveBtn" onclick="saveUserAccount()" style="flex: 2; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">حفظ الحساب والصلاحيات</button>
+            <button onclick="closeUserModal()" style="flex: 1; padding: 12px; background: #64748b; color: white; border: none; border-radius: 8px; cursor: pointer;">إلغاء</button>
+        </div>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        
+        <h4>المستخدمين الحاليين:</h4>
+        <div id="displayUsers" style="background: #fff; border-radius: 8px;"></div>
     </div>
+</div>
 
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -360,29 +382,149 @@ if (!adminExists) {
             }
         };
 
-        function openAdminPanel() { document.getElementById('userModal').style.display = 'flex'; renderUsers(); }
-        function renderUsers() {
-            const container = document.getElementById('displayUsers');
-            container.innerHTML = users.map(u => `
-                <div class="user-list-item">
-                    <span>👤 ${u.user}</span>
-                    ${u.user !== 'superadmin' ? `<span class="del-btn" onclick="deleteUser('${u.user}')">حذف</span>` : '<strong>(أساسي)</strong>'}
-                </div>
-            `).join('');
-        }
-        function addNewUser() {
-            const u = document.getElementById('newU').value; const p = document.getElementById('newP').value;
-            if (u && p) {
-                users.push({ user: u, pass: p, role: "user" });
-                localStorage.setItem('sadenUsers', JSON.stringify(users));
-                renderUsers(); document.getElementById('newU').value = ''; document.getElementById('newP').value = '';
+       // دالة لفتح نافذة الإدارة وتجهيزها
+function openAdminPanel() {
+    document.getElementById('userModal').style.display = 'flex';
+    resetUserForm(); // تصفير الحقول للوضع الافتراضي
+    generatePermissionsUI(); // بناء شجرة الصلاحيات من السايدبار الحالي
+    renderUsers(); // عرض قائمة المستخدمين
+}
+
+// دالة لتوليد الصلاحيات تلقائياً من الـ Sidebar
+function generatePermissionsUI() {
+    const listContainer = document.getElementById('dynamicPermissionsList');
+    listContainer.innerHTML = ''; 
+    
+    // نجيب كل الدروب داون في السايدبار
+    const menus = document.querySelectorAll('.sidebar .dropdown');
+    
+    menus.forEach(menu => {
+        const mainBtn = menu.querySelector('.has-submenu');
+        const menuContent = menu.querySelector('.dropdown-content');
+        if (!mainBtn || !menuContent) return;
+
+        const menuId = menuContent.id;
+        const subButtons = menuContent.querySelectorAll('.sub-btn');
+
+        let html = `
+            <div style="margin-bottom: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: white;">
+                <label style="font-weight: bold; color: #2563eb; display: block;">
+                    <input type="checkbox" class="parent-check" data-menu="${menuId}" onchange="toggleChildCheckboxes(this)"> ${mainBtn.innerText}
+                </label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; margin-right: 20px; margin-top: 5px; gap: 5px;">
+        `;
+
+        subButtons.forEach(btn => {
+            const btnText = btn.innerText.replace('⬅️', '').trim();
+            const onclickText = btn.getAttribute('onclick') || "";
+            const urlMatch = onclickText.match(/'([^']+)'/);
+            const url = urlMatch ? urlMatch[1] : "#";
+
+            html += `
+                <label style="font-size: 13px;">
+                    <input type="checkbox" class="dept-check" data-parent="${menuId}" value="${url}"> ${btnText}
+                </label>
+            `;
+        });
+
+        html += `</div></div>`;
+        listContainer.innerHTML += html;
+    });
+}
+
+// دالة الحفظ (إضافة أو تعديل)
+function saveUserAccount() {
+    const u = document.getElementById('newU').value;
+    const p = document.getElementById('newP').value;
+    const editId = document.getElementById('editUserId').value;
+    
+    let links = [];
+    let menus = [];
+
+    document.querySelectorAll('.dept-check:checked').forEach(cb => {
+        links.push(cb.value);
+        const parent = cb.getAttribute('data-parent');
+        if (!menus.includes(parent)) menus.push(parent);
+    });
+
+    if (u && p) {
+        if (editId) {
+            // وضع التعديل
+            const idx = users.findIndex(x => x.user === editId);
+            if (idx !== -1) {
+                users[idx] = { user: u, pass: p, role: "user", links: links, menus: menus };
             }
+        } else {
+            // وضع الإضافة
+            users.push({ user: u, pass: p, role: "user", links: links, menus: menus });
         }
-        function deleteUser(name) {
-            users = users.filter(x => x.user !== name);
-            localStorage.setItem('sadenUsers', JSON.stringify(users));
-            renderUsers();
-        }
+        
+        localStorage.setItem('sadenUsers', JSON.stringify(users));
+        renderUsers();
+        resetUserForm();
+        alert("تم حفظ بيانات المستخدم وصلاحياته بنجاح");
+    } else {
+        alert("يرجى إكمال الاسم وكلمة المرور");
+    }
+}
+
+// دالة عرض المستخدمين مع زر التعديل
+function renderUsers() {
+    const container = document.getElementById('displayUsers');
+    container.innerHTML = users.map(u => `
+        <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center;">
+            <span>👤 <strong>${u.user}</strong></span>
+            <div>
+                <button onclick="editUser('${u.user}')" style="background:#3b82f6; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; margin-left:5px;">تعديل</button>
+                ${u.user !== 'superadmin' ? `<button onclick="deleteUser('${u.user}')" style="background:#fee2e2; color:#dc2626; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">حذف</button>` : '<strong>(مدير)</strong>'}
+            </div>
+        </div>
+    `).join('');
+}
+
+// دالة تعبئة النموذج ببيانات مستخدم للتعديل
+function editUser(userName) {
+    const user = users.find(x => x.user === userName);
+    if (!user) return;
+
+    document.getElementById('modalTitle').innerText = "تعديل صلاحيات: " + userName;
+    document.getElementById('newU').value = user.user;
+    document.getElementById('newP').value = user.pass;
+    document.getElementById('editUserId').value = user.user; // تحديد أننا في وضع التعديل
+
+    // تصفير الجيك بوكس أولاً
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+    // اختيار الجيك بوكس بناءً على صلاحيات المستخدم المخزنة
+    if (user.links) {
+        user.links.forEach(link => {
+            const cb = document.querySelector(`.dept-check[value="${link}"]`);
+            if (cb) cb.checked = true;
+        });
+    }
+    if (user.menus) {
+        user.menus.forEach(menuId => {
+            const cb = document.querySelector(`.parent-check[data-menu="${menuId}"]`);
+            if (cb) cb.checked = true;
+        });
+    }
+}
+
+// دوال مساعدة
+function resetUserForm() {
+    document.getElementById('modalTitle').innerText = "إضافة مستخدم وصلاحيات جديدة";
+    document.getElementById('newU').value = '';
+    document.getElementById('newP').value = '';
+    document.getElementById('editUserId').value = '';
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+}
+
+function toggleChildCheckboxes(parentInput) {
+    const menuId = parentInput.getAttribute('data-menu');
+    document.querySelectorAll(`.dept-check[data-parent="${menuId}"]`).forEach(cb => cb.checked = parentInput.checked);
+}
+
+function closeUserModal() { document.getElementById('userModal').style.display = 'none'; }
     document.addEventListener("DOMContentLoaded", function() {
     const welcomeDiv = document.getElementById('welcome');
     if(welcomeDiv) welcomeDiv.style.display = 'none';
