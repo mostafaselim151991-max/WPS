@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام جرد سادن الشامل - نسخة الإصلاح</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        :root { --bg: #f3f4f6; --blue: #2563eb; --red: #b91c1c; --white: #ffffff; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; }
+        .screen { padding: 25px; }
+        .hidden { display: none; }
+        
+        /* تصميم المناطق والفروع */
+        .regions-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1400px; margin: auto; }
+        .region-card { background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .region-header { padding: 15px; color: white; text-align: center; font-weight: bold; }
+        .western { background: #374151; } .central { background: #1e6091; } .northern { background: #475569; } .southern { background: #2d31fa; }
+        .city-list { padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .city-item { background: #f9fafb; padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #ddd; transition: 0.3s; }
+        .city-item:hover { background: var(--blue); color: white; }
+
+        /* الأزرار والتبويبات */
+        .btn-main { background: var(--blue); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Tajawal'; font-weight: bold; }
+        .tabs-nav { display: flex; gap: 10px; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+        .tab-btn { padding: 12px; cursor: pointer; border: none; background: none; font-weight: bold; font-family: 'Tajawal'; font-size: 16px; color: #6b7280; }
+        .tab-btn.active { color: var(--blue); border-bottom: 3px solid var(--blue); }
+        .sub-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+        .sub-btn { background: #e5e7eb; border: none; padding: 6px 15px; border-radius: 20px; cursor: pointer; font-family: 'Tajawal'; font-weight: bold; }
+        .sub-btn.active { background: var(--blue); color: white; }
+
+        /* الجداول والتقارير */
+        .data-card { background: white; padding: 15px; border-radius: 12px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; border: 1px solid #000; background: white; min-width: 1000px; }
+        th { background: var(--red); color: white; border: 1px solid #000; padding: 8px; font-size: 12px; }
+        td { border: 1px solid #000; padding: 5px; text-align: center; font-size: 12px; }
+        .barcode-img { max-width: 100px; height: 35px; }
+
+        /* المودال */
+        .modal { display: none; position: fixed; z-index: 2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
+        .modal-content { background:white; margin: 3% auto; padding:20px; width:90%; max-width:550px; border-radius:12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .input-group { margin-bottom: 12px; text-align: right; }
+        .input-group label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+        .input-group input, .input-group select, .input-group textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-family: 'Tajawal'; box-sizing: border-box; }
+
+        @media print {
+            @page { size: A4 landscape; margin: 5mm; }
+            .btn-main, .tabs-nav, .sub-tabs, .modal, .no-print, .btn-back { display: none !important; }
+            body { background: white; }
+            .screen { padding: 0; }
+            .data-card { padding: 0; }
+            th { background-color: #b91c1c !important; color: white !important; -webkit-print-color-adjust: exact; }
+            .print-header { display: block !important; text-align: center; border-bottom: 2px solid #000; margin-bottom: 15px; }
+        }
+        .print-header { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="regions-screen" class="screen">
+        <h1 style="text-align: center; color: var(--red); margin-bottom: 5px;">مجموعة سادن - SADEN GROUP</h1>
+        <h3 style="text-align: center; margin-bottom: 40px; color: var(--blue);">نظام إدارة جرد الفروع والمواقع</h3>
+        <div class="regions-container" id="regions-grid"></div>
+        <div style="text-align: center; margin-top: 40px;">
+            <button class="btn-main" style="padding: 15px 50px; font-size: 18px;" onclick="openModal('branchModal')">➕ إضافة فرع جديد للمنظومة</button>
+        </div>
+    </div>
+
+    <div id="inventory-screen" class="screen hidden">
+        <div class="print-header">
+            <h2 style="color: var(--red); margin: 0;">SADEN GROUP - مجموعة سادن</h2>
+            <h4 id="report-title">تقرير جرد الأصول والمعدات</h4>
+            <p id="report-meta"></p>
+        </div>
+
+        <button class="btn-main no-print btn-back" onclick="location.reload()" style="background:#6b7280; margin-bottom: 15px;">◀ العودة للرئيسية</button>
+        
+        <div style="float: left;" class="no-print">
+            <button class="btn-main" style="background:#16a34a; margin-left: 5px;" onclick="exportExcel()">📊 إكسيل</button>
+            <button class="btn-main" style="background:#ea580c;" onclick="window.print()">🖨 طباعة A4</button>
+        </div>
+
+        <h2 id="current-branch-title" style="color: var(--blue); margin-top: 0;"></h2>
+
+        <div class="tabs-nav no-print">
+            <button class="tab-btn active" id="tab-labs" onclick="switchMainTab('labs')">جرد المختبرات</button>
+            <button class="tab-btn" id="tab-sites" onclick="switchMainTab('sites')">جرد المواقع</button>
+            <button class="tab-btn" id="tab-housing" onclick="switchMainTab('housing')">جرد السكنات</button>
+        </div>
+
+        <div id="labs-sub-nav" class="sub-tabs no-print">
+            <button class="sub-btn active" onclick="switchSubTab('soil')">مختبر التربة</button>
+            <button class="sub-btn" onclick="switchSubTab('concrete')">مختبر الخرسانة</button>
+            <button class="sub-btn" onclick="switchSubTab('asphalt')">مختبر الأسفلت</button>
+        </div>
+
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 id="section-title" style="margin:0; border-right: 5px solid var(--red); padding-right: 15px;">جرد المختبر</h3>
+            <button class="btn-main no-print" style="background:#059669;" onclick="openModal('itemModal')">➕ إضافة بند جديد</button>
+        </div>
+
+        <div class="data-card">
+            <table id="main-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 40px;">م</th>
+                        <th colspan="2">البيان (اسم الجهاز/البند)</th>
+                        <th rowspan="2" style="width: 50px;">العدد</th>
+                        <th rowspan="2" style="width: 100px;">الماركة</th>
+                        <th rowspan="2" style="width: 120px;">السيريال</th>
+                        <th rowspan="2" style="width: 150px;">التكويد (Barcode)</th>
+                        <th rowspan="2">الوصف والمشتملات</th>
+                        <th rowspan="2" style="width: 80px;">الحالة</th>
+                        <th rowspan="2">ملاحظات</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 150px;">عربي</th>
+                        <th style="width: 150px;">إنجليزي</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="branchModal" class="modal">
+        <div class="modal-content">
+            <h3 style="border-bottom: 2px solid var(--blue); padding-bottom: 10px;">إضافة فرع جديد</h3>
+            <div class="input-group"><label>اسم المدينة/الفرع:</label><input type="text" id="newCity" placeholder="مثلاً: ينبع"></div>
+            <div class="input-group">
+                <label>المنطقة التابع لها:</label>
+                <select id="newRegion">
+                    <option value="western">المنطقة الغربية</option>
+                    <option value="central">الوسطى والشرقية</option>
+                    <option value="northern">المنطقة الشمالية</option>
+                    <option value="southern">المنطقة الجنوبية</option>
+                </select>
+            </div>
+            <button class="btn-main" onclick="saveBranch()" style="width:100%; margin-top: 10px; font-size: 16px;">حفظ الفرع</button>
+            <button class="btn-main" onclick="closeModals()" style="width:100%; background:#9ca3af; margin-top:10px;">إلغاء</button>
+        </div>
+    </div>
+
+    <div id="itemModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h3 style="border-bottom: 2px solid var(--red); padding-bottom: 10px;">إضافة بيانات الجرد</h3>
+            <div class="grid-2">
+                <div class="input-group"><label>الاسم (عربي):</label><input type="text" id="inAr"></div>
+                <div class="input-group"><label>الاسم (إنجليزي):</label><input type="text" id="inEn"></div>
+                <div class="input-group"><label>العدد:</label><input type="number" id="inQty" value="1"></div>
+                <div class="input-group"><label>الماركة/النوع:</label><input type="text" id="inBrand"></div>
+                <div class="input-group"><label>السيريال:</label><input type="text" id="inSerial"></div>
+                <div class="input-group"><label>كود الباركود:</label><input type="text" id="inCode" placeholder="مثلاً: S-1001"></div>
+            </div>
+            <div class="input-group"><label>المشتملات/الوصف:</label><textarea id="inParts" rows="2"></textarea></div>
+            <div class="grid-2">
+                <div class="input-group"><label>الحالة:</label><select id="inStatus"><option>يعمل</option><option>صيانة</option><option>تالف</option></select></div>
+                <div class="input-group"><label>ملاحظات:</label><input type="text" id="inNotes"></div>
+            </div>
+            <button class="btn-main" onclick="saveItem()" style="width:100%; background:#059669; font-size: 16px; padding: 12px;">حفظ في الجدول</button>
+            <button class="btn-main" onclick="closeModals()" style="width:100%; background:#9ca3af; margin-top:10px;">إغاء</button>
+        </div>
+    </div>
+
+    <script>
+        // قاعدة البيانات المؤقتة
+        let db = {
+            activeBranch: '', mainTab: 'labs', subTab: 'soil',
+            regions: {
+                western: { title: 'المنطقة الغربية', cities: ['مكة المكرمة', 'جدة', 'الطائف'] },
+                central: { title: 'الوسطى والشرقية', cities: ['الرياض', 'الدمام', 'القصيم'] },
+                northern: { title: 'المنطقة الشمالية', cities: ['تبوك', 'حائل'] },
+                southern: { title: 'المنطقة الجنوبية', cities: ['خميس مشيط', 'جيزان'] }
+            },
+            inventory: []
+        };
+
+        // عرض المناطق والفروع
+        function renderRegions() {
+            const grid = document.getElementById('regions-grid'); grid.innerHTML = '';
+            for (let k in db.regions) {
+                let reg = db.regions[k];
+                grid.innerHTML += `
+                    <div class="region-card">
+                        <div class="region-header ${k}">${reg.title}</div>
+                        <div class="city-list">
+                            ${reg.cities.map(c => `<div class="city-item" onclick="openInv('${c}')">${c}</div>`).join('')}
+                        </div>
+                    </div>`;
+            }
+        }
+
+        // حفظ فرع جديد
+        function saveBranch() {
+            const city = document.getElementById('newCity').value;
+            const reg = document.getElementById('newRegion').value;
+            if(city.trim()) {
+                db.regions[reg].cities.push(city);
+                renderRegions();
+                closeModals();
+                document.getElementById('newCity').value = '';
+            }
+        }
+
+        // فتح شاشة الجرد للفرع
+        function openInv(city) {
+            db.activeBranch = city;
+            document.getElementById('regions-screen').classList.add('hidden');
+            document.getElementById('inventory-screen').classList.remove('hidden');
+            document.getElementById('current-branch-title').innerText = "فرع: " + city;
+            refreshTable();
+        }
+
+        // التبديل بين الأقسام الرئيسية
+        function switchMainTab(t) {
+            db.mainTab = t;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + t).classList.add('active');
+            
+            document.getElementById('labs-sub-nav').style.display = (t === 'labs') ? 'flex' : 'none';
+            db.subTab = (t === 'labs') ? 'soil' : 'general';
+            refreshTable();
+        }
+
+        // التبديل بين المختبرات
+        function switchSubTab(st) {
+            db.subTab = st;
+            document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            refreshTable();
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+        // وظيفة الحفظ الأساسية
+        function saveItem() {
+            const newItem = {
+                branch: db.activeBranch,
+                mainTab: db.mainTab,
+                subTab: db.subTab,
+                ar: document.getElementById('inAr').value,
+                en: document.getElementById('inEn').value,
+                q: document.getElementById('inQty').value,
+                b: document.getElementById('inBrand').value,
+                s: document.getElementById('inSerial').value,
+                c: document.getElementById('inCode').value || "S-000",
+                p: document.getElementById('inParts').value,
+                st: document.getElementById('inStatus').value,
+                n: document.getElementById('inNotes').value
+            };
+            
+            db.inventory.push(newItem);
+            refreshTable();
+            closeModals();
+            
+            // تصفير الحقول
+            document.querySelectorAll('#itemModal input, #itemModal textarea').forEach(i => i.value = '');
+            document.getElementById('inQty').value = 1;
+        }
+
+        // تحديث الجدول
+        function refreshTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            const titles = {labs:'المختبرات', sites:'المواقع', housing:'السكنات'};
+            const subs = {soil:'التربة', concrete:'الخرسانة', asphalt:'الأسفلت', general:''};
+            
+            document.getElementById('section-title').innerText = `جرد قسم ${titles[db.mainTab]} ${subs[db.subTab]}`;
+            
+            const filtered = db.inventory.filter(d => 
+                d.branch === db.activeBranch && 
+                d.mainTab === db.mainTab && 
+                d.subTab === db.subTab
+            );
+
+            filtered.forEach((item, idx) => {
+                const bcId = `bc-${idx}`;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${idx+1}</td>
+                        <td>${item.ar}</td>
+                        <td>${item.en}</td>
+                        <td>${item.q}</td>
+                        <td>${item.b}</td>
+                        <td>${item.s}</td>
+                        <td>
+                            <div style="display:flex; flex-direction:column; align-items:center;">
+                                <svg id="${bcId}" class="barcode-img"></svg>
+                                <span style="font-size:10px; font-weight:bold;">${item.c}</span>
+                            </div>
+                        </td>
+                        <td>${item.p}</td>
+                        <td style="color:${item.st==='يعمل'?'green':'red'}; font-weight:bold;">${item.st}</td>
+                        <td>${item.n}</td>
+                    </tr>`;
+                
+                // رسم الباركود بعد إضافة الصف
+                setTimeout(() => {
+                    JsBarcode(`#${bcId}`, item.c, {
+                        format: "CODE128",
+                        displayValue: false,
+                        height: 30,
+                        width: 1.5,
+                        margin: 0
+                    });
+                }, 50);
+            });
+
+            document.getElementById('report-meta').innerText = `الفرع: ${db.activeBranch} | القسم: ${titles[db.mainTab]} | التاريخ: ${new Date().toLocaleDateString('ar-SA')}`;
+        }
+
+        function exportExcel() {
+            const table = document.getElementById("main-table");
+            const wb = XLSX.utils.table_to_book(table);
+            XLSX.writeFile(wb, `جرد_سادن_${db.activeBranch}.xlsx`);
+        }
+
+        // بدء التشغيل
+        renderRegions();
+    </script>
+</body>
+</html>

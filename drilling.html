@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة قسم الحفر - مجموعة سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --dark-bg: #111827;
+            --nav-bg: #1f2937;
+            --accent-blue: #3b82f6;
+            --text-gray: #9ca3af;
+            --white: #ffffff;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--dark-bg); margin: 0; padding: 0; color: var(--white); overflow-x: hidden; }
+        .tabs-header { background-color: var(--nav-bg); display: flex; padding: 10px 20px 0 20px; gap: 5px; border-bottom: 1px solid #374151; }
+        .tab-item { padding: 12px 25px; color: var(--text-gray); cursor: pointer; font-size: 14px; font-weight: 500; border-radius: 10px 10px 0 0; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .tab-item.active { background-color: var(--white); color: var(--dark-bg); font-weight: bold; }
+        .content-area { padding: 25px; }
+        .card { background: var(--white); border-radius: 15px; padding: 25px; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .card-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; color: var(--dark-bg); border-bottom: 1px solid #f3f4f6; padding-bottom: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        thead th { background-color: #f3f4f6; color: #6b7280; padding: 15px; font-size: 13px; font-weight: 600; }
+        tbody td { padding: 15px; border-bottom: 1px solid #f3f4f6; font-size: 14px; color: #374151; }
+
+        .rig-id-box { background: #eff6ff; color: #1e40af; padding: 5px 12px; border-radius: 6px; font-weight: bold; border: 1px solid #bfdbfe; }
+        .car-num-box { background: #f9fafb; border: 1px solid #d1d5db; padding: 4px 10px; border-radius: 5px; font-weight: 500; }
+        
+        .action-btns { display: flex; gap: 5px; justify-content: center; }
+        .btn { border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: 'Tajawal'; font-size: 12px; transition: 0.2s; font-weight: bold; }
+        .btn-view { background: #f1f5f9; color: var(--dark-bg); }
+        .btn-edit { background: #dcfce7; color: #166534; }
+        .btn-delete { background: #fee2e2; color: #991b1b; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
+        .modal-content { background: white; margin: 5% auto; padding: 0; width: 500px; border-radius: 15px; position: relative; color: #333; }
+        
+        #printCard { padding: 30px; border-radius: 10px; background: white; }
+        .print-header { text-align: center; border-bottom: 2px solid var(--dark-bg); margin-bottom: 20px; padding-bottom: 10px; }
+        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #eee; }
+        .info-label { font-weight: bold; color: #666; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; text-align: right; }
+        .input-group label { font-weight: bold; color: #4b5563; }
+        .input-group input, .input-group select { padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; background: #f9fafb; outline: none; }
+        .btn-save { background: var(--accent-blue); color: white; border: none; padding: 15px 50px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 30px; font-size: 16px; width: 100%; }
+
+        .tuv-active { background: #d1fae5; color: #065f46; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 11px; }
+        .tuv-expired { background: #fee2e2; color: #b91c1c; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 11px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="tabs-header">
+        <div class="tab-item active" onclick="switchTab(this, 'fleet-tab')">📋 أسطول الحفارات</div>
+        <div class="tab-item" onclick="switchTab(this, 'add-tab')">➕ تسجيل حفارة جديدة</div>
+    </div>
+
+    <div class="content-area">
+        <div id="fleet-tab" class="tab-content card">
+            <div class="card-title">
+                <h3 style="margin:0;">📒 أسطول حفارات المجموعة</h3>
+                <span style="font-size: 14px;">الإجمالي: <b id="rigCount">0</b></span>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>كود الحفارة</th>
+                            <th>رقم السيارة</th>
+                            <th>الفرع</th>
+                            <th>نوع التصنيع</th>
+                            <th>الطراز</th>
+                            <th>تاريخ انتهاء TUV</th>
+                            <th>الحالة</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fleetData"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="add-tab" class="tab-content card hidden">
+            <h3 class="card-title">📝 تسجيل بيانات جديدة</h3>
+            <form id="rigForm">
+                <div class="form-grid">
+                    <div class="input-group"><label>كود الحفارة</label><input type="text" id="rigID"></div>
+                    <div class="input-group"><label>رقم السيارة</label><input type="text" id="carNum"></div>
+                    <div class="input-group"><label>الفرع</label><input type="text" id="rigBranch"></div>
+                    <div class="input-group"><label>نوع التصنيع</label><select id="mfgType"><option>محلي</option><option>مستورد</option><option>تصنيع ورش سادن</option></select></div>
+                    <div class="input-group"><label>الطراز</label><input type="text" id="rigModel"></div>
+                    <div class="input-group"><label>سنة الصنع</label><input type="number" id="rigYear" value="2026"></div>
+                    <div class="input-group"><label>إصدار TUV</label><input type="date" id="tuvStart"></div>
+                    <div class="input-group"><label>انتهاء TUV</label><input type="date" id="tuvEnd"></div>
+                </div>
+                <button type="button" class="btn-save" onclick="saveRig()">حفظ البيانات</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <div id="printCard">
+                <div class="print-header">
+                    <h2>مجموعة سادن للحفر</h2>
+                    <p>كارت بيانات المعدة الفنية</p>
+                </div>
+                <div id="cardDetails"></div> <div style="margin-top: 30px; display: flex; gap: 10px;" class="no-print">
+                    <button class="btn-save" style="margin:0; background:var(--success); flex:1;" onclick="downloadPDF()">تصدير PDF 📄</button>
+                    <button class="btn-save" style="margin:0; background:var(--danger); flex:1;" onclick="closeModal()">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let rigs = [];
+
+        function switchTab(el, tabId) {
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+        }
+
+        function saveRig() {
+            const rig = {
+                id: document.getElementById('rigID').value,
+                car: document.getElementById('carNum').value,
+                branch: document.getElementById('rigBranch').value,
+                mfg: document.getElementById('mfgType').value,
+                model: document.getElementById('rigModel').value,
+                year: document.getElementById('rigYear').value,
+                start: document.getElementById('tuvStart').value,
+                end: document.getElementById('tuvEnd').value
+            };
+            if(!rig.id || !rig.end) return alert("أكمل البيانات!");
+            rigs.push(rig);
+            renderTable();
+            document.getElementById('rigForm').reset();
+            switchTab(document.querySelectorAll('.tab-item')[0], 'fleet-tab');
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('fleetData');
+            tbody.innerHTML = '';
+            rigs.forEach((r, index) => {
+                const today = new Date().setHours(0,0,0,0);
+                const expiry = new Date(r.end).setHours(0,0,0,0);
+                const status = expiry < today ? '<span class="tuv-expired">منتهية</span>' : '<span class="tuv-active">سارية</span>';
+                tbody.innerHTML += `<tr>
+                    <td><span class="rig-id-box">${r.id}</span></td>
+                    <td><span class="car-num-box">${r.car}</span></td>
+                    <td>${r.branch}</td>
+                    <td>${r.mfg}</td>
+                    <td><b>${r.model}</b></td>
+                    <td>${r.end}</td>
+                    <td>${status}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-view" onclick="viewRig(${index})">عرض</button>
+                            <button class="btn btn-edit" onclick="editRig(${index})">تعديل</button>
+                            <button class="btn btn-delete" onclick="deleteRig(${index})">حذف</button>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('rigCount').innerText = rigs.length;
+        }
+
+        function viewRig(index) {
+    const r = rigs[index];
+    // خليت كل القيم Bold وباللون الأسود الصريح لضمان ظهورها في الـ Canvas
+    const details = `
+        <div class="info-row">
+            <span class="info-label">كود الحفارة:</span> 
+            <b id="pdf_id" style="color: #1e40af; font-weight: 900;">${r.id}</b>
+        </div>
+        <div class="info-row">
+            <span class="info-label">رقم السيارة:</span> 
+            <b style="color: #000; font-weight: 700;">${r.car}</b>
+        </div>
+        <div class="info-row">
+            <span class="info-label">الفرع التابع:</span> 
+            <b style="color: #000; font-weight: 700;">${r.branch}</b>
+        </div>
+        <div class="info-row">
+            <span class="info-label">نوع التصنيع:</span> 
+            <b style="color: #000; font-weight: 700;">${r.mfg}</b>
+        </div>
+        <div class="info-row">
+            <span class="info-label">الماركة والطراز:</span> 
+            <b style="color: #000; font-weight: 700;">${r.model}</b>
+        </div>
+        <div class="info-row">
+            <span class="info-label">سنة الصنع:</span> 
+            <b style="color: #000; font-weight: 700;">${r.year}</b>
+        </div>
+        <div class="info-row">
+            <span class="info-label">إصدار TUV:</span> 
+            <b style="color: #000; font-weight: 700;">${r.start || '---'}</b>
+        </div>
+        <div class="info-row">
+            <span class="info-label">انتهاء TUV:</span> 
+            <b id="pdf_end" style="color: #ef4444; font-weight: 900;">${r.end}</b>
+        </div>
+    `;
+    document.getElementById('cardDetails').innerHTML = details;
+    document.getElementById('viewModal').style.display = 'block';
+}
+
+     function downloadPDF() {
+    const element = document.getElementById('printCard');
+    const rigCode = document.getElementById('pdf_id').innerText;
+    
+    const opt = {
+        margin: 10,
+        filename: 'كارت_حفارة_' + rigCode + '.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { 
+            scale: 3, // رفعنا الجودة لضمان قراءة النصوص الصغيرة
+            useCORS: true,
+            letterRendering: true, // ده أهم سطر لإظهار الحروف العربية بوضوح
+            fontWeight: 'bold' // إجبار المكتبة على التركيز على الخطوط الثقيلة
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+}
+
+        function editRig(index) {
+            const r = rigs[index];
+            document.getElementById('rigID').value = r.id;
+            document.getElementById('carNum').value = r.car;
+            document.getElementById('rigBranch').value = r.branch;
+            document.getElementById('mfgType').value = r.mfg;
+            document.getElementById('rigModel').value = r.model;
+            document.getElementById('rigYear').value = r.year;
+            document.getElementById('tuvStart').value = r.start;
+            document.getElementById('tuvEnd').value = r.end;
+            rigs.splice(index, 1);
+            renderTable();
+            switchTab(document.querySelectorAll('.tab-item')[1], 'add-tab');
+        }
+
+        function deleteRig(index) {
+            if(confirm("هل أنت متأكد؟")) { rigs.splice(index, 1); renderTable(); }
+        }
+
+        function closeModal() { document.getElementById('viewModal').style.display = 'none'; }
+        window.onclick = function(e) { if(e.target == document.getElementById('viewModal')) closeModal(); }
+    </script>
+</body>
+</html>

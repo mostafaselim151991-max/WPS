@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>حاسبة المبالغ + جدول الموظف</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      direction: rtl;
+      background-color: #e9ecf1;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .container {
+      background-color: #fefefe;
+      border-radius: 18px;
+      box-shadow: 6px 6px 12px #d1d9e6, -6px -6px 12px #ffffff;
+      padding: 30px;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 40px;
+    }
+    label {
+      display: block;
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: #444;
+    }
+    input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      box-shadow: inset 2px 2px 6px #d1d9e6, inset -2px -2px 6px #ffffff;
+      margin-top: 5px;
+      background-color: #f3f6fb;
+      transition: all 0.3s ease;
+    }
+    input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #007bff33;
+    }
+    .total {
+      margin-top: 25px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      color: #1c8f3c;
+    }
+    .buttons, .table-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+    button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 25px;
+      font-size: 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 2px 2px 8px #b0b8c4, -2px -2px 8px #ffffff;
+      transition: background 0.3s, transform 0.2s;
+    }
+    button:hover {
+      background-color: #0056b3;
+      transform: translateY(-2px);
+    }
+    .reset-btn {
+      background-color: #e53935;
+    }
+    .reset-btn:hover {
+      background-color: #c62828;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      background: #fdfdfd;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 2px 2px 10px #d1d9e6, -2px -2px 10px #ffffff;
+    }
+    table th, table td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    table th {
+      background-color: #f5f7fa;
+      font-weight: bold;
+      color: #333;
+    }
+    table input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-size: 15px;
+    }
+    table input:focus {
+      outline: none;
+    }
+    footer {
+      margin-top: 50px;
+      text-align: center;
+      color: #777;
+      font-size: 15px;
+      padding-top: 20px;
+      border-top: 1px solid #ccc;
+      width: 100%;
+      max-width: 900px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>حاسبة مبالغ بعدد الفئات</h2>
+
+    <label>عدد فئة 500 ريال:
+      <input type="number" id="f500" value="0" oninput="calculateTotal()">
+    </label>
+    <label>عدد فئة 200 ريال:
+      <input type="number" id="f200" value="0" oninput="calculateTotal()">
+    </label>
+    <label>عدد فئة 100 ريال:
+      <input type="number" id="f100" value="0" oninput="calculateTotal()">
+    </label>
+    <label>عدد فئة 50 ريال:
+      <input type="number" id="f50" value="0" oninput="calculateTotal()">
+    </label>
+    <label>عدد فئة 20 ريال:
+      <input type="number" id="f20" value="0" oninput="calculateTotal()">
+    </label>
+    <label>عدد فئة 10 ريال:
+      <input type="number" id="f10" value="0" oninput="calculateTotal()">
+    </label>
+    <label>عدد فئة 5 ريال:
+      <input type="number" id="f5" value="0" oninput="calculateTotal()">
+    </label>
+    <label>عدد فئة 1 ريال:
+      <input type="number" id="f1" value="0" oninput="calculateTotal()">
+    </label>
+    <label>عدد فئة نصف ريال:
+      <input type="number" id="f0_5" value="0" oninput="calculateTotal()">
+    </label>
+    <label>عدد فئة ربع ريال:
+      <input type="number" id="f0_25" value="0" oninput="calculateTotal()">
+    </label>
+
+    <div class="total" id="total">الإجمالي: 0 ريال</div>
+
+    <div class="buttons">
+      <button class="reset-btn" onclick="resetCalculator()">تصفير الحاسبة</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>جدول حساب أيام عمل موظف</h2>
+    <div class="table-buttons">
+      <button onclick="addRow()">إضافة صف</button>
+      <button class="reset-btn" onclick="clearTable()">تصفير الجدول</button>
+    </div>
+    <table id="workTable">
+      <thead>
+        <tr>
+          <th>تاريخ بداية العمل</th>
+          <th>نهاية الشهر</th>
+          <th>الأيام</th>
+          <th>الراتب</th>
+          <th>قيمة الراتب</th>
+          <th>الخصم</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+<script>
+  function calculateTotal() {
+    const f500 = parseFloat(document.getElementById('f500').value) || 0;
+    const f200 = parseFloat(document.getElementById('f200').value) || 0;
+    const f100 = parseFloat(document.getElementById('f100').value) || 0;
+    const f50  = parseFloat(document.getElementById('f50').value)  || 0;
+    const f20  = parseFloat(document.getElementById('f20').value)  || 0;
+    const f10  = parseFloat(document.getElementById('f10').value)  || 0;
+    const f5   = parseFloat(document.getElementById('f5').value)   || 0;
+    const f1   = parseFloat(document.getElementById('f1').value)   || 0;
+    const f0_5 = parseFloat(document.getElementById('f0_5').value) || 0;
+    const f0_25= parseFloat(document.getElementById('f0_25').value)|| 0;
+
+    const total = (f500 * 500) + (f200 * 200) + (f100 * 100) + (f50 * 50) +
+                  (f20 * 20) + (f10 * 10) + (f5 * 5) + (f1 * 1) +
+                  (f0_5 * 0.5) + (f0_25 * 0.25);
+
+    document.getElementById('total').textContent = `الإجمالي: ${total.toLocaleString()} ريال`;
+  }
+
+  function resetCalculator() {
+    ['f500','f200','f100','f50','f20','f10','f5','f1','f0_5','f0_25'].forEach(id => {
+      document.getElementById(id).value = 0;
+    });
+    calculateTotal();
+  }
+
+  function addRow() {
+    const tbody = document.getElementById('workTable').getElementsByTagName('tbody')[0];
+    const row = tbody.insertRow();
+    for (let i = 0; i < 6; i++) {
+      const cell = row.insertCell();
+      const input = document.createElement('input');
+      input.type = (i === 0 || i === 1) ? 'date' : 'number';
+      input.oninput = () => updateRow(row);
+      cell.appendChild(input);
+    }
+  }
+
+  function updateRow(row) {
+    const inputs = row.getElementsByTagName('input');
+    const startDate = new Date(inputs[0].value);
+    const endDate = new Date(inputs[1].value);
+    const salary = parseFloat(inputs[3].value) || 0;
+
+    if (inputs[0].value && inputs[1].value) {
+      const diffTime = endDate - startDate;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      inputs[2].value = diffDays > 0 ? diffDays : 0;
+
+      const dailySalary = salary / 30;
+      const earned = dailySalary * diffDays;
+      const discount = salary - earned;
+
+      inputs[4].value = earned.toFixed(2);
+      inputs[5].value = discount.toFixed(2);
+    }
+  }
+
+  function clearTable() {
+    const tbody = document.getElementById('workTable').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+  }
+</script>
+
+<div class="container">
+  <h2>حاسبة الضريبة</h2>
+  <label>المبلغ بدون الضريبة:
+    <input type="number" id="amountWithoutTax" placeholder="أدخل المبلغ بدون ضريبة" oninput="calculateFromWithoutTax()">
+  </label>
+  <label>المبلغ شامل الضريبة:
+    <input type="number" id="amountWithTax" placeholder="أدخل المبلغ مع الضريبة" oninput="calculateFromWithTax()">
+  </label>
+  <label>نسبة الضريبة (%):
+    <input type="number" id="taxRate" value="15" oninput="recalculateTax()">
+  </label>
+  <div class="total" id="taxResults">
+    <p>قيمة الضريبة: <span id="taxValue">0</span> ريال</p>
+    <p>صافي المبلغ: <span id="netValue">0</span> ريال</p>
+    <p>الإجمالي مع الضريبة: <span id="grossValue">0</span> ريال</p>
+  </div>
+  <div class="buttons">
+    <button class="reset-btn" onclick="resetTaxCalculator()">تصفير الحاسبة</button>
+  </div>
+</div>
+
+<script>
+  function calculateFromWithoutTax() {
+    const amount = parseFloat(document.getElementById('amountWithoutTax').value) || 0;
+    const rate = parseFloat(document.getElementById('taxRate').value) || 0;
+    const tax = amount * (rate / 100);
+    const total = amount + tax;
+
+    document.getElementById('taxValue').textContent = tax.toFixed(2);
+    document.getElementById('netValue').textContent = amount.toFixed(2);
+    document.getElementById('grossValue').textContent = total.toFixed(2);
+    document.getElementById('amountWithTax').value = total.toFixed(2);
+  }
+
+  function calculateFromWithTax() {
+    const total = parseFloat(document.getElementById('amountWithTax').value) || 0;
+    const rate = parseFloat(document.getElementById('taxRate').value) || 0;
+    const net = total / (1 + rate / 100);
+    const tax = total - net;
+
+    document.getElementById('taxValue').textContent = tax.toFixed(2);
+    document.getElementById('netValue').textContent = net.toFixed(2);
+    document.getElementById('grossValue').textContent = total.toFixed(2);
+    document.getElementById('amountWithoutTax').value = net.toFixed(2);
+  }
+
+  function recalculateTax() {
+    const withoutTax = document.getElementById('amountWithoutTax').value;
+    const withTax = document.getElementById('amountWithTax').value;
+    if (withTax) {
+      calculateFromWithTax();
+    } else if (withoutTax) {
+      calculateFromWithoutTax();
+    }
+  }
+
+  function resetTaxCalculator() {
+    document.getElementById('amountWithoutTax').value = '';
+    document.getElementById('amountWithTax').value = '';
+    document.getElementById('taxValue').textContent = '0';
+    document.getElementById('netValue').textContent = '0';
+    document.getElementById('grossValue').textContent = '0';
+  }
+</script>
+
+<footer>
+  تصميم: مصطفى عبده سليم
+</footer>
+
+</body>
+</html>
