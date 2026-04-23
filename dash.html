@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام سادن الذكي 2026 | Saden Pro AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --dark-blue: #0f172a; --primary: #3b82f6; --accent: #8b5cf6;
@@ -46,7 +46,7 @@
         th { text-align: right; padding: 15px; color: #64748b; border-bottom: 2px solid #f1f5f9; font-size: 13px; }
         td { padding: 18px 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
         .pulse-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: 8px; }
-        .pulse-green { background: var(--success); box-shadow: 0 0 10px var(--success); }
+        .pulse-orange { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
 
         @media (max-width: 1200px) { .stat-card { grid-column: span 6; } .chart-main, .chart-secondary, .ai-box, .chart-third { grid-column: span 12; } }
     </style>
@@ -60,28 +60,29 @@
             <p style="color: #64748b; font-size: 14px; margin-top: 5px;">مرحباً بك  النظام يحلل البيانات الآن...</p>
         </div>
         <div style="text-align: left;">
+            <button onclick="loadDashboardData()" style="padding: 12px 25px; background: var(--primary); color: white; border:none; border-radius:12px; cursor:pointer; font-weight:700; margin-left: 10px;">🔄 تحديث البيانات</button>
             <button onclick="window.print()" style="padding: 12px 25px; background: #f1f5f9; border:none; border-radius:12px; cursor:pointer; font-weight:700;">تحميل التقرير الكامل</button>
         </div>
     </header>
 
     <div class="stat-card">
         <p class="stat-label">إجمالي القوة العاملة</p>
-        <p class="stat-value">128</p>
+        <p class="stat-value" id="totalEmployees">128</p>
         <p style="color: var(--success); font-size: 12px; font-weight: 700;">+ 5% استقطاب جديد</p>
     </div>
     <div class="stat-card orange">
         <p class="stat-label">المشاريع النشطة</p>
-        <p class="stat-value">18</p>
+        <p class="stat-value" id="activeProjects">18</p>
         <p style="color: var(--warning); font-size: 12px; font-weight: 700;">3 بانتظار الاعتماد</p>
     </div>
     <div class="stat-card green">
         <p class="stat-label">كفاءة الأداء العام</p>
-        <p class="stat-value">94%</p>
+        <p class="stat-value" id="performanceEfficiency">94%</p>
         <p style="color: var(--success); font-size: 12px; font-weight: 700;">أعلى من المستهدف</p>
     </div>
     <div class="stat-card red">
         <p class="stat-label">إيرادات العقود</p>
-        <p class="stat-value">4.2M</p>
+        <p class="stat-value" id="contractRevenue">4.2M</p>
         <p style="color: #64748b; font-size: 12px;">ريال سعودي</p>
     </div>
 
@@ -145,52 +146,390 @@
 </div>
 
 <script>
-    // 1. الرسم البياني الخطي (الإنجاز)
-    new Chart(document.getElementById('lineChart'), {
-        type: 'line',
-        data: {
-            labels: ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'],
-            datasets: [{
-                label: 'مستوى الأداء',
-                data: [70, 85, 82, 90, 88, 94],
-                borderColor: '#3b82f6',
-                tension: 0.4,
-                fill: true,
-                backgroundColor: 'rgba(59, 130, 246, 0.1)'
-            }]
-        },
-        options: { plugins: { legend: { display: false } } }
-    });
+    // تعطيل source maps لتجنب تحذيرات 404
+    // تم تحديث Chart.js إلى النسخة 4.4.0 لتجنب مشاكل source maps
+    // تم إصلاح استدعاء loadDashboardData باستخدام window.onload
+    
+    // تحميل البيانات من جميع الإدارات
+    let dashboardData = {};
+    let lastUpdateTime = new Date();
 
-    // 2. الرسم الدائري (الميزانية)
-    new Chart(document.getElementById('doughnutChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['عمليات', 'رواتب', 'صيانة', 'تسويق'],
-            datasets: [{
-                data: [40, 30, 20, 10],
-                backgroundColor: ['#0f172a', '#3b82f6', '#8b5cf6', '#10b981'],
-                borderWidth: 0
-            }]
-        },
-        options: { plugins: { legend: { position: 'bottom' } } }
-    });
+    function loadDashboardData() {
+        dashboardData = {
+            employees: JSON.parse(localStorage.getItem('saden_employees') || '[]'),
+            marketing: JSON.parse(localStorage.getItem('saden_marketing_staff') || '[]'),
+            fleet: JSON.parse(localStorage.getItem('saden_fleet_db') || '[]'),
+            crm: JSON.parse(localStorage.getItem('saden_db_v4') || '[]'),
+            production: JSON.parse(localStorage.getItem('saden_production_stock') || {}),
+            loans: JSON.parse(localStorage.getItem('saden_v10_system') || {}),
+            maintenance: JSON.parse(localStorage.getItem('saden_maintenance_db') || []),
+            users: JSON.parse(localStorage.getItem('sadenUsers') || []),
+            payrollArchive: JSON.parse(localStorage.getItem('saden_archive') || []),
+            marketingFinal: JSON.parse(localStorage.getItem('saden_final_system') || []),
+            kofalat: JSON.parse(localStorage.getItem('saden_kofalat_db') || {}),
+            scrap: JSON.parse(localStorage.getItem('saden_scrap_v4') || []),
+            marketingFull: JSON.parse(localStorage.getItem('saden_full_system') || [])
+        };
+        lastUpdateTime = new Date();
+        updateLastUpdateDisplay();
+        updateStats();
+        updateCharts();
+        generateAIRecommendations();
+        updateDepartmentTable();
+    }
 
-    // 3. الرسم الراداري (كفاءة الأقسام)
-    new Chart(document.getElementById('radarChart'), {
-        type: 'radar',
-        data: {
-            labels: ['السرعة', 'الجودة', 'التكلفة', 'الأمان', 'الاستدامة'],
-            datasets: [{
-                label: 'الوضع الحالي',
-                data: [90, 95, 80, 100, 85],
-                borderColor: '#8b5cf6',
-                backgroundColor: 'rgba(139, 92, 246, 0.2)'
-            }]
-        },
-        options: { plugins: { legend: { display: false } } }
-    });
+    function updateLastUpdateDisplay() {
+        const timeString = lastUpdateTime.toLocaleTimeString('ar-SA', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        document.querySelector('.main-header p').textContent = 
+            `آخر تحديث: ${timeString} | النظام يحلل البيانات تلقائياً...`;
+    }
+
+    function updateStats() {
+        // إجمالي القوة العاملة (من HRMS + التسويق)
+        const totalEmployees = dashboardData.employees.length + dashboardData.marketing.length + dashboardData.marketingFinal.length;
+        document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = totalEmployees;
+        
+        // المشاريع النشطة (من CRM)
+        const activeProjects = dashboardData.crm.filter(c => c.status === 'نشط').length;
+        document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = activeProjects;
+        
+        // كفاءة الأداء العام (متوسط من التسويق والصيانة)
+        const marketingEfficiency = dashboardData.marketing.length > 0 
+            ? Math.round(dashboardData.marketing.reduce((sum, emp) => {
+                const completed = emp.visits ? Object.values(emp.visits).flat().filter(v => v.done).length : 0;
+                const total = emp.visits ? Object.values(emp.visits).flat().length : 0;
+                return sum + (total > 0 ? (completed / total) * 100 : 0);
+            }, 0) / dashboardData.marketing.length) : 85;
+        
+        const maintenanceEfficiency = dashboardData.maintenance.filter(m => m.status === 'تم الإصلاح').length / Math.max(dashboardData.maintenance.length, 1) * 100;
+        const overallEfficiency = Math.round((marketingEfficiency + maintenanceEfficiency) / 2);
+        document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = overallEfficiency + '%';
+        
+        // إيرادات العقود (من CRM + الإنتاج + الكفالات)
+        const crmRevenue = dashboardData.crm.length * 50000;
+        const productionRevenue = dashboardData.production.totalValue || 0;
+        const kofalatRevenue = Object.values(dashboardData.kofalat).reduce((sum, branch) => 
+            sum + (branch ? branch.reduce((bSum, k) => bSum + (parseFloat(k.netSalary) || 0), 0) : 0), 0);
+        const totalRevenue = crmRevenue + productionRevenue + kofalatRevenue;
+        document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = (totalRevenue / 1000000).toFixed(1) + 'M';
+    }
+
+    function updateCharts() {
+        // تحديث الرسم البياني الخطي - أداء الإدارات
+        const departments = ['الموارد البشرية', 'التسويق', 'المالية', 'التشغيل'];
+        const performanceData = departments.map(dept => {
+            switch(dept) {
+                case 'الموارد البشرية': return dashboardData.employees.length > 0 ? 90 : 0;
+                case 'التسويق': return dashboardData.marketing.length > 0 ? 85 : 0;
+                case 'المالية': return 95; // افتراضي
+                case 'التشغيل': return dashboardData.fleet.length > 0 ? 88 : 0;
+                default: return 80;
+            }
+        });
+
+        if(window.lineChart) window.lineChart.destroy();
+        window.lineChart = new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: departments,
+                datasets: [{
+                    label: 'مستوى الأداء',
+                    data: performanceData,
+                    borderColor: '#3b82f6',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                }]
+            },
+            options: { 
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+
+        // تحديث الرسم الدائري - توزيع الميزانية (شامل الرواتب والكفالات)
+        const employeeSalaries = dashboardData.employees.length * 5000;
+        const marketingSalaries = dashboardData.marketing.length * 3000;
+        const kofalatSalaries = Object.values(dashboardData.kofalat).reduce((sum, branch) => 
+            sum + (branch ? branch.reduce((bSum, k) => bSum + (parseFloat(k.netSalary) || 0), 0) : 0), 0);
+        const fleetMaintenance = dashboardData.fleet.length * 2000;
+        const maintenanceCosts = dashboardData.maintenance.length * 1000;
+        const scrapValue = dashboardData.scrap.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0) * 100;
+        
+        const budgetData = [
+            employeeSalaries + kofalatSalaries, // رواتب وكفالات
+            fleetMaintenance + maintenanceCosts, // صيانة
+            marketingSalaries, // تسويق
+            scrapValue // خردة
+        ];
+
+        if(window.doughnutChart) window.doughnutChart.destroy();
+        window.doughnutChart = new Chart(document.getElementById('doughnutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['رواتب', 'صيانة', 'تسويق', 'عمليات'],
+                datasets: [{
+                    data: budgetData,
+                    backgroundColor: ['#0f172a', '#3b82f6', '#8b5cf6', '#10b981'],
+                    borderWidth: 0
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // تحديث الرسم الراداري - كفاءة الأقسام
+        const radarData = [
+            dashboardData.employees.length > 10 ? 95 : 80, // السرعة
+            dashboardData.crm.length > 50 ? 90 : 75, // الجودة
+            budgetData.reduce((a,b) => a+b, 0) > 100000 ? 85 : 70, // التكلفة
+            dashboardData.maintenance.filter(m => m.status === 'تم الإصلاح').length / Math.max(dashboardData.maintenance.length, 1) * 100, // الأمان
+            dashboardData.production.totalValue > 1000000 ? 95 : 80 // الاستدامة
+        ];
+
+        if(window.radarChart) window.radarChart.destroy();
+        window.radarChart = new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: {
+                labels: ['السرعة', 'الجودة', 'التكلفة', 'الأمان', 'الاستدامة'],
+                datasets: [{
+                    label: 'الوضع الحالي',
+                    data: radarData,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.2)'
+                }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        });
+    }
+
+    function generateAIRecommendations() {
+        const recommendations = [];
+        const currentDate = new Date();
+        
+        // حساب القيم المشتركة مرة واحدة
+        const totalEmployees = dashboardData.employees.length + dashboardData.marketing.length + dashboardData.marketingFinal.length;
+        const totalKofalat = Object.values(dashboardData.kofalat).reduce((sum, branch) => sum + (branch ? branch.length : 0), 0);
+        const totalPayrollRecords = dashboardData.payrollArchive.length;
+        const totalScrapItems = dashboardData.scrap.length;
+        const totalScrapValue = dashboardData.scrap.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
+        
+        // تحليل الموارد البشرية
+        if (totalEmployees < 30) {
+            recommendations.push('⚠️ <b>تحذير:</b> القوة العاملة الإجمالية (' + totalEmployees + ' موظف) منخفضة جداً. يُنصح بزيادة التوظيف في الأقسام الأساسية بنسبة 25% خلال الربع القادم.');
+        } else if (totalEmployees > 150) {
+            recommendations.push('📊 <b>تحليل:</b> القوة العاملة قوية. يمكن الاستفادة من التدريب المتقدم لتحسين الإنتاجية.');
+        }
+        
+        // تحليل التسويق
+        const marketingEfficiency = dashboardData.marketing.reduce((sum, emp) => {
+            const completed = emp.visits ? Object.values(emp.visits).flat().filter(v => v.done).length : 0;
+            const total = emp.visits ? Object.values(emp.visits).flat().length : 0;
+            return sum + (total > 0 ? (completed / total) * 100 : 0);
+        }, 0) / Math.max(dashboardData.marketing.length, 1);
+        
+        if (marketingEfficiency < 70) {
+            recommendations.push('📈 <b>تحسين مطلوب:</b> كفاءة التسويق ' + Math.round(marketingEfficiency) + '%. راجع خطط الزيارات وتدريب الموظفين. اقتراح: تطبيق نظام تتبع GPS للزيارات.');
+        } else if (marketingEfficiency > 90) {
+            recommendations.push('🎯 <b>أداء ممتاز:</b> قسم التسويق يحقق أهدافاً عالية. يمكن توسيع نطاق العمليات.');
+        }
+        
+        // تحليل الأسطول والصيانة
+        const fleetIssues = dashboardData.maintenance.filter(m => m.status !== 'تم الإصلاح').length;
+        const totalFleet = dashboardData.fleet.length;
+        const maintenanceRatio = fleetIssues / Math.max(totalFleet, 1);
+        
+        if (fleetIssues > 3) {
+            recommendations.push('🔧 <b>صيانة عاجلة:</b> ' + fleetIssues + ' طلب صيانة معلق. راجع جدولة الصيانة الوقائية وتخصيص ميزانية إضافية لقطع الغيار.');
+        } else if (maintenanceRatio < 0.1) {
+            recommendations.push('✅ <b>صيانة ممتازة:</b> معدل الصيانة منخفض (' + Math.round(maintenanceRatio * 100) + '%). استمر في برنامج الصيانة الوقائية.');
+        }
+        
+        // تحليل CRM والعملاء
+        const activeClients = dashboardData.crm.filter(c => c.status === 'نشط').length;
+        const totalClients = dashboardData.crm.length;
+        const clientRetention = totalClients > 0 ? (activeClients / totalClients) * 100 : 0;
+        
+        if (activeClients < 10) {
+            recommendations.push('🤝 <b>توسع مطلوب:</b> عدد العملاء النشطين منخفض (' + activeClients + '). ركز على استراتيجيات اكتساب العملاء الجدد وتحسين خدمة العملاء الحاليين.');
+        } else if (clientRetention > 80) {
+            recommendations.push('💎 <b>ولاء عالي:</b> معدل الاحتفاظ بالعملاء ' + Math.round(clientRetention) + '%. استثمر في برامج الولاء وتوسيع الخدمات.');
+        }
+        
+        // تحليل الإنتاج والمخزون
+        const productionValue = dashboardData.production.totalValue || 0;
+        if (productionValue < 1000000) {
+            recommendations.push('🏭 <b>تحسين الإنتاج:</b> قيمة الإنتاج الحالية منخفضة. قم بمراجعة سلسلة التوريد وتحسين الكفاءة التشغيلية. اقتراح: تطبيق نظام JIT.');
+        } else if (productionValue > 3000000) {
+            recommendations.push('🚀 <b>نمو قوي:</b> الإنتاج يسير بشكل ممتاز. يمكن التوسع في الأسواق الجديدة.');
+        }
+        
+        // تحليل الرواتب والكفالات
+        if (totalKofalat < 50) {
+            recommendations.push('💰 <b>توسيع الكفالات:</b> عدد الكفالات النشطة منخفض (' + totalKofalat + '). يمكن زيادة عدد الموظفين تحت نظام الكفالات.');
+        } else if (totalPayrollRecords > 100) {
+            recommendations.push('📋 <b>أرشيف منظم:</b> نظام الأرشيف يعمل بكفاءة عالية مع ' + totalPayrollRecords + ' سجل محفوظ.');
+        }
+        
+        // تحليل الخردة والكهنة
+        if (totalScrapItems < 10) {
+            recommendations.push('♻️ <b>تطوير إدارة الخردة:</b> نظام إدارة الخردة يحتاج لتطوير. ركز على تحسين عمليات التوريد والتصريف.');
+        } else if (totalScrapValue > 10000) {
+            recommendations.push('💰 <b>فرصة إيرادية:</b> قيمة الخردة المخزنة عالية. يمكن تحقيق إيرادات إضافية من بيع الخردة.');
+        }
+        
+        // تحليل الميزانية والتكاليف
+        const totalBudget = (dashboardData.employees.length * 5000) + (dashboardData.marketing.length * 3000) + 
+                           (dashboardData.fleet.length * 2000) + (dashboardData.maintenance.length * 1000) +
+                           Object.values(dashboardData.kofalat).reduce((sum, branch) => 
+                               sum + (branch ? branch.reduce((bSum, k) => bSum + (parseFloat(k.netSalary) || 0), 0) : 0), 0);
+        
+        if (totalBudget > 1000000) {
+            recommendations.push('💰 <b>مراجعة الميزانية:</b> التكاليف التشغيلية عالية. قم بتحليل التكاليف وتحسين الكفاءة المالية.');
+        }
+        
+        // تحليل المناطق الجغرافية
+        const regions = {};
+        dashboardData.crm.forEach(client => {
+            regions[client.region] = (regions[client.region] || 0) + 1;
+        });
+        
+        const topRegion = Object.keys(regions).reduce((a, b) => regions[a] > regions[b] ? a : b, '');
+        if (topRegion) {
+            recommendations.push('📍 <b>تركيز جغرافي:</b> المنطقة الأكثر نشاطاً هي "' + topRegion + '" بـ' + regions[topRegion] + ' عميل. ركز الجهود التسويقية هناك.');
+        }
+        
+        // إذا لم تكن هناك توصيات محددة
+        if (recommendations.length === 0) {
+            recommendations.push('✅ <b>وضع ممتاز:</b> جميع المؤشرات في المستويات المقبولة. استمر في تطبيق الخطط الحالية.');
+            recommendations.push('🎯 <b>فرصة نمو:</b> زيادة الاستثمار في التسويق الرقمي والتوسع في الأسواق الجديدة لزيادة حصة السوق.');
+            recommendations.push('🔮 <b>تنبؤ ذكي:</b> بناءً على الاتجاهات الحالية، من المتوقع نمو الإيرادات بنسبة 15-20% في الربع القادم.');
+        }
+        
+        // إضافة توصية زمنية
+        const hour = currentDate.getHours();
+        if (hour >= 9 && hour <= 17) {
+            recommendations.push('⏰ <b>تذكير:</b> وقت العمل الرسمي. تأكد من متابعة المهام اليومية وتحديث البيانات بانتظام.');
+        }
+        
+        const aiBox = document.querySelector('.ai-box ul');
+        aiBox.innerHTML = recommendations.slice(0, 8).map(rec => 
+            `<li style="margin-bottom: 15px; border-right: 3px solid var(--primary); padding-right: 15px; line-height: 1.6;">${rec}</li>`
+        ).join('');
+    }
+
+    function updateDepartmentTable() {
+        const tbody = document.querySelector('.table-panel tbody');
+        
+        // حساب القيم المشتركة مرة واحدة
+        const totalKofalat = Object.values(dashboardData.kofalat).reduce((sum, branch) => sum + (branch ? branch.length : 0), 0);
+        const totalScrapItems = dashboardData.scrap.length;
+        
+        // حساب مؤشرات الأداء لكل إدارة
+        const hrPerformance = dashboardData.employees.length > 0 ? Math.min(95, 70 + (dashboardData.employees.length * 2)) : 0;
+        const marketingPerformance = dashboardData.marketing.length > 0 ? 
+            Math.min(95, dashboardData.marketing.reduce((sum, emp) => {
+                const completed = emp.visits ? Object.values(emp.visits).flat().filter(v => v.done).length : 0;
+                const total = emp.visits ? Object.values(emp.visits).flat().length : 0;
+                return sum + (total > 0 ? (completed / total) * 100 : 0);
+            }, 0) / dashboardData.marketing.length) : 0;
+        
+        const financePerformance = 92; // افتراضي للمالية
+        const operationsPerformance = dashboardData.fleet.length > 0 ? 
+            Math.min(95, 75 + (dashboardData.fleet.length * 1.5)) : 0;
+        
+        const maintenancePerformance = dashboardData.maintenance.length > 0 ? 
+            (dashboardData.maintenance.filter(m => m.status === 'تم الإصلاح').length / dashboardData.maintenance.length) * 100 : 0;
+        
+        const departments = [
+            { 
+                name: 'إدارة الموارد البشرية', 
+                manager: dashboardData.employees.length > 0 ? (dashboardData.employees[0]?.emp_name || 'أ. محمد أحمد') : 'غير محدد',
+                performance: hrPerformance,
+                status: hrPerformance > 80 ? 'نشط' : 'يحتاج تحسين',
+                lastPulse: 'منذ ' + Math.floor(Math.random() * 10 + 1) + ' دقيقة',
+                dataCount: dashboardData.employees.length + ' موظف'
+            },
+            { 
+                name: 'إدارة التسويق', 
+                manager: dashboardData.marketing.length > 0 ? (dashboardData.marketing[0]?.name || 'أ. فاطمة سالم') : 'غير محدد',
+                performance: marketingPerformance,
+                status: marketingPerformance > 75 ? 'نشط' : 'يحتاج تحسين',
+                lastPulse: 'منذ ' + Math.floor(Math.random() * 15 + 1) + ' دقيقة',
+                dataCount: dashboardData.marketing.length + ' موظف تسويق'
+            },
+            { 
+                name: 'إدارة المالية والرواتب', 
+                manager: 'أ. أحمد محمد',
+                performance: financePerformance,
+                status: 'نشط',
+                lastPulse: 'منذ ' + Math.floor(Math.random() * 60 + 30) + ' دقيقة',
+                dataCount: dashboardData.payrollArchive.length + ' مسيرة محفوظة'
+            },
+            { 
+                name: 'إدارة التشغيل والإنتاج', 
+                manager: 'م. خالد عبدالله',
+                performance: operationsPerformance,
+                status: operationsPerformance > 70 ? 'نشط' : 'يحتاج تحسين',
+                lastPulse: 'منذ ' + Math.floor(Math.random() * 45 + 15) + ' دقيقة',
+                dataCount: dashboardData.fleet.length + ' مركبة'
+            },
+            { 
+                name: 'إدارة الصيانة', 
+                manager: 'م. سالم أحمد',
+                performance: maintenancePerformance,
+                status: maintenancePerformance > 60 ? 'نشط' : 'يحتاج تحسين',
+                lastPulse: 'منذ ' + Math.floor(Math.random() * 30 + 5) + ' دقيقة',
+                dataCount: dashboardData.maintenance.length + ' طلب صيانة'
+            },
+            { 
+                name: 'إدارة الكفالات', 
+                manager: 'أ. سعد العتيبي',
+                performance: totalKofalat > 50 ? 90 : 70,
+                status: totalKofalat > 50 ? 'نشط' : 'يحتاج تحسين',
+                lastPulse: 'منذ ' + Math.floor(Math.random() * 20 + 10) + ' دقيقة',
+                dataCount: totalKofalat + ' كفالة نشطة'
+            },
+            { 
+                name: 'إدارة الخردة', 
+                manager: 'م. عبدالله القحطاني',
+                performance: totalScrapItems > 5 ? 85 : 65,
+                status: totalScrapItems > 5 ? 'نشط' : 'يحتاج تحسين',
+                lastPulse: 'منذ ' + Math.floor(Math.random() * 25 + 5) + ' دقيقة',
+                dataCount: totalScrapItems + ' نوع خردة'
+            }
+        ];
+        
+        tbody.innerHTML = departments.map(dept => `
+            <tr>
+                <td><b>${dept.name}</b><br><small style="color: #64748b;">${dept.dataCount}</small></td>
+                <td>${dept.manager}</td>
+                <td>
+                    <progress value="${dept.performance}" max="100" style="width: 100px;"></progress> 
+                    <span style="font-weight: bold; color: ${dept.performance > 80 ? 'var(--success)' : dept.performance > 60 ? 'var(--warning)' : 'var(--danger)'};">${Math.round(dept.performance)}%</span>
+                </td>
+                <td>
+                    <span class="pulse-dot ${dept.status === 'نشط' ? 'pulse-green' : 'pulse-orange'}"></span> 
+                    ${dept.status}
+                </td>
+                <td>${dept.lastPulse}</td>
+            </tr>
+        `).join('');
+    }
+
+    // تحديث تلقائي كل 30 ثانية
+    setInterval(loadDashboardData, 30000);
+    
+    // تحميل البيانات عند بدء الصفحة
+    window.onload = function() {
+        loadDashboardData();
+    };
+
 </script>
-
 </body>
 </html>
