@@ -7,119 +7,63 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --primary: #0284c7; --secondary: #0ea5e9; --navy: #1e293b; --bg: #f8fafc; 
-            --text: #334155; --border: #e2e8f0; --dark: #0f172a; --white: #ffffff;
+            --primary: #0284c7; --navy: #1e293b; --bg: #f8fafc; 
+            --text: #334155; --border: #e2e8f0; --white: #ffffff;
+            --danger: #ef4444; --warning: #f59e0b; --success: #10b981;
         }
 
-        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
         
-        /* تصميم التبويبات العلوي */
-        .tabs-header { background: var(--dark); padding: 10px 20px 0; display: flex; gap: 8px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .tab-link { 
-            padding: 12px 25px; border: none; background: #1e293b; color: #94a3b8; 
-            cursor: pointer; border-radius: 10px 10px 0 0; font-weight: bold; font-family: 'Tajawal'; transition: 0.3s;
-        }
+        .tabs-header { background: var(--navy); padding: 10px 20px 0; display: flex; gap: 8px; position: sticky; top: 0; z-index: 1000; }
+        .tab-link { padding: 12px 25px; border: none; background: #334155; color: #cbd5e1; cursor: pointer; border-radius: 10px 10px 0 0; font-weight: bold; font-family: 'Tajawal'; transition: 0.3s; }
         .tab-link.active { background: var(--bg); color: var(--primary); }
 
-        .container { max-width: 1100px; margin: auto; padding: 20px; }
-        
-        header { text-align: center; margin-bottom: 40px; border-bottom: 3px solid var(--primary); display: inline-block; width: 100%; padding-bottom: 15px; }
-        header h1 { margin: 0; color: var(--navy); font-size: 28px; }
-        header p { margin: 5px 0 0; color: #64748b; }
+        .container { max-width: 1200px; margin: auto; padding: 20px; }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid var(--primary); padding-bottom: 10px; }
 
-        /* التحكم في عرض المحتوى */
-        .tab-body { display: none; animation: fadeIn 0.3s ease-in; }
-        .tab-body.active { display: block; }
+        .tab-body { display: none; }
+        .tab-body.active { display: block; animation: fadeIn 0.4s; }
 
-        /* تنسيق أقسام الفورم الخاصة بك */
-        .section-box { background: white; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 15px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .section-header { background: #fff; padding: 18px 25px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; border-right: 6px solid var(--primary); }
-        .section-header:hover { background: #f1f5f9; }
-        .section-header h3 { margin: 0; font-size: 18px; color: var(--navy); display: flex; align-items: center; gap: 10px; }
+        .section-box { background: white; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 15px; }
+        .section-header { padding: 15px 25px; cursor: pointer; display: flex; justify-content: space-between; background: #fff; border-right: 6px solid var(--primary); border-radius: 12px; }
         .section-content { padding: 25px; display: none; border-top: 1px solid var(--border); background: #fafbfc; }
         .section-content.active { display: block; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .field { display: flex; flex-direction: column; }
-        .field label { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #475569; }
-        .field input, .field select, .field textarea { padding: 11px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Tajawal'; font-size: 14px; outline: none; transition: 0.3s; }
-        .field input:focus, .field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1); }
+        .field label { font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #64748b; }
+        .field input, .field select, .field textarea { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Tajawal'; }
         
         .full-row { grid-column: 1 / -1; }
-        .form-actions { margin-top: 30px; display: flex; justify-content: center; gap: 20px; }
-        .btn { padding: 15px 50px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-family: 'Tajawal'; font-size: 17px; transition: 0.3s; }
-        .btn-save { background: var(--navy); color: white; box-shadow: 0 4px 14px rgba(30, 41, 59, 0.3); }
+        .btn { padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-family: 'Tajawal'; }
         
-        .file-upload { border: 2px dashed var(--border); padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .employees-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .emp-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 15px; cursor: pointer; transition: 0.3s; }
+        .emp-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-        /* تصميم كروت الموظفين */
-        .employees-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        .emp-card { background: white; border-radius: 15px; border: 1px solid var(--border); overflow: hidden; position: relative; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .emp-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
-        .card-top { background: var(--navy); height: 60px; }
-        .card-avatar { width: 70px; height: 70px; background: #f1f5f9; border: 4px solid white; border-radius: 50%; position: absolute; top: 25px; right: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
-        .card-body { padding: 45px 20px 20px; }
-        .card-name { font-weight: bold; font-size: 18px; color: var(--navy); margin-bottom: 5px; }
-        .card-job { color: var(--primary); font-size: 14px; font-weight: 600; margin-bottom: 15px; }
-        .card-info { font-size: 13px; display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+        #profile-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; overflow-y:auto; padding:20px; box-sizing: border-box; }
+        .view-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .view-section h4 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .data-label { font-size: 11px; color: #94a3b8; }
+        .data-value { font-weight: bold; font-size: 14px; color: var(--navy); }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* تنسيق النافذة المنبثقة (Modal) */
-.modal {
-    display: none; 
-    position: fixed; 
-    z-index: 2000; 
-    left: 0; top: 0; width: 100%; height: 100%; 
-    background-color: rgba(0,0,0,0.5); 
-    backdrop-filter: blur(5px);
-}
-.modal-content {
-    background-color: #fff;
-    margin: 5% auto;
-    padding: 30px;
-    border-radius: 15px;
-    width: 80%;
-    max-width: 900px;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
-}
-.close-modal {
-    position: absolute;
-    left: 20px;
-    top: 20px;
-    font-size: 28px;
-    cursor: pointer;
-    color: #64748b;
-}
-.modal-actions {
-    margin-top: 25px;
-    padding-top: 20px;
-    border-top: 2px solid var(--border);
-    display: flex;
-    gap: 15px;
-}
-.btn-edit { background: var(--warning); color: white; padding: 10px 25px; border-radius: 8px; border:none; cursor:pointer; font-family: 'Tajawal'; font-weight: bold;}
-.btn-delete { background: var(--danger); color: white; padding: 10px 25px; border-radius: 8px; border:none; cursor:pointer; font-family: 'Tajawal'; font-weight: bold;}
     </style>
 </head>
 <body>
 
 <div class="tabs-header">
-    <button class="tab-link active" onclick="switchTab(event, 'fleet-section')">اضافة موظف</button>
-    <button class="tab-link" onclick="switchTab(event, 'emps-section')">سجل الموظفين</button>
-    <button class="tab-link" onclick="switchTab(event, 's-section')">تحت الإنشاء</button>
+    <button class="tab-link active" onclick="switchTab(event, 'form-tab')">إضافة / تعديل</button>
+    <button class="tab-link" onclick="switchTab(event, 'list-tab')">سجل الموظفين</button>
 </div>
 
 <div class="container">
-    
-    <div id="fleet-section" class="tab-body active">
-        <header>
-            <h1>نظام إدارة الموارد البشرية | HRMS</h1>
-            <p>نموذج إدخال ملف الموظف الكامل</p>
-        </header>
-
-        <form id="masterEmployeeForm" onsubmit="saveEmployee(event)">
+    <div id="form-tab" class="tab-body active">
+        <header><h1 id="main-title">إنشاء ملف موظف جديد</h1></header>
+        <form id="hrForm" onsubmit="handleSave(event)">
+            <input type="hidden" id="edit-id" name="edit-id" value="-1">
+            
             <div class="section-box">
                 <div class="section-header" onclick="toggleSection(this)">
                     <h3>👤 أولاً: البيانات الأساسية</h3>
@@ -148,7 +92,7 @@
                 </div>
             </div>
 
-            <div class="section-box">
+           <div class="section-box">
                 <div class="section-header" onclick="toggleSection(this)">
                     <h3>🎓 ثانيًا: بيانات الدراسة</h3>
                     <span>➕</span>
@@ -250,205 +194,238 @@
                 </div>
             </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-save">💾 حفظ كافة البيانات</button>
+
+            <div style="text-align: center; padding: 20px;">
+                <button type="submit" class="btn" style="background:var(--navy); color:white; width: 200px;" id="submit-btn">💾 حفظ البيانات</button>
             </div>
         </form>
     </div>
 
-    <div id="emps-section" class="tab-body">
-        <header>
-            <h1>سجل الموظفين المسجلين</h1>
-            <p>قائمة كروت بيانات الموظفين</p>
-        </header>
-        <div class="employees-grid" id="cards-container">
-            </div>
+    <div id="list-tab" class="tab-body">
+        <header><h1>سجل الموظفين النشطين</h1></header>
+        <div class="employees-grid" id="list-container"></div>
     </div>
-
-    <div id="s-section" class="tab-body" style="text-align:center; padding:50px;">
-        <h2>القسم تحت الإنشاء</h2>
-    </div>
-
 </div>
-<div id="detailsModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeModal()">&times;</span>
-        <h2 id="modalTitle" style="color: var(--navy); border-bottom: 2px solid var(--primary); padding-bottom: 10px;">تفاصيل الموظف</h2>
-        <div id="modalBody" class="grid" style="margin-top: 20px;">
+
+<div id="profile-overlay">
+    <div style="max-width:900px; margin:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; background:white; padding:15px; border-radius:12px;">
+            <h2 id="view-name" style="margin:0; color:var(--navy)"></h2>
+            <div>
+                <button class="btn" style="background:var(--warning); color:white;" id="edit-action">📝 تعديل</button>
+                <button class="btn" style="background:var(--danger); color:white;" onclick="closeProfile()">✖ إغلاق</button>
             </div>
-        <div class="modal-actions">
-            <button class="btn-edit" id="editBtn">📝 تعديل البيانات</button>
-            <button class="btn-delete" id="deleteBtn">🗑️ حذف الموظف</button>
         </div>
+        <div id="full-details-area"></div>
     </div>
 </div>
-<script>
-    let employeesDatabase = [];
 
-    // دالة التنقل بين التبويبات
-    function switchTab(e, sectionId) {
-        // إخفاء جميع محتويات التابات
+<script>
+    let db = [];
+
+    function switchTab(e, id) {
         document.querySelectorAll('.tab-body').forEach(b => b.classList.remove('active'));
-        // إزالة التنشيط من جميع الأزرار
         document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
         
-        // إظهار المحتوى المختار
-        document.getElementById(sectionId).classList.add('active');
-        // تنشيط الزر الذي تم الضغط عليه
-        e.currentTarget.classList.add('active');
+        const targetTab = document.getElementById(id);
+        if(targetTab) {
+            targetTab.classList.add('active');
+            if(e) e.currentTarget.classList.add('active');
+        }
+        
+        if(id === 'list-tab') renderList();
     }
 
-    // دالة فتح وإغلاق السكاشن داخل الفورم
-    function toggleSection(header) {
-        const content = header.nextElementSibling;
-        const icon = header.querySelector('span');
-        if (content.style.display === "block" || content.classList.contains('active')) {
-            content.style.display = "none";
-            content.classList.remove('active');
-            icon.innerText = "➕";
+    function toggleSection(h) {
+        const c = h.nextElementSibling;
+        const s = h.querySelector('span');
+        const isVisible = c.classList.contains('active');
+        
+        if(isVisible) {
+            c.style.display = "none";
+            c.classList.remove('active');
+            s.innerText = "➕";
         } else {
-            content.style.display = "block";
-            content.classList.add('active');
-            icon.innerText = "➖";
+            c.style.display = "block";
+            c.classList.add('active');
+            s.innerText = "➖";
         }
     }
 
-    // دالة حساب العمر
-    function calculateAge() {
-        const birthDate = new Date(document.getElementById('date_birth').value);
-        if (birthDate) {
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            document.getElementById('age').value = age + " سنة";
+    function handleSave(e) {
+    e.preventDefault();
+    
+    // الحل هنا: بنلف على كل العناصر اللي ليها ID وبناخد قيمتها
+    const data = {};
+    const inputs = e.target.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        if (input.id) {
+            data[input.id] = input.value;
         }
+    });
+
+    const editId = document.getElementById('edit-id').value;
+
+    if(editId === "-1") {
+        db.push(data);
+        alert("تم حفظ الموظف: " + data.emp_name); // دلوقتي هيقرأ الاسم صح من الـ id
+    } else {
+        db[editId] = data;
+        alert("تم تحديث بيانات: " + data.emp_name);
+        document.getElementById('edit-id').value = "-1";
+        document.getElementById('main-title').innerText = "إنشاء ملف موظف جديد";
+        document.getElementById('submit-btn').innerText = "💾 حفظ البيانات";
     }
-
-    // دالة حفظ الموظف وتحويله إلى كارت
-    function saveEmployee(event) {
-        event.preventDefault();
-        
-        const empData = {
-            number: document.getElementById('emp_number').value,
-            name: document.getElementById('emp_name').value,
-            job: document.getElementById('company_job').value || 'غير محدد',
-            dept: document.getElementById('dept').value,
-            salary: document.getElementById('base_salary').value || '0',
-            national: document.getElementById('emp_national').value || 'غير محدد'
-        };
-
-        if(!empData.name || !empData.number) {
-            alert("يرجى إدخال الاسم والرقم الوظيفي على الأقل");
+    
+    e.target.reset();
+    switchTab(null, 'list-tab');
+}
+    function renderList() {
+        const cont = document.getElementById('list-container');
+        if(db.length === 0) {
+            cont.innerHTML = '<p style="grid-column:1/-1; text-align:center;">لا توجد بيانات موظفين حالياً</p>';
             return;
         }
-
-        employeesDatabase.push(empData);
-        alert("تم حفظ بيانات الموظف: " + empData.name);
         
-        // تحديث الكروت وتصفير الفورم
-        renderCards();
-        document.getElementById('masterEmployeeForm').reset();
-        
-        // الانتقال تلقائياً لتابة السجل لرؤية النتيجة
-        const eventMock = { currentTarget: document.querySelector('button[onclick*="emps-section"]') };
-        switchTab(eventMock, 'emps-section');
+        cont.innerHTML = db.map((emp, i) => `
+            <div class="emp-card" onclick="openProfile(${i})">
+                <div style="font-weight:bold; color:var(--primary)"># ${emp.emp_number}</div>
+                <div style="font-size:18px; margin:5px 0; font-weight:700;">${emp.emp_name}</div>
+                <div style="font-size:13px; color:#666">${emp.company_job || 'بدون مسمى'} | ${emp.dept || 'بدون إدارة'}</div>
+            </div>
+        `).join('');
     }
 
-    // دالة رسم الكروت في صفحة السجل
-    function renderCards() {
-        const container = document.getElementById('cards-container');
-        container.innerHTML = '';
+    function openProfile(i) {
+        const emp = db[i];
+        document.getElementById('view-name').innerText = emp.emp_name;
+        const area = document.getElementById('full-details-area');
+        
+        const sections = [
 
-        if(employeesDatabase.length === 0) {
-            container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">لا يوجد موظفين مسجلين حالياً</p>';
-            return;
+    {
+        t: "البيانات الأساسية",
+        f: {
+            emp_number: "الرقم الوظيفي",
+            emp_name: "اسم الموظف",
+            id_number: "رقم الهوية",
+            pass_number: "رقم الجواز",
+            emp_national: "الجنسية",
+            gender: "الجنس",
+            date_birth: "تاريخ الميلاد",
+            age: "العمر",
+            id_job: "المهنة في الإقامة",
+            company_name: "الكفالة",
+            drive_lic: "رخصة القيادة",
+            religion: "الديانة",
+            social_status: "الحالة الاجتماعية"
         }
+    },
 
-        employeesDatabase.forEach((emp, index) => {
-            container.innerHTML += `
-                <div class="emp-card">
-                    <div class="card-top"></div>
-                    <div class="card-avatar">👤</div>
-                    <div class="card-body">
-                        <div class="card-name">${emp.name}</div>
-                        <div class="card-job">${emp.job} - ${emp.dept}</div>
-                        
-                        <div class="card-info"><span>الرقم الوظيفي:</span> <b>${emp.number}</b></div>
-                        <div class="card-info"><span>الجنسية:</span> <b>${emp.national}</b></div>
-                        <div class="card-info"><span>الراتب الأساسي:</span> <b style="color:green">${emp.salary} ريال</b></div>
-                    </div>
-                </div>
-            `;
-        });
+    {
+        t: "بيانات الدراسة",
+        f: {
+            edu_degree: "الدرجة العلمية",
+            university: "الجامعة",
+            college: "الكلية",
+            grad_year: "سنة التخرج",
+            grade: "التقدير",
+            diploma: "دبلومة",
+            master: "ماجستير",
+            phd: "دكتوراه"
+        }
+    },
+
+    {
+        t: "البيانات الوظيفية",
+        f: {
+            company_job: "المسمى الوظيفي",
+            join_date: "تاريخ الالتحاق",
+            rejoin_date: "تاريخ المباشرة",
+            dept: "الإدارة"
+        }
+    },
+
+    {
+        t: "البيانات المالية",
+        f: {
+            base_salary: "الراتب الأساسي",
+            housing_allowance: "بدل السكن",
+            transport_allowance: "بدل النقل",
+            iban: "رقم الآيبان"
+        }
+    },
+
+    {
+        t: "الحضور والإجازات",
+        f: {
+            work_type: "نظام الدوام",
+            vacation_balance: "رصيد الإجازات"
+        }
+    },
+
+    {
+        t: "العقود",
+        f: {
+            contract_type: "نوع العقد",
+            contract_start: "بداية العقد",
+            contract_end: "نهاية العقد"
+        }
+    },
+
+    {
+        t: "التقييم والأداء",
+        f: {
+            last_evaluation: "آخر تقييم",
+            notes: "ملاحظات"
+        }
+    },
+
+    {
+        t: "التأمينات والمرفقات",
+        f: {
+            gosi_number: "رقم التأمينات",
+            attachments: "المرفقات"
+        }
     }
-    // دالة عرض الكروت وتفعيل الضغط عليها
-function renderCards() {
-    const container = document.getElementById('cards-container');
-    container.innerHTML = '';
 
-    if(employeesDatabase.length === 0) {
-        container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">لا يوجد موظفين مسجلين حالياً</p>';
-        return;
-    }
+];
 
-    employeesDatabase.forEach((emp, index) => {
-        container.innerHTML += `
-            <div class="emp-card" onclick="showEmployeeDetails(${index})" style="cursor:pointer">
-                <div class="card-top"></div>
-                <div class="card-avatar">👤</div>
-                <div class="card-body">
-                    <div class="card-name">${emp.name}</div>
-                    <div class="card-job">${emp.job}</div>
-                    <div class="card-info"><span>الرقم الوظيفي:</span> <b>${emp.number}</b></div>
-                    <div class="card-info"><span>الإدارة:</span> <b>${emp.dept}</b></div>
+        area.innerHTML = sections.map(s => `
+            <div class="view-section">
+                <h4>${s.t}</h4>
+                <div class="data-grid">
+                    ${Object.entries(s.f).map(([key, label]) => `
+                        <div>
+                            <div class="data-label">${label}</div>
+                            <div class="data-value">${emp[key] || '-'}</div>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
-        `;
-    });
-}
+        `).join('');
 
-// دالة عرض تفاصيل الموظف في نافذة Modal
-function showEmployeeDetails(index) {
-    const emp = employeesDatabase[index];
-    const modal = document.getElementById('detailsModal');
-    const body = document.getElementById('modalBody');
-    
-    // عرض كافة البيانات المخزنة
-    body.innerHTML = `
-        <div class="field"><label>الاسم</label><p><b>${emp.name}</b></p></div>
-        <div class="field"><label>الرقم الوظيفي</label><p><b>${emp.number}</b></p></div>
-        <div class="field"><label>المسمى الوظيفي</label><p><b>${emp.job}</b></p></div>
-        <div class="field"><label>الإدارة</label><p><b>${emp.dept}</b></p></div>
-        <div class="field"><label>الجنسية</label><p><b>${emp.national}</b></p></div>
-        <div class="field"><label>الراتب الأساسي</label><p><b>${emp.salary} ريال</b></p></div>
-    `;
+        document.getElementById('edit-action').onclick = () => {
+            const form = document.getElementById('hrForm');
+            Object.keys(emp).forEach(k => {
+                if(form.elements[k]) form.elements[k].value = emp[k];
+            });
+            document.getElementById('edit-id').value = i;
+            document.getElementById('main-title').innerText = "تعديل ملف: " + emp.emp_name;
+            document.getElementById('submit-btn').innerText = "✅ تحديث البيانات";
+            closeProfile();
+            switchTab(null, 'form-tab');
+            document.querySelectorAll('.tab-link')[0].classList.add('active');
+            document.querySelectorAll('.tab-link')[1].classList.remove('active');
+        };
+        
+        document.getElementById('profile-overlay').style.display = "block";
+    }
 
-    // برمجة زر الحذف
-    document.getElementById('deleteBtn').onclick = function() {
-        if(confirm('هل أنت متأكد من حذف الموظف ' + emp.name + '؟')) {
-            employeesDatabase.splice(index, 1);
-            renderCards();
-            closeModal();
-        }
-    };
-
-    // برمجة زر التعديل (مثال: يعيدك للفورم مع تعبئة البيانات)
-    document.getElementById('editBtn').onclick = function() {
-        alert('سيتم فتح نموذج التعديل للموظف: ' + emp.name);
-        // هنا يمكنك إضافة منطق إعادة البيانات للفورم الأصلي لتعديلها
-    };
-
-    modal.style.display = "block";
-}
-
-function closeModal() {
-    document.getElementById('detailsModal').style.display = "none";
-}
-
-// إغلاق المودال عند الضغط خارج المحتوى
-window.onclick = function(event) {
-    const modal = document.getElementById('detailsModal');
-    if (event.target == modal) closeModal();
-}
+    function closeProfile() {
+        document.getElementById('profile-overlay').style.display = "none";
+    }
 </script>
+
 </body>
 </html>
