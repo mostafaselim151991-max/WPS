@@ -113,11 +113,13 @@
                 <button onclick="closeAchModal()" style="background:var(--danger); color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer;">إغلاق ✕</button>
             </div>
 
-            <div style="background:#f1f5f9; padding:20px; border-radius:15px; margin-top:20px; display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:10px; align-items:end;">
+            <div style="background:#f1f5f9; padding:20px; border-radius:15px; margin-top:20px; display:grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr auto; gap:10px; align-items:end;">
                 <div><label style="font-size:12px; font-weight:bold;">اسم المشروع/الشركة</label><input type="text" id="vName" style="width:90%"></div>
+                <div><label style="font-size:12px; font-weight:bold;">المكان</label><input type="text" id="vLocation" style="width:90%"></div>
+                <div><label style="font-size:12px; font-weight:bold;">التاريخ</label><input type="date" id="vDate" style="width:90%"></div>
+                <div><label style="font-size:12px; font-weight:bold;">التوقيت</label><input type="time" id="vTime" style="width:90%"></div>
                 <div><label style="font-size:12px; font-weight:bold;">نوع الخطة</label><select id="vType"><option value="daily">يومية</option><option value="weekly">أسبوعية</option><option value="monthly">شهرية</option></select></div>
                 <div><label style="font-size:12px; font-weight:bold;">الأهمية</label><select id="vClass"><option value="ذهبي">🌟 ذهبي (رئيسي)</option><option value="فضي">🥈 فضي (متوسط)</option><option value="عادي">📝 عادي</option></select></div>
-                <div><label style="font-size:12px; font-weight:bold;">حالة العميل</label><select id="vStatus"><option value="بارد">❄️ بارد</option><option value="دافئ">🔥 دافئ</option><option value="جاهز">✅ جاهز للتعاقد</option></select></div>
                 <button onclick="addVisit()" style="background:var(--accent); color:white; border:none; padding:12px 20px; border-radius:10px; cursor:pointer;">إضافة للملف</button>
             </div>
             <div class="ach-grid">
@@ -128,21 +130,17 @@
         </div>
     </div>
 
-    <div id="staffModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>بيانات فرد التسويق</h3><span onclick="closeModal()" style="cursor:pointer">✕</span></div>
-            <div class="form-body">
-                <div class="input-group"><label>الرقم الوظيفي</label><input type="text" id="job_id"></div>
-                <div class="input-group"><label>الاسم بالكامل</label><input type="text" id="name"></div>
-                <div class="input-group"><label>رقم الهوية</label><input type="text" id="id_num"></div>
-                <div class="input-group"><label>تاريخ التعيين</label><input type="date" id="h_date"></div>
-                <div class="input-group"><label>منطقة العمل</label><select id="region"><option>الجنوبية</option><option>الشمالية</option><option>الشرقية والوسطى</option><option>الغربية</option></select></div>
-                <div class="input-group"><label>نوع العمل</label><select id="type"><option value="field">ميداني</option><option value="office">مكتبي</option></select></div>
-                <div class="input-group"><label>رقم الجوال</label><input type="text" id="mobile"></div>
-                <div class="input-group"><label>البريد الإلكتروني</label><input type="email" id="email"></div>
-                <div class="input-group" style="grid-column: span 2;"><label>المهارات</label><textarea id="skills" rows="3"></textarea></div>
+    <div id="notesModal" class="modal" style="z-index:4000;">
+        <div class="modal-content" style="width:500px; max-width:90vw;">
+            <div class="modal-header" style="background:var(--success); color:white;"><h3 style="margin:0;">إنهاء المهمة</h3><span onclick="closeNotesModal()" style="cursor:pointer; color:white;">✕</span></div>
+            <div style="padding:20px;">
+                <label style="font-weight:bold; display:block; margin-bottom:10px; color:var(--accent);">ملاحظات إنهاء المهمة:</label>
+                <textarea id="taskNotes" rows="4" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-family:'Tajawal'; resize:vertical;" placeholder="اكتب ملاحظاتك عن إنهاء المهمة هنا..."></textarea>
+                <div style="text-align:center; margin-top:20px; display:flex; gap:10px; justify-content:center;">
+                    <button onclick="confirmCompleteTask()" style="background:var(--success); color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold;">✅ تأكيد الإنهاء</button>
+                    <button onclick="closeNotesModal()" style="background:#6b7280; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">إلغاء</button>
+                </div>
             </div>
-            <button onclick="saveData()" style="background:var(--accent); color:white; border:none; padding:20px; width:100%; font-weight:bold; cursor:pointer;">حفظ البيانات</button>
         </div>
     </div>
 
@@ -150,6 +148,8 @@
     let staffData = loadStaffData();
     let currentIdx = -1;
     let currentAchIdx = -1;
+    let currentTaskKey = '';
+    let currentTaskIndex = -1;
 
     function loadStaffData() {
         const hrmsEmployees = JSON.parse(localStorage.getItem('saden_employees') || '[]');
@@ -175,6 +175,28 @@
                 merged.push(s);
             }
         });
+        
+        // تحديث البيانات القديمة لتتوافق مع البنية الجديدة
+        merged.forEach(staff => {
+            if (staff.visits) {
+                ['daily', 'weekly', 'monthly'].forEach(type => {
+                    if (staff.visits[type]) {
+                        staff.visits[type].forEach(visit => {
+                            if (visit.done === undefined) visit.done = false;
+                            if (!visit.notes) visit.notes = '';
+                            if (!visit.location) visit.location = '';
+                            if (!visit.date) visit.date = '';
+                            if (!visit.time) visit.time = '';
+                        });
+                    } else {
+                        staff.visits[type] = [];
+                    }
+                });
+            } else {
+                staff.visits = {daily: [], weekly: [], monthly: []};
+            }
+        });
+        
         localStorage.setItem('saden_marketing_staff', JSON.stringify(merged));
         localStorage.setItem('saden_full_system', JSON.stringify(merged));
         return merged;
@@ -233,12 +255,20 @@
                 div.innerHTML += `
                     <div class="visit-card">
                         <div style="display:flex; justify-content:space-between;">
-                            <span class="visit-tag">${v.vClass} | ${v.vStatus}</span>
+                            <span class="visit-tag">${v.vClass}</span>
                             <span onclick="delVisit('${key}',${i})" style="color:red; cursor:pointer">✕</span>
                         </div>
-                        <p style="margin:10px 0; font-weight:bold;">${v.name}</p>
-                        <button onclick="toggleVisit('${key}',${i})" style="width:100%; border:none; padding:6px; border-radius:5px; cursor:pointer; background:${v.done?'var(--success)':'#ccc'}; color:white;">
-                            تمت الزيارة: ${v.done ? 'نعم ✅' : 'لا ❌'}
+                        <p style="margin:5px 0; font-weight:bold; font-size:14px;">${v.name}</p>
+                        <div style="font-size:12px; color:#666; margin:5px 0;">
+                            📍 ${v.location || 'غير محدد'} | 📅 ${v.date || 'غير محدد'} | 🕐 ${v.time || 'غير محدد'}
+                        </div>
+                        ${v.done ? `
+                            <div style="background:#e8f5e8; padding:8px; border-radius:5px; margin:8px 0; font-size:12px;">
+                                ✅ تمت الزيارة - ملاحظات: ${v.notes || 'لا توجد ملاحظات'}
+                            </div>
+                        ` : ''}
+                        <button onclick="toggleVisit('${key}',${i})" style="width:100%; border:none; padding:8px; border-radius:5px; cursor:pointer; background:${v.done?'var(--success)':'#ccc'}; color:white; font-size:12px;">
+                            ${v.done ? '✅ تمت الزيارة' : '❌ لم تتم الزيارة'}
                         </button>
                     </div>`;
             });
@@ -247,17 +277,55 @@
 
     function addVisit() {
         const name = document.getElementById('vName').value;
+        const location = document.getElementById('vLocation').value;
+        const date = document.getElementById('vDate').value;
+        const time = document.getElementById('vTime').value;
         const type = document.getElementById('vType').value;
-        if(!name) return;
+        if(!name) return alert("يرجى إدخال اسم المشروع/الشركة");
         staffData[currentAchIdx].visits[type].push({
-            name, vClass: document.getElementById('vClass').value,
-            vStatus: document.getElementById('vStatus').value, done: false
+            name, location, date, time,
+            vClass: document.getElementById('vClass').value,
+            done: false, notes: ''
         });
         save(); renderVisits();
         document.getElementById('vName').value = "";
+        document.getElementById('vLocation').value = "";
+        document.getElementById('vDate').value = "";
+        document.getElementById('vTime').value = "";
     }
 
-    function toggleVisit(key, i) { staffData[currentAchIdx].visits[key][i].done = !staffData[currentAchIdx].visits[key][i].done; save(); renderVisits(); }
+    function toggleVisit(key, i) {
+        const visit = staffData[currentAchIdx].visits[key][i];
+        if (!visit.done) {
+            // فتح نافذة إدخال الملاحظات
+            currentTaskKey = key;
+            currentTaskIndex = i;
+            document.getElementById('taskNotes').value = '';
+            document.getElementById('notesModal').style.display = 'block';
+        } else {
+            // إعادة فتح المهمة
+            if (confirm('هل تريد إعادة فتح هذه المهمة؟')) {
+                visit.done = false;
+                visit.notes = '';
+                save(); renderVisits();
+            }
+        }
+    }
+
+    function confirmCompleteTask() {
+        const notes = document.getElementById('taskNotes').value.trim();
+        const visit = staffData[currentAchIdx].visits[currentTaskKey][currentTaskIndex];
+        visit.done = true;
+        visit.notes = notes || 'تم إنهاء المهمة';
+        save(); renderVisits();
+        closeNotesModal();
+    }
+
+    function closeNotesModal() {
+        document.getElementById('notesModal').style.display = 'none';
+        currentTaskKey = '';
+        currentTaskIndex = -1;
+    }
     function delVisit(key, i) { staffData[currentAchIdx].visits[key].splice(i,1); save(); renderVisits(); }
 
     function openAddModal() { currentIdx = -1; clearFields(); document.getElementById('staffModal').style.display = 'block'; }
