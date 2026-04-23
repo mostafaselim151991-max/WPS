@@ -308,14 +308,33 @@
     const profilePicInput = document.getElementById('profile_pic');
     data.profile_pic = profilePicInput.dataset.base64 || '';
 
+    // التحقق من البيانات الأساسية - في حالة عدم تسجيل أي بيانات يتم رفض التسجيل
+    const empName = data.emp_name ? data.emp_name.trim() : '';
+    const empNumber = data.emp_number ? data.emp_number.trim() : '';
+    
+    if(!empName && !empNumber) {
+        alert('❌ يرجى تسجيل البيانات الأساسية:\n- اسم الموظف\n- الرقم الوظيفي');
+        return;
+    }
+    
+    if(!empName) {
+        alert('❌ يرجى تسجيل اسم الموظف');
+        return;
+    }
+    
+    if(!empNumber) {
+        alert('❌ يرجى تسجيل الرقم الوظيفي');
+        return;
+    }
+
     const editId = document.getElementById('edit-id').value;
 
     if(editId === "-1") {
         db.push(data);
-        alert("تم حفظ الموظف: " + data.emp_name); // دلوقتي هيقرأ الاسم صح من الـ id
+        alert("✅ تم حفظ الموظف: " + data.emp_name); // دلوقتي هيقرأ الاسم صح من الـ id
     } else {
         db[editId] = data;
-        alert("تم تحديث بيانات: " + data.emp_name);
+        alert("✅ تم تحديث بيانات: " + data.emp_name);
         document.getElementById('edit-id').value = "-1";
         document.getElementById('main-title').innerText = "إنشاء ملف موظف جديد";
         document.getElementById('submit-btn').innerText = "💾 حفظ البيانات";
