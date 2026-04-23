@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة بيانات تجريبية - نظام سادن</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        .section h3 { color: #0066cc; margin-top: 0; }
+        button { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #218838; }
+        .status { margin-top: 10px; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>إضافة بيانات تجريبية للاختبار</h1>
+
+        <div class="section">
+            <h3>الموظفين (HRMS)</h3>
+            <p>إضافة 50 موظف تجريبي</p>
+            <button onclick="addEmployees()">إضافة الموظفين</button>
+        </div>
+
+        <div class="section">
+            <h3>فريق التسويق</h3>
+            <p>إضافة 25 موظف تسويق</p>
+            <button onclick="addMarketing()">إضافة فريق التسويق</button>
+        </div>
+
+        <div class="section">
+            <h3>الأسطول</h3>
+            <p>إضافة 30 مركبة</p>
+            <button onclick="addFleet()">إضافة الأسطول</button>
+        </div>
+
+        <div class="section">
+            <h3>المشاريع (CRM)</h3>
+            <p>إضافة 15 مشروع نشط</p>
+            <button onclick="addProjects()">إضافة المشاريع</button>
+        </div>
+
+        <div class="section">
+            <h3>الكفالات</h3>
+            <p>إضافة كفالات للموظفين</p>
+            <button onclick="addKofalat()">إضافة الكفالات</button>
+        </div>
+
+        <div class="section">
+            <h3>الخردة</h3>
+            <p>إضافة مواد خردة</p>
+            <button onclick="addScrap()">إضافة الخردة</button>
+        </div>
+
+        <div class="section">
+            <h3>إضافة جميع البيانات</h3>
+            <button onclick="addAllData()" style="background: #007bff;">إضافة جميع البيانات التجريبية</button>
+        </div>
+
+        <div id="status" class="status" style="display: none;"></div>
+
+        <div class="section">
+            <h3>التنقل</h3>
+            <button onclick="goToDashboard()" style="background: #17a2b8;">الذهاب للداش بورد</button>
+            <button onclick="goToDebug()" style="background: #6c757d;">فحص البيانات</button>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, isSuccess = true) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status ' + (isSuccess ? 'success' : 'error');
+            statusDiv.textContent = message;
+            setTimeout(() => statusDiv.style.display = 'none', 3000);
+        }
+
+        function addEmployees() {
+            const employees = [];
+            const branches = ['الرياض', 'جدة', 'الدمام', 'مكة', 'المدينة'];
+            const departments = ['الإدارة', 'التسويق', 'المالية', 'العمليات', 'الصيانة'];
+
+            for (let i = 1; i <= 50; i++) {
+                employees.push({
+                    id: i,
+                    name: `الموظف ${i}`,
+                    department: departments[Math.floor(Math.random() * departments.length)],
+                    branch: branches[Math.floor(Math.random() * branches.length)],
+                    salary: Math.floor(Math.random() * 5000) + 3000,
+                    status: 'نشط'
+                });
+            }
+
+            localStorage.setItem('saden_employees', JSON.stringify(employees));
+            showStatus('تم إضافة 50 موظف بنجاح!');
+        }
+
+        function addMarketing() {
+            const marketing = [];
+            const regions = ['الوسطى', 'الغربية', 'الشرقية', 'الشمالية'];
+
+            for (let i = 1; i <= 25; i++) {
+                marketing.push({
+                    id: i,
+                    name: `مندوب تسويق ${i}`,
+                    region: regions[Math.floor(Math.random() * regions.length)],
+                    visits: {
+                        'يناير': Array.from({length: Math.floor(Math.random() * 10) + 5}, (_, j) => ({
+                            id: j + 1,
+                            client: `عميل ${j + 1}`,
+                            done: Math.random() > 0.3
+                        }))
+                    },
+                    status: 'نشط'
+                });
+            }
+
+            localStorage.setItem('saden_marketing_staff', JSON.stringify(marketing));
+            localStorage.setItem('saden_final_system', JSON.stringify(marketing.slice(0, 15)));
+            showStatus('تم إضافة 25 موظف تسويق بنجاح!');
+        }
+
+        function addFleet() {
+            const fleet = [];
+            const types = ['شاحنة', 'سيارة نقل', 'حافلة', 'معدة ثقيلة'];
+
+            for (let i = 1; i <= 30; i++) {
+                fleet.push({
+                    id: i,
+                    type: types[Math.floor(Math.random() * types.length)],
+                    model: `موديل ${2020 + Math.floor(Math.random() * 5)}`,
+                    status: Math.random() > 0.2 ? 'جاهز' : 'في الصيانة',
+                    mileage: Math.floor(Math.random() * 200000) + 50000
+                });
+            }
+
+            localStorage.setItem('saden_fleet_db', JSON.stringify(fleet));
+            showStatus('تم إضافة 30 مركبة بنجاح!');
+        }
+
+        function addProjects() {
+            const projects = [];
+            const statuses = ['نشط', 'مكتمل', 'معلق'];
+
+            for (let i = 1; i <= 15; i++) {
+                projects.push({
+                    id: i,
+                    name: `مشروع ${i}`,
+                    client: `عميل ${i}`,
+                    value: Math.floor(Math.random() * 500000) + 100000,
+                    status: statuses[Math.floor(Math.random() * statuses.length)],
+                    progress: Math.floor(Math.random() * 100)
+                });
+            }
+
+            localStorage.setItem('saden_db_v4', JSON.stringify(projects));
+            showStatus('تم إضافة 15 مشروع بنجاح!');
+        }
+
+        function addKofalat() {
+            const kofalat = {
+                'الرياض': [],
+                'جدة': [],
+                'الدمام': []
+            };
+
+            Object.keys(kofalat).forEach(branch => {
+                for (let i = 1; i <= 10; i++) {
+                    kofalat[branch].push({
+                        id: i,
+                        employeeName: `موظف ${i}`,
+                        netSalary: Math.floor(Math.random() * 3000) + 2000,
+                        status: 'نشط'
+                    });
+                }
+            });
+
+            localStorage.setItem('saden_kofalat_db', JSON.stringify(kofalat));
+            showStatus('تم إضافة الكفالات بنجاح!');
+        }
+
+        function addScrap() {
+            const scrap = [];
+            const materials = ['حديد', 'ألمنيوم', 'نحاس', 'بلاستيك', 'زجاج'];
+
+            for (let i = 1; i <= 8; i++) {
+                scrap.push({
+                    id: i,
+                    material: materials[Math.floor(Math.random() * materials.length)],
+                    qty: Math.floor(Math.random() * 100) + 10,
+                    unit: 'كجم',
+                    value: Math.floor(Math.random() * 5000) + 1000
+                });
+            }
+
+            localStorage.setItem('saden_scrap_v4', JSON.stringify(scrap));
+            showStatus('تم إضافة الخردة بنجاح!');
+        }
+
+        function addAllData() {
+            addEmployees();
+            setTimeout(addMarketing, 500);
+            setTimeout(addFleet, 1000);
+            setTimeout(addProjects, 1500);
+            setTimeout(addKofalat, 2000);
+            setTimeout(addScrap, 2500);
+            setTimeout(() => showStatus('تم إضافة جميع البيانات التجريبية بنجاح!'), 3000);
+        }
+
+        function goToDashboard() {
+            window.location.href = 'dash.html';
+        }
+
+        function goToDebug() {
+            window.location.href = 'debug_storage.html';
+        }
+    </script>
+</body>
+</html></content>
+<parameter name="filePath">d:\مشروع النظام الموحد لمجموعة سادن\WPS\test_data.html

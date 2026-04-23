@@ -191,31 +191,39 @@
     function updateStats() {
         // إجمالي القوة العاملة (من HRMS + التسويق)
         const totalEmployees = dashboardData.employees.length + dashboardData.marketing.length + dashboardData.marketingFinal.length;
-        document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = totalEmployees;
+        document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = totalEmployees || 0;
         
         // المشاريع النشطة (من CRM)
-        const activeProjects = dashboardData.crm.filter(c => c.status === 'نشط').length;
-        document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = activeProjects;
+        const activeProjects = dashboardData.crm.filter(c => c && (c.status === 'نشط' || c.status === 'active')).length;
+        document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = activeProjects || 0;
         
         // كفاءة الأداء العام (متوسط من التسويق والصيانة)
-        const marketingEfficiency = dashboardData.marketing.length > 0 
-            ? Math.round(dashboardData.marketing.reduce((sum, emp) => {
-                const completed = emp.visits ? Object.values(emp.visits).flat().filter(v => v.done).length : 0;
-                const total = emp.visits ? Object.values(emp.visits).flat().length : 0;
+        let marketingEfficiency = 0;
+        if (dashboardData.marketing.length > 0) {
+            marketingEfficiency = Math.round(dashboardData.marketing.reduce((sum, emp) => {
+                const visits = emp.visits ? Object.values(emp.visits).flat() : [];
+                const completed = visits.filter(v => v.done).length;
+                const total = visits.length;
                 return sum + (total > 0 ? (completed / total) * 100 : 0);
-            }, 0) / dashboardData.marketing.length) : 85;
+            }, 0) / dashboardData.marketing.length);
+        }
         
-        const maintenanceEfficiency = dashboardData.maintenance.filter(m => m.status === 'تم الإصلاح').length / Math.max(dashboardData.maintenance.length, 1) * 100;
-        const overallEfficiency = Math.round((marketingEfficiency + maintenanceEfficiency) / 2);
+        const maintenanceEfficiency = dashboardData.maintenance.length > 0 
+            ? Math.round((dashboardData.maintenance.filter(m => m.status === 'تم الإصلاح').length / dashboardData.maintenance.length) * 100)
+            : 0;
+        
+        const overallEfficiency = marketingEfficiency > 0 || maintenanceEfficiency > 0 
+            ? Math.round((marketingEfficiency + maintenanceEfficiency) / (marketingEfficiency > 0 && maintenanceEfficiency > 0 ? 2 : 1))
+            : 0;
         document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = overallEfficiency + '%';
         
         // إيرادات العقود (من CRM + الإنتاج + الكفالات)
-        const crmRevenue = dashboardData.crm.length * 50000;
-        const productionRevenue = dashboardData.production.totalValue || 0;
+        const crmRevenue = dashboardData.crm.reduce((sum, project) => sum + (project && project.value ? parseFloat(project.value) : 0), 0);
+        const productionRevenue = dashboardData.production.totalValue ? parseFloat(dashboardData.production.totalValue) : 0;
         const kofalatRevenue = Object.values(dashboardData.kofalat).reduce((sum, branch) => 
             sum + (branch ? branch.reduce((bSum, k) => bSum + (parseFloat(k.netSalary) || 0), 0) : 0), 0);
         const totalRevenue = crmRevenue + productionRevenue + kofalatRevenue;
-        document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = (totalRevenue / 1000000).toFixed(1) + 'M';
+        document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = totalRevenue > 0 ? (totalRevenue / 1000000).toFixed(1) + 'M' : '0.0M';
     }
 
     function updateCharts() {

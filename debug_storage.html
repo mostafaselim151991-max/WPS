@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فحص بيانات localStorage</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        .data-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .data-key { font-weight: bold; color: #0066cc; }
+        .data-count { color: #28a745; font-weight: bold; }
+        .data-empty { color: #dc3545; }
+        .data-error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>فحص بيانات localStorage - نظام سادن</h1>
+        <div id="results"></div>
+        <button onclick="checkData()" style="margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">فحص البيانات</button>
+    </div>
+
+    <script>
+        function checkData() {
+            const keys = [
+                'saden_employees',
+                'saden_marketing_staff',
+                'saden_fleet_db',
+                'saden_db_v4',
+                'saden_production_stock',
+                'saden_v10_system',
+                'saden_maintenance_db',
+                'sadenUsers',
+                'saden_archive',
+                'saden_final_system',
+                'saden_kofalat_db',
+                'saden_scrap_v4',
+                'saden_full_system'
+            ];
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>نتائج الفحص:</h2>';
+
+            keys.forEach(key => {
+                try {
+                    const data = localStorage.getItem(key);
+                    let count = 0;
+                    let status = '';
+
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        if (Array.isArray(parsed)) {
+                            count = parsed.length;
+                            status = `<span class="data-count">${count} عنصر</span>`;
+                        } else if (typeof parsed === 'object' && parsed !== null) {
+                            count = Object.keys(parsed).length;
+                            status = `<span class="data-count">${count} مفتاح</span>`;
+                        } else {
+                            status = `<span class="data-count">1 قيمة</span>`;
+                        }
+                    } else {
+                        status = '<span class="data-empty">فارغ</span>';
+                    }
+
+                    resultsDiv.innerHTML += `
+                        <div class="data-item">
+                            <span class="data-key">${key}:</span> ${status}
+                        </div>
+                    `;
+                } catch (e) {
+                    resultsDiv.innerHTML += `
+                        <div class="data-item">
+                            <span class="data-key">${key}:</span> <span class="data-error">خطأ في التحليل</span>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // فحص تلقائي عند التحميل
+        window.onload = checkData;
+    </script>
+</body>
+</html></content>
+<parameter name="filePath">d:\مشروع النظام الموحد لمجموعة سادن\WPS\debug_storage.html
