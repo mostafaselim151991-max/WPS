@@ -37,9 +37,27 @@
         .full-row { grid-column: 1 / -1; }
         .btn { padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-family: 'Tajawal'; }
         
-        .employees-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .emp-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 15px; cursor: pointer; transition: 0.3s; }
-        .emp-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .employees-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        .emp-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 20px; min-height: 220px; cursor: pointer; transition: 0.3s; }
+        .emp-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+        
+        .profile-pic-container { text-align: center; margin-bottom: 20px; }
+        .profile-pic { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
+        .profile-pic-placeholder { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 50px; margin: 0 auto; }
+        .pic-upload { display: inline-block; margin-top: 10px; padding: 8px 15px; background: var(--primary); color: white; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .pic-upload:hover { background: #0369a1; }
+        #profile_pic_preview { max-width: 150px; max-height: 150px; border-radius: 8px; margin-top: 10px; display: none; }
+        .emp-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .emp-card-pic { width: 75px; height: 75px; border-radius: 18px; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0; }
+        .emp-card-placeholder { width: 75px; height: 75px; border-radius: 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 30px; }
+        .emp-card-title { font-size: 18px; font-weight: 700; margin: 0; }
+        .emp-card-role { font-size: 13px; color: #0284c7; margin-top: 4px; font-weight: 600; }
+        .emp-card-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: #555; margin: 5px 0 0; padding-top: 8px; border-top: 1px solid #e2e8f0; }
+        .emp-card-meta span { display: inline-flex; align-items: center; gap: 6px; }
+        .emp-card-contacts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center; }
+        .emp-card-contact { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; text-decoration: none; color: #334155; font-size: 12px; }
+        .emp-card-contact:hover { background: #eff6ff; border-color: #bde0ff; }
+        .emp-card-contact.disabled { opacity: 0.5; pointer-events: none; cursor: default; }
 
         #profile-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; overflow-y:auto; padding:20px; box-sizing: border-box; }
         .view-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); }
@@ -70,6 +88,12 @@
                     <span>➖</span>
                 </div>
                 <div class="section-content active">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div id="profile_pic_preview_container"></div>
+                        <input type="file" id="profile_pic" accept="image/*" style="display:none" onchange="previewProfilePic(event)">
+                        <button type="button" class="pic-upload" onclick="document.getElementById('profile_pic').click();">📷 اختر صورة ملف شخصي</button>
+                        <img id="profile_pic_preview" alt="معاينة الصورة">
+                    </div>
                     <div class="grid">
                         <div class="field"><label>الرقم الوظيفي</label><input type="text" id="emp_number"></div>
                         <div class="field"><label>اسم الموظف</label><input type="text" id="emp_name"></div>
@@ -78,16 +102,22 @@
                         <div class="field"><label>الجنسية</label><input type="text" id="emp_national"></div>
                         <div class="field"><label>الجنس</label><select id="gender"><option>ذكر</option><option>أنثى</option></select></div>
                         <div class="field"><label>تاريخ الميلاد</label><input type="date" id="date_birth" onchange="calculateAge()"></div>
-                        <div class="field"><label>العمر</label><input type="text" id="age" readonly></div>
                         <div class="field"><label>المهنة في الإقامة</label><input type="text" id="id_job"></div>
                         <div class="field"><label>الكفالة</label><input type="text" id="company_name"></div>
                         <div class="field"><label>رقم رخصة القيادة</label><input type="text" id="drive_lic"></div>
                         <div class="field"><label>الديانة</label><select id="religion"><option>مسلم</option><option>غير مسلم</option></select></div>
-                        <div class="field"><label>الحالة الاجتماعية</label>
-                            <select id="social_status">
-                                <option>أعزب / آنسة</option><option>متزوج / متزوجة</option><option>مطلق / مطلقة</option><option>أرمل / أرملة</option>
-                            </select>
-                        </div>
+                    <div class="field">
+                        <label for="social_status">الحالة الاجتماعية</label>
+                        <select id="social_status">
+                            <option>أعزب / آنسة</option>
+                            <option>متزوج / متزوجة</option>
+                            <option>مطلق / مطلقة</option>
+                            <option>أرمل / أرملة</option>
+                        </select>
+                    </div>
+                    <div class="field"><label>رقم الجوال</label><input type="text" id="phone_number"></div>
+                    <div class="field"><label>البريد الإلكتروني</label><input type="text" id="email"></div>
+                    <div class="field"><label>العنوان</label><input type="text" id="address"></div>
                     </div>
                 </div>
             </div>
@@ -100,13 +130,13 @@
                 <div class="section-content">
                     <div class="grid">
                         <div class="field"><label>الدرجة العلمية</label><select id="edu_degree"><option>بكالوريوس</option><option>ليسانس</option><option>دبلوم</option><option>أخرى</option></select></div>
-                        <div class="field"><label>الجامعة</label><input type="text"></div>
-                        <div class="field"><label>الكلية</label><input type="text"></div>
-                        <div class="field"><label>سنة التخرج</label><input type="number"></div>
-                        <div class="field"><label>التقدير</label><select><option>إمتياز</option><option>جيد جداً</option><option>جيد</option><option>مقبول</option></select></div>
-                        <div class="field"><label>دبلومة في</label><input type="text"></div>
-                        <div class="field"><label>ماجستير في</label><input type="text"></div>
-                        <div class="field"><label>دكتوراه في</label><input type="text"></div>
+                        <div class="field"><label>الجامعة</label><input type="text" id="university"></div>
+                        <div class="field"><label>الكلية</label><input type="text" id="college"></div>
+                        <div class="field"><label>سنة التخرج</label><input type="number" id="grad_year"></div>
+                        <div class="field"><label>التقدير</label><select id="grade"><option>إمتياز</option><option>جيد جداً</option><option>جيد</option><option>مقبول</option></select></div>
+                        <div class="field"><label>دبلومة في</label><input type="text" id="diploma"></div>
+                        <div class="field"><label>ماجستير في</label><input type="text" id="master"></div>
+                        <div class="field"><label>دكتوراه في</label><input type="text" id="phd"></div>
                     </div>
                 </div>
             </div>
@@ -120,7 +150,7 @@
                     <div class="grid">
                         <div class="field"><label>المسمى الوظيفي</label><input type="text" id="company_job"></div>
                         <div class="field"><label>تاريخ الإلتحاق</label><input type="date" id="join_date"></div>
-                        <div class="field"><label>تاريخ المباشرة (بعد الإجازة)</label><input type="date"></div>
+                        <div class="field"><label>تاريخ المباشرة (بعد الإجازة)</label><input type="date" id="rejoin_date"></div>
                         <div class="field"><label>الإدارة</label><select id="dept"><option>الموارد البشرية</option><option>المالية</option><option>التشغيل</option></select></div>
                     </div>
                 </div>
@@ -134,8 +164,8 @@
                 <div class="section-content">
                     <div class="grid">
                         <div class="field"><label>الراتب الأساسي</label><input type="number" id="base_salary"></div>
-                        <div class="field"><label>بدل السكن</label><input type="number"></div>
-                        <div class="field"><label>بدل النقل</label><input type="number"></div>
+                        <div class="field"><label>بدل السكن</label><input type="number" id="housing_allowance"></div>
+                        <div class="field"><label>بدل النقل</label><input type="number" id="transport_allowance"></div>
                         <div class="field full-row"><label>رقم الآيبان (IBAN)</label><input type="text" id="iban"></div>
                     </div>
                 </div>
@@ -148,8 +178,8 @@
                 </div>
                 <div class="section-content">
                     <div class="grid">
-                        <div class="field"><label>نظام الدوام</label><select><option>ثابت</option><option>شفتات</option></select></div>
-                        <div class="field"><label>رصيد الإجازات</label><input type="number" value="30"></div>
+                        <div class="field"><label>نظام الدوام</label><select id="work_type"><option>ثابت</option><option>شفتات</option></select></div>
+                        <div class="field"><label>رصيد الإجازات</label><input type="number" id="vacation_balance" value="30"></div>
                     </div>
                 </div>
             </div>
@@ -161,9 +191,9 @@
                 </div>
                 <div class="section-content">
                     <div class="grid">
-                        <div class="field"><label>نوع العقد</label><select><option>محدد</option><option>غير محدد</option></select></div>
-                        <div class="field"><label>بداية العقد</label><input type="date"></div>
-                        <div class="field"><label>نهاية العقد</label><input type="date"></div>
+                        <div class="field"><label>نوع العقد</label><select id="contract_type"><option>محدد</option><option>غير محدد</option></select></div>
+                        <div class="field"><label>بداية العقد</label><input type="date" id="contract_start"></div>
+                        <div class="field"><label>نهاية العقد</label><input type="date" id="contract_end"></div>
                     </div>
                 </div>
             </div>
@@ -175,8 +205,8 @@
                 </div>
                 <div class="section-content">
                     <div class="grid">
-                        <div class="field"><label>آخر تقييم (%)</label><input type="number"></div>
-                        <div class="field full-row"><label>ملاحظات</label><textarea rows="2"></textarea></div>
+                        <div class="field"><label>آخر تقييم (%)</label><input type="number" id="last_evaluation"></div>
+                        <div class="field full-row"><label>ملاحظات</label><textarea rows="2" id="notes"></textarea></div>
                     </div>
                 </div>
             </div>
@@ -188,8 +218,12 @@
                 </div>
                 <div class="section-content">
                     <div class="grid">
-                        <div class="field"><label>رقم التأمينات GOSI</label><input type="text"></div>
-                        <div class="field full-row"><div class="file-upload">ارفع المرفقات هنا</div></div>
+                        <div class="field"><label>رقم التأمينات GOSI</label><input type="text" id="gosi_number"></div>
+                        <div class="field full-row">
+                            <div class="file-upload" id="attachments" onclick="document.getElementById('attachments_file').click();">ارفع المرفقات هنا</div>
+                            <input type="file" id="attachments_file" style="display:none" onchange="document.getElementById('attachments_input').value = this.value;">
+                            <input type="hidden" id="attachments_input" name="attachments">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -233,6 +267,11 @@
             if(e) e.currentTarget.classList.add('active');
         }
         
+        if(id === 'form-tab') {
+            document.getElementById('profile_pic').dataset.base64 = '';
+            document.getElementById('profile_pic_preview').style.display = 'none';
+        }
+        
         if(id === 'list-tab') renderList();
     }
 
@@ -259,10 +298,15 @@
     const data = {};
     const inputs = e.target.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
-        if (input.id) {
+        if (input.id && input.id !== 'profile_pic') {
             data[input.id] = input.value;
         }
     });
+    // Capture attachments value from the div if needed
+    data.attachments = document.getElementById('attachments_input').value;
+    // Capture profile picture
+    const profilePicInput = document.getElementById('profile_pic');
+    data.profile_pic = profilePicInput.dataset.base64 || '';
 
     const editId = document.getElementById('edit-id').value;
 
@@ -287,13 +331,64 @@
             return;
         }
         
-        cont.innerHTML = db.map((emp, i) => `
+        cont.innerHTML = db.map((emp, i) => {
+            const waNumber = normalizePhoneNumber(emp.phone_number);
+            const waHref = waNumber ? `https://wa.me/${waNumber}` : '#';
+            const waClass = waNumber ? 'emp-card-contact' : 'emp-card-contact disabled';
+            const emailHref = emp.email ? `mailto:${emp.email}` : '#';
+            const emailClass = emp.email ? 'emp-card-contact' : 'emp-card-contact disabled';
+            return `
             <div class="emp-card" onclick="openProfile(${i})">
-                <div style="font-weight:bold; color:var(--primary)"># ${emp.emp_number}</div>
-                <div style="font-size:18px; margin:5px 0; font-weight:700;">${emp.emp_name}</div>
-                <div style="font-size:13px; color:#666">${emp.company_job || 'بدون مسمى'} | ${emp.dept || 'بدون إدارة'}</div>
+                <div class="emp-card-header">
+                    ${emp.profile_pic ? `<img src="${emp.profile_pic}" class="emp-card-pic" alt="صورة">` : `<div class="emp-card-placeholder">👤</div>`}
+                    <div>
+                        <div class="emp-card-title">${emp.emp_name}</div>
+                        <div class="emp-card-role">💼 ${emp.company_job || 'بدون مسمى'}</div>
+                    </div>
+                </div>
+                <div class="emp-card-meta">
+                    <span>🆔 ${emp.emp_number || '-'}</span>
+                    <span>🪪 ${emp.id_number || '-'}</span>
+                    <span>🏢 ${emp.dept || 'بدون إدارة'}</span>
+                </div>
+                <div class="emp-card-contacts">
+                    <a class="${waClass}" href="${waHref}" target="_blank" onclick="event.stopPropagation();">
+                        <span>🟢</span><span>WhatsApp</span>
+                    </a>
+                    <a class="${emailClass}" href="${emailHref}" target="_blank" onclick="event.stopPropagation();">
+                        <span>📧</span><span>Email</span>
+                    </a>
+                </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
+    }
+
+    function previewProfilePic(event) {
+        const file = event.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const preview = document.getElementById('profile_pic_preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                document.getElementById('profile_pic').dataset.base64 = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function normalizePhoneNumber(phone) {
+        if (!phone) return '';
+        const arabicDigits = {
+            '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'
+        };
+        return phone
+
+            .split('')
+            .map(ch => arabicDigits[ch] ?? ch)
+            .join('')
+            .replace(/[^0-9]/g, '');
     }
 
     function openProfile(i) {
@@ -318,7 +413,11 @@
             company_name: "الكفالة",
             drive_lic: "رخصة القيادة",
             religion: "الديانة",
-            social_status: "الحالة الاجتماعية"
+            social_status: "الحالة الاجتماعية",
+            phone_number: "رقم الجوال",
+            email:"البريد الإلكتروني",
+            address:"العنوان",
+
         }
     },
 
@@ -391,7 +490,13 @@
 
 ];
 
-        area.innerHTML = sections.map(s => `
+        const profilePicSection = `
+            <div class="profile-pic-container">
+                ${emp.profile_pic ? `<img src="${emp.profile_pic}" class="profile-pic" alt="صورة الملف">` : `<div class="profile-pic-placeholder">👤</div>`}
+            </div>
+        `;
+        
+        area.innerHTML = profilePicSection + sections.map(s => `
             <div class="view-section">
                 <h4>${s.t}</h4>
                 <div class="data-grid">
@@ -408,7 +513,19 @@
         document.getElementById('edit-action').onclick = () => {
             const form = document.getElementById('hrForm');
             Object.keys(emp).forEach(k => {
-                if(form.elements[k]) form.elements[k].value = emp[k];
+                // Handle old typo for backward compatibility
+                if (k === "adress" && form.elements["address"]) {
+                    form.elements["address"].value = emp[k];
+                } else if (k === "profile_pic") {
+                    document.getElementById('profile_pic').dataset.base64 = emp[k];
+                    if(emp[k]) {
+                        const preview = document.getElementById('profile_pic_preview');
+                        preview.src = emp[k];
+                        preview.style.display = 'block';
+                    }
+                } else if(form.elements[k]) {
+                    form.elements[k].value = emp[k];
+                }
             });
             document.getElementById('edit-id').value = i;
             document.getElementById('main-title').innerText = "تعديل ملف: " + emp.emp_name;
