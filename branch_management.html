@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام سادن الموحد | إدارة الفروع</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #0284c7; --navy: #1e293b; --bg: #f1f5f9; 
+            --white: #ffffff; --success: #10b981; --danger: #ef4444;
+        }
+
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; color: var(--navy); }
+        .container { padding: 30px; max-width: 1400px; margin: auto; }
+
+        /* الهيدر */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        
+        /* شبكة المناطق */
+        .regions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .region-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); min-height: 200px; }
+        .region-header { padding: 15px; color: white; text-align: center; font-weight: bold; font-size: 15px; }
+        
+        .bg-western { background: #334155; } .bg-central { background: #075985; }
+        .bg-northern { background: #475569; } .bg-southern { background: #1e3a8a; }
+
+        .branch-item { padding: 12px 20px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; transition: 0.3s; }
+        .branch-item:hover { background: #f0f9ff; color: var(--primary); padding-right: 30px; }
+
+        /* لوحة الفرع والتبويبات */
+        .branch-panel { display: none; background: white; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); margin-top: 20px; overflow: hidden; animation: slideUp 0.4s ease; }
+        .panel-top { background: var(--navy); color: white; padding: 25px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .tabs-bar { display: flex; background: #e2e8f0; overflow-x: auto; scrollbar-width: none; }
+        .tab-btn { padding: 18px 25px; border: none; background: none; cursor: pointer; font-family: 'Tajawal'; font-weight: 600; color: #475569; transition: 0.3s; white-space: nowrap; border-bottom: 3px solid transparent; }
+        .tab-btn.active { color: var(--primary); background: white; border-bottom: 3px solid var(--primary); }
+
+        .tab-content { padding: 35px; display: none; }
+        .tab-content.active { display: block; }
+
+        /* الجداول والنماذج */
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; }
+        input, select { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Tajawal'; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: right; border-bottom: 1px solid #f1f5f9; }
+        th { background: #f8fafc; color: #64748b; font-size: 13px; }
+
+        /* النافذة المنبثقة (Modal) */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
+        .modal-body { background: white; padding: 30px; border-radius: 15px; width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+
+        .btn { padding: 12px 25px; border-radius: 8px; border: none; font-family: 'Tajawal'; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h2 style="margin:0">📍 خريطة فروع سادن المتخصصة</h2>
+            <p style="color:#64748b; margin:5px 0 0">الإدارة والسيطرة والتحليل التشغيلي</p>
+        </div>
+        <button class="btn btn-success" onclick="openAddModal()">➕ إضافة فرع جديد</button>
+    </header>
+
+    <div class="regions-grid">
+        <div class="region-card"><div class="region-header bg-western">المنطقة الغربية</div><div id="list-western"></div></div>
+        <div class="region-card"><div class="region-header bg-central">الشرقية والوسطى</div><div id="list-central"></div></div>
+        <div class="region-card"><div class="region-header bg-northern">المنطقة الشمالية</div><div id="list-northern"></div></div>
+        <div class="region-card"><div class="region-header bg-southern">المنطقة الجنوبية</div><div id="list-southern"></div></div>
+    </div>
+
+    <div id="branchPanel" class="branch-panel">
+        <div class="panel-top">
+            <div>
+                <h3 id="branchTitle" style="margin:0">اسم الفرع</h3>
+                <small id="branchRegionTag" style="color:#38bdf8; font-weight:bold;"></small>
+            </div>
+            <div>
+                شهر السجل: <select id="activeMonth" onchange="updateView()">
+                    <option>يناير</option><option>فبراير</option><option>مارس</option><option selected>أبريل</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tabs-bar">
+            <button class="tab-btn active" onclick="switchTab(event, 'clients')">🤝 عملاء الفرع</button>
+            <button class="tab-btn" onclick="switchTab(event, 'projects')">🏗️ مشروعات الفرع</button>
+            <button class="tab-btn" onclick="switchTab(event, 'staff')">👥 القوى العاملة</button>
+            <button class="tab-btn" onclick="switchTab(event, 'finance')">💰 المالية والأرباح</button>
+            <button class="tab-btn" onclick="switchTab(event, 'targets')">🎯 مشروعات مستهدفة</button>
+            <button class="tab-btn" onclick="switchTab(event, 'rating')">⭐ تقييم العاملين</button>
+            <button class="tab-btn" onclick="switchTab(event, 'debt')">⚠️ مديونية الفرع</button>
+        </div>
+
+        <div id="clients" class="tab-content active">
+            <h4>سجل عملاء الفرع</h4>
+            <div class="form-row">
+                <input type="text" id="in_client_name" placeholder="اسم العميل الجديد">
+                <input type="text" id="in_client_phone" placeholder="رقم الجوال">
+                <button class="btn btn-primary" onclick="addItem('clients')">تسجيل عميل</button>
+            </div>
+            <table id="tbl-clients"><thead><tr><th>اسم العميل</th><th>رقم التواصل</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="finance" class="tab-content">
+            <h4>البيانات المالية الشهرية</h4>
+            <div class="form-row">
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <label>إجمالي الإيرادات</label><input type="number" id="in_rev" value="0">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <label>إجمالي المصروفات</label><input type="number" id="in_exp" value="0">
+                </div>
+                <button class="btn btn-success" style="align-self:flex-end" onclick="saveFinance()">حفظ وحساب الأرباح</button>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div style="background:#f0fdf4; padding:30px; border-radius:15px; text-align:center; border:1px solid #bbf7d0;">
+                    <span style="color:#166534; font-weight:bold;">صافي الأرباح</span>
+                    <div id="res_profit" style="font-size:32px; font-weight:bold; color:#15803d; margin-top:10px;">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="projects" class="tab-content"><h4>مشروعات الفرع الميدانية</h4><div class="form-row"><input type="text" placeholder="اسم المشروع"> <button class="btn btn-primary">إضافة</button></div></div>
+        <div id="staff" class="tab-content"><h4>سجل القوى العاملة بالفرع</h4></div>
+        <div id="targets" class="tab-content"><h4>المشروعات المستهدفة والمناقصات</h4></div>
+        <div id="rating" class="tab-content"><h4>تقييم الأداء الشهري للفريق</h4></div>
+        <div id="debt" class="tab-content"><h4>متابعة مديونيات الفرع والتحصيل</h4></div>
+    </div>
+</div>
+
+<div id="addModal" class="modal">
+    <div class="modal-body">
+        <h3 style="margin-top:0">إضافة فرع جديد</h3>
+        <div style="display:flex; flex-direction:column; gap:15px;">
+            <input type="text" id="new_branch_name" placeholder="أدخل اسم الفرع (مثلاً: جدة)">
+            <select id="new_branch_region">
+                <option value="">-- اختر المنطقة --</option>
+                <option value="western">المنطقة الغربية</option>
+                <option value="central">الشرقية والوسطى</option>
+                <option value="northern">المنطقة الشمالية</option>
+                <option value="southern">المنطقة الجنوبية</option>
+            </select>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn btn-success" style="flex:1" onclick="saveNewBranch()">حفظ الفرع</button>
+                <button class="btn" style="flex:1; background:#e2e8f0;" onclick="closeAddModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let branches = [
+        { name: 'الرياض', region: 'central', clients: [{n:'أمانة الرياض', p:'011xxx'}], rev: 500000, exp: 150000 },
+        { name: 'مكة المكرمة', region: 'western', clients: [], rev: 0, exp: 0 }
+    ];
+    let activeBranch = null;
+
+    function renderBranches() {
+        ['western', 'central', 'northern', 'southern'].forEach(reg => {
+            const list = document.getElementById('list-' + reg);
+            list.innerHTML = '';
+            branches.filter(b => b.region === reg).forEach(b => {
+                const item = document.createElement('div');
+                item.className = 'branch-item';
+                item.innerHTML = `<span>${b.name}</span> <span>⚙️</span>`;
+                item.onclick = () => openBranchPanel(b);
+                list.appendChild(item);
+            });
+        });
+    }
+
+    function openAddModal() { document.getElementById('addModal').style.display = 'flex'; }
+    function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+
+    function saveNewBranch() {
+        const name = document.getElementById('new_branch_name').value;
+        const region = document.getElementById('new_branch_region').value;
+        if(name && region) {
+            branches.push({ name: name, region: region, clients: [], rev: 0, exp: 0 });
+            renderBranches();
+            closeAddModal();
+            document.getElementById('new_branch_name').value = '';
+        } else { alert('يرجى إكمال البيانات'); }
+    }
+
+    function openBranchPanel(b) {
+        activeBranch = b;
+        document.getElementById('branchPanel').style.display = 'block';
+        document.getElementById('branchTitle').innerText = "لوحة تحكم فرع: " + b.name;
+        document.getElementById('branchRegionTag').innerText = "نطاق: " + b.region;
+        updateView();
+        window.scrollTo({ top: document.getElementById('branchPanel').offsetTop - 30, behavior: 'smooth' });
+    }
+
+    function switchTab(evt, tabId) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+
+    function addItem(type) {
+        if(type === 'clients') {
+            const name = document.getElementById('in_client_name').value;
+            const phone = document.getElementById('in_client_phone').value;
+            if(name) {
+                activeBranch.clients.push({ n: name, p: phone });
+                updateView();
+                document.getElementById('in_client_name').value = '';
+                document.getElementById('in_client_phone').value = '';
+            }
+        }
+    }
+
+    function saveFinance() {
+        activeBranch.rev = parseFloat(document.getElementById('in_rev').value) || 0;
+        activeBranch.exp = parseFloat(document.getElementById('in_exp').value) || 0;
+        updateView();
+        alert('تم حفظ البيانات المالية لشهر ' + document.getElementById('activeMonth').value);
+    }
+
+    function updateView() {
+        if(!activeBranch) return;
+        // تحديث جدول العملاء
+        const tbody = document.querySelector('#tbl-clients tbody');
+        tbody.innerHTML = activeBranch.clients.map(c => `<tr><td>${c.n}</td><td>${c.p}</td></tr>`).join('');
+        // تحديث المالية
+        document.getElementById('in_rev').value = activeBranch.rev;
+        document.getElementById('in_exp').value = activeBranch.exp;
+        document.getElementById('res_profit').innerText = (activeBranch.rev - activeBranch.exp).toLocaleString() + " ر.س";
+    }
+
+    renderBranches();
+</script>
+</body>
+</html>
