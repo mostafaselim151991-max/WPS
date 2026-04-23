@@ -86,7 +86,10 @@
 
     <div class="header">
         <h2 style="margin:0">👥 سادن | إدارة أفراد التسويق</h2>
-        <button onclick="openAddModal()" style="background:var(--success); color:white; border:none; padding:12px 24px; border-radius:10px; cursor:pointer; font-weight:bold;">➕ إضافة فرد جديد</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <button onclick="syncWithHrms()" style="background:#2563eb; color:white; border:none; padding:12px 24px; border-radius:10px; cursor:pointer; font-weight:bold;">🔄 مزامنة من HRMS</button>
+            <button onclick="openAddModal()" style="background:var(--success); color:white; border:none; padding:12px 24px; border-radius:10px; cursor:pointer; font-weight:bold;">➕ إضافة فرد جديد</button>
+        </div>
     </div>
 
     <div class="container">
@@ -115,9 +118,8 @@
                 <div><label style="font-size:12px; font-weight:bold;">نوع الخطة</label><select id="vType"><option value="daily">يومية</option><option value="weekly">أسبوعية</option><option value="monthly">شهرية</option></select></div>
                 <div><label style="font-size:12px; font-weight:bold;">الأهمية</label><select id="vClass"><option value="ذهبي">🌟 ذهبي (رئيسي)</option><option value="فضي">🥈 فضي (متوسط)</option><option value="عادي">📝 عادي</option></select></div>
                 <div><label style="font-size:12px; font-weight:bold;">حالة العميل</label><select id="vStatus"><option value="بارد">❄️ بارد</option><option value="دافئ">🔥 دافئ</option><option value="جاهز">✅ جاهز للتعاقد</option></select></div>
-                <button onclick="addVisitRecord()" style="background:var(--accent); color:white; border:none; padding:12px 20px; border-radius:10px; cursor:pointer;">إضافة للملف</button>
+                <button onclick="addVisit()" style="background:var(--accent); color:white; border:none; padding:12px 20px; border-radius:10px; cursor:pointer;">إضافة للملف</button>
             </div>
-
             <div class="ach-grid">
                 <div class="ach-column"><h3>📅 يومي</h3><div id="listDaily"></div></div>
                 <div class="ach-column"><h3>🗓️ أسبوعي</h3><div id="listWeekly"></div></div>
@@ -145,9 +147,44 @@
     </div>
 
 <script>
-    let staffData = JSON.parse(localStorage.getItem('saden_full_system')) || [];
+    let staffData = loadStaffData();
     let currentIdx = -1;
     let currentAchIdx = -1;
+
+    function loadStaffData() {
+        const hrmsEmployees = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+        const marketingStored = JSON.parse(localStorage.getItem('saden_marketing_staff') || localStorage.getItem('saden_full_system') || '[]');
+        const storedById = Object.fromEntries(marketingStored.map(s => [s.job_id, s]));
+        const merged = hrmsEmployees.filter(emp => emp.dept === 'التسويق').map(emp => {
+            const prev = storedById[emp.emp_number] || {};
+            return {
+                job_id: emp.emp_number || '',
+                name: emp.emp_name || '',
+                id_num: emp.id_number || '',
+                h_date: emp.join_date || emp.rejoin_date || '',
+                region: prev.region || '',
+                type: prev.type || ((emp.work_type === 'شفتات' || emp.work_type === 'ميداني') ? 'field' : 'office'),
+                mobile: emp.phone_number || prev.mobile || '',
+                email: emp.email || prev.email || '',
+                skills: prev.skills || '',
+                visits: prev.visits || {daily: [], weekly: [], monthly: []}
+            };
+        });
+        marketingStored.forEach(s => {
+            if (!merged.some(x => x.job_id === s.job_id)) {
+                merged.push(s);
+            }
+        });
+        localStorage.setItem('saden_marketing_staff', JSON.stringify(merged));
+        localStorage.setItem('saden_full_system', JSON.stringify(merged));
+        return merged;
+    }
+
+    function syncWithHrms() {
+        staffData = loadStaffData();
+        renderCards();
+        alert('✅ تم تحديث بيانات التسويق من سجل الموظفين');
+    }
 
     function renderCards(data = staffData) {
         const container = document.getElementById('staffContainer');
@@ -249,7 +286,10 @@
         save(); renderCards(); closeModal();
     }
 
-    function save() { localStorage.setItem('saden_full_system', JSON.stringify(staffData)); }
+    function save() { 
+        localStorage.setItem('saden_marketing_staff', JSON.stringify(staffData));
+        localStorage.setItem('saden_full_system', JSON.stringify(staffData));
+    }
     function closeModal() { document.getElementById('staffModal').style.display = 'none'; }
     function closeAchModal() { document.getElementById('achievementModal').style.display = 'none'; }
     function deleteStaff(i) { if(confirm("حذف؟")) { staffData.splice(i, 1); save(); renderCards(); } }

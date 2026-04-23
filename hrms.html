@@ -151,7 +151,7 @@
                         <div class="field"><label>المسمى الوظيفي</label><input type="text" id="company_job"></div>
                         <div class="field"><label>تاريخ الإلتحاق</label><input type="date" id="join_date"></div>
                         <div class="field"><label>تاريخ المباشرة (بعد الإجازة)</label><input type="date" id="rejoin_date"></div>
-                        <div class="field"><label>الإدارة</label><select id="dept"><option>الموارد البشرية</option><option>المالية</option><option>التشغيل</option></select></div>
+                        <div class="field"><label>الإدارة</label><select id="dept"><option>الموارد البشرية</option><option>المالية</option><option>التشغيل</option><option>التسويق</option></select></div>
                     </div>
                 </div>
             </div>
@@ -257,6 +257,40 @@
 <script>
     let db = [];
 
+    function loadDB() {
+        db = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+        renderList();
+    }
+
+    function saveDB() {
+        localStorage.setItem('saden_employees', JSON.stringify(db));
+        syncMarketingStaff();
+    }
+
+    function syncMarketingStaff() {
+        const stored = JSON.parse(localStorage.getItem('saden_marketing_staff') || '[]');
+        const existing = Object.fromEntries(stored.map(s => [s.job_id, s]));
+        const marketingList = [];
+
+        db.filter(emp => emp.dept === 'التسويق').forEach(emp => {
+            const prev = existing[emp.emp_number] || {};
+            marketingList.push({
+                job_id: emp.emp_number || '',
+                name: emp.emp_name || '',
+                id_num: emp.id_number || '',
+                h_date: emp.join_date || emp.rejoin_date || '',
+                region: prev.region || '',
+                type: prev.type || ((emp.work_type === 'شفتات' || emp.work_type === 'ميداني') ? 'field' : 'office'),
+                mobile: emp.phone_number || prev.mobile || '',
+                email: emp.email || prev.email || '',
+                skills: prev.skills || '',
+                visits: prev.visits || {daily: [], weekly: [], monthly: []}
+            });
+        });
+
+        localStorage.setItem('saden_marketing_staff', JSON.stringify(marketingList));
+    }
+
     function switchTab(e, id) {
         document.querySelectorAll('.tab-body').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
@@ -294,7 +328,6 @@
     function handleSave(e) {
     e.preventDefault();
     
-    // الحل هنا: بنلف على كل العناصر اللي ليها ID وبناخد قيمتها
     const data = {};
     const inputs = e.target.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
@@ -302,13 +335,10 @@
             data[input.id] = input.value;
         }
     });
-    // Capture attachments value from the div if needed
     data.attachments = document.getElementById('attachments_input').value;
-    // Capture profile picture
     const profilePicInput = document.getElementById('profile_pic');
     data.profile_pic = profilePicInput.dataset.base64 || '';
 
-    // التحقق من البيانات الأساسية - في حالة عدم تسجيل أي بيانات يتم رفض التسجيل
     const empName = data.emp_name ? data.emp_name.trim() : '';
     const empNumber = data.emp_number ? data.emp_number.trim() : '';
     
@@ -331,7 +361,7 @@
 
     if(editId === "-1") {
         db.push(data);
-        alert("✅ تم حفظ الموظف: " + data.emp_name); // دلوقتي هيقرأ الاسم صح من الـ id
+        alert("✅ تم حفظ الموظف: " + data.emp_name);
     } else {
         db[editId] = data;
         alert("✅ تم تحديث بيانات: " + data.emp_name);
@@ -339,7 +369,8 @@
         document.getElementById('main-title').innerText = "إنشاء ملف موظف جديد";
         document.getElementById('submit-btn').innerText = "💾 حفظ البيانات";
     }
-    
+
+    saveDB();
     e.target.reset();
     switchTab(null, 'list-tab');
 }
@@ -561,6 +592,8 @@
     function closeProfile() {
         document.getElementById('profile-overlay').style.display = "none";
     }
+
+    loadDB();
 </script>
 
 </body>
