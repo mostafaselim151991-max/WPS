@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة طلبات الصيانة - الفرع | سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark: #0f172a;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        body { margin: 0; padding: 20px; font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--dark); }
+        .page { max-width: 1100px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 26px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .stat-card h3 { margin: 0 0 8px; font-size: 13px; color: #475569; }
+        .stat-card .value { font-size: 26px; font-weight: 700; }
+        .stat-card.new .value { color: var(--primary); }
+        .stat-card.waiting .value { color: var(--warning); }
+        .stat-card.approved .value { color: var(--success); }
+        .stat-card.rejected .value { color: var(--danger); }
+        .card { background: white; border: 1px solid var(--border); border-radius: 18px; padding: 22px; box-shadow: 0 10px 25px rgba(15,23,42,0.06); }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { text-align: right; padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        th { background: #eff6ff; color: var(--dark); }
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .status-badge.new { background: #dbeafe; color: var(--primary); }
+        .status-badge.processing { background: #fef3c7; color: #92400e; }
+        .status-badge.waiting { background: #fed7aa; color: #92400e; }
+        .status-badge.approved { background: #d1fae5; color: #065f46; }
+        .status-badge.rejected { background: #fee2e2; color: #991b1b; }
+        .btn { border: none; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 700; }
+        .btn.primary { background: var(--primary); color: white; }
+        .btn.view { background: #64748b; color: white; }
+        .btn.small { padding: 6px 12px; font-size: 12px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45); backdrop-filter: blur(2px); z-index: 999; overflow-y: auto; }
+        .modal-content { background: white; border-radius: 18px; margin: 30px auto; padding: 24px; width: 92%; max-width: 900px; box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .close-btn { font-size: 28px; cursor: pointer; }
+        .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .detail-item { padding: 12px; background: #f8fafc; border-radius: 8px; border-right: 4px solid var(--primary); }
+        .detail-item label { display: block; font-size: 11px; color: #475569; font-weight: 700; margin-bottom: 4px; }
+        .detail-item span { font-size: 14px; color: var(--dark); font-weight: 700; }
+        .detail-item.full { grid-column: span 2; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="header">
+        <div>
+            <h1>🚗 إدارة طلبات صيانة الأسطول</h1>
+            <p>متابعة طلبات الصيانة المرسلة للورش وقبول/رفض التقديرات.</p>
+        </div>
+        <button class="btn primary" onclick="window.location.href='maintenance_request.html'">➕ طلب صيانة جديد</button>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card new"><h3>طلبات جديدة</h3><p class="value" id="countNew">0</p></div>
+        <div class="stat-card waiting"><h3>بانتظار الموافقة</h3><p class="value" id="countWaiting">0</p></div>
+        <div class="stat-card approved"><h3>موافقة</h3><p class="value" id="countApproved">0</p></div>
+        <div class="stat-card rejected"><h3>مرفوض</h3><p class="value" id="countRejected">0</p></div>
+    </div>
+
+    <div class="card">
+        <h2>قائمة الطلبات</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>رقم الطلب</th>
+                    <th>رقم اللوحة</th>
+                    <th>نوع الصيانة</th>
+                    <th>الورشة</th>
+                    <th>الحالة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="requestTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>تفاصيل طلب الصيانة</h2>
+            <span class="close-btn" onclick="closeDetailModal()">&times;</span>
+        </div>
+        <div class="detail-grid">
+            <div class="detail-item"><label>رقم الطلب</label><span id="detailOrderNo">---</span></div>
+            <div class="detail-item"><label>التاريخ</label><span id="detailDate">---</span></div>
+            <div class="detail-item"><label>رقم اللوحة</label><span id="detailPlate">---</span></div>
+            <div class="detail-item"><label>الممشى</label><span id="detailKM">---</span></div>
+            <div class="detail-item"><label>نوع الصيانة</label><span id="detailType">---</span></div>
+            <div class="detail-item"><label>الورشة المكلفة</label><span id="detailWorkshop">---</span></div>
+            <div class="detail-item full"><label>وصف العطل</label><span id="detailReason">---</span></div>
+        </div>
+
+        <div id="workshopReportSection" style="display:none; margin-top:20px; padding-top:20px; border-top:2px solid #eff6ff;">
+            <h3 style="color:var(--primary)">📋 تقرير الورشة</h3>
+            <div class="detail-grid" style="margin-top:12px;">
+                <div class="detail-item full"><label>التشخيص</label><span id="detailFaults">---</span></div>
+                <div class="detail-item"><label>التكلفة المقدرة</label><span id="detailCost">---</span></div>
+                <div class="detail-item"><label>مدة التنفيذ</label><span id="detailDays">---</span></div>
+                <div class="detail-item full"><label>ملاحظات الورشة</label><span id="detailNotes">---</span></div>
+            </div>
+        </div>
+
+        <div id="actionButtons" style="display:none; margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn primary" onclick="approveFromModal()" style="background:var(--success)">✅ الموافقة</button>
+            <button class="btn primary" onclick="rejectFromModal()" style="background:var(--danger)">❌ الرفض</button>
+        </div>
+
+        <div style="margin-top:20px; text-align:left;">
+            <button class="btn view" onclick="closeDetailModal()">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let requests = [];
+    let currentIndex = null;
+
+    function loadRequests() {
+        requests = JSON.parse(localStorage.getItem('saden_maintenance_db')) || [];
+        renderRequests();
+        updateStats();
+    }
+
+    function renderRequests() {
+        const table = document.getElementById('requestTable');
+        table.innerHTML = requests.map((item, index) => {
+            let statusClass = 'new';
+            if (item.status === 'بانتظار موافقة الفرع') statusClass = 'waiting';
+            else if (item.status === 'موافقة') statusClass = 'approved';
+            else if (item.status === 'مرفوض') statusClass = 'rejected';
+
+            return `
+                <tr>
+                    <td><b>${item.orderNo}</b></td>
+                    <td>${item.plate}</td>
+                    <td>${item.type}</td>
+                    <td>${item.workshop}</td>
+                    <td><span class="status-badge ${statusClass}">${item.status}</span></td>
+                    <td><button class="btn view btn-small" onclick="openDetailModal(${index})">عرض التفاصيل</button></td>
+                </tr>
+            `;
+        }).join('');
+
+        if (!requests.length) {
+            table.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#475569;">لا توجد طلبات صيانة حتى الآن.</td></tr>';
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('countNew').innerText = requests.filter(r => r.status === 'جديد').length;
+        document.getElementById('countWaiting').innerText = requests.filter(r => r.status === 'بانتظار موافقة الفرع').length;
+        document.getElementById('countApproved').innerText = requests.filter(r => r.status === 'موافقة').length;
+        document.getElementById('countRejected').innerText = requests.filter(r => r.status === 'مرفوض').length;
+    }
+
+    function openDetailModal(index) {
+        currentIndex = index;
+        const item = requests[index];
+
+        document.getElementById('detailOrderNo').innerText = item.orderNo;
+        document.getElementById('detailDate').innerText = item.date || '---';
+        document.getElementById('detailPlate').innerText = item.plate;
+        document.getElementById('detailKM').innerText = item.km ? item.km + ' كم' : '---';
+        document.getElementById('detailType').innerText = item.type;
+        document.getElementById('detailWorkshop').innerText = item.workshop + (item.externalName ? ' (' + item.externalName + ')' : '');
+        document.getElementById('detailReason').innerText = item.reason || '---';
+
+        const workshopSection = document.getElementById('workshopReportSection');
+        const actionButtons = document.getElementById('actionButtons');
+
+        if (item.status === 'بانتظار موافقة الفرع') {
+            workshopSection.style.display = 'block';
+            document.getElementById('detailFaults').innerText = item.workshopFaults || '---';
+            document.getElementById('detailCost').innerText = item.repairCost ? item.repairCost + ' ريال' : '---';
+            document.getElementById('detailDays').innerText = item.executionDays || '---';
+            document.getElementById('detailNotes').innerText = item.workshopNotes || '---';
+            actionButtons.style.display = 'flex';
+        } else {
+            workshopSection.style.display = 'none';
+            actionButtons.style.display = 'none';
+        }
+
+        document.getElementById('detailModal').style.display = 'block';
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').style.display = 'none';
+        currentIndex = null;
+    }
+
+    function approveFromModal() {
+        if (currentIndex === null) return;
+        requests[currentIndex].status = 'موافقة';
+        requests[currentIndex].branchApprovedAt = new Date().toISOString();
+        localStorage.setItem('saden_maintenance_db', JSON.stringify(requests));
+        loadRequests();
+        closeDetailModal();
+        alert('تم الموافقة على الإصلاح بنجاح.');
+    }
+
+    function rejectFromModal() {
+        const reason = prompt('اكتب سبب الرفض:');
+        if (!reason) return;
+
+        if (currentIndex === null) return;
+        requests[currentIndex].status = 'مرفوض';
+        requests[currentIndex].rejectionReason = reason;
+        requests[currentIndex].branchRejectedAt = new Date().toISOString();
+        localStorage.setItem('saden_maintenance_db', JSON.stringify(requests));
+        loadRequests();
+        closeDetailModal();
+        alert('تم رفض الطلب بنجاح. سيتم إبلاغ الورشة بقرارك.');
+    }
+
+    window.onclick = function(event) {
+        if (event.target === document.getElementById('detailModal')) closeDetailModal();
+    };
+
+    window.onload = loadRequests;
+</script>
+</body>
+</html>

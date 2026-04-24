@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ورشة الصيانة | نظام سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark: #0f172a;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        body { margin: 0; padding: 20px; font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--dark); }
+        .page { max-width: 1100px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 26px; }
+        .panel { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+        .panel select, .panel button { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: white; color: var(--dark); font-size: 14px; cursor: pointer; }
+        .panel button { background: var(--primary); color: white; border: none; }
+        .card { background: white; border: 1px solid var(--border); border-radius: 18px; padding: 22px; box-shadow: 0 10px 25px rgba(15,23,42,0.06); }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { text-align: right; padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        th { background: #eff6ff; color: var(--dark); }
+        .status { font-weight: 700; }
+        .status.new { color: var(--primary); }
+        .status.processing { color: var(--warning); }
+        .status.waiting { color: #c2410c; }
+        .status.approved { color: var(--success); }
+        .status.rejected { color: var(--danger); }
+        .btn { border: none; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 700; }
+        .btn.view { background: #64748b; color: white; }
+        .btn.save { background: var(--primary); color: white; }
+        .btn.cancel { background: #f8fafc; color: var(--dark); border: 1px solid var(--border); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.45); backdrop-filter: blur(2px); z-index: 999; overflow-y: auto; }
+        .modal-content { background: white; border-radius: 18px; margin: 30px auto; padding: 24px; width: 92%; max-width: 900px; box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 18px; }
+        .modal-header h2 { margin: 0; }
+        .close-btn { font-size: 28px; cursor: pointer; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .form-grid .field { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 13px; color: #475569; font-weight: 700; }
+        input, textarea, select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: #f8fafc; color: var(--dark); outline: none; }
+        textarea { min-height: 100px; resize: vertical; }
+        .full-width { grid-column: span 2; }
+        .note { color: #475569; font-size: 13px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="header">
+        <div>
+            <h1>🛠️ لوحة ورشة الصيانة</h1>
+            <p>عرض طلبات الصيانة المرسلة من الفروع وتحديد الأعطال وتكلفة الإصلاح.</p>
+        </div>
+        <button class="btn save" onclick="window.location.href='maintenance_request.html'">إنشاء طلب جديد</button>
+    </div>
+
+    <div class="panel">
+        <select id="workshopFilter" onchange="renderRequests()">
+            <option value="ورشة الرياض">ورشة الرياض</option>
+            <option value="ورشة جده">ورشة جده</option>
+            <option value="ورشة خميس مشيط">ورشة خميس مشيط</option>
+            <option value="ورشة خارجية">ورشة خارجية</option>
+        </select>
+        <button class="btn save" onclick="loadRequests()">تحديث الطلبات</button>
+    </div>
+
+    <div class="card">
+        <h2>جدول طلبات الصيانة</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>رقم الطلب</th>
+                    <th>التاريخ</th>
+                    <th>رقم اللوحة</th>
+                    <th>الفرع</th>
+                    <th>الورشة</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="requestTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="workshopModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>معالجة طلب الصيانة</h2>
+            <span class="close-btn" onclick="closeWorkshopModal()">&times;</span>
+        </div>
+        <div class="form-grid">
+            <div class="field full-width">
+                <label>رقم الطلب</label>
+                <input type="text" id="modalOrderNo" readonly>
+            </div>
+            <div class="field">
+                <label>المركبة</label>
+                <input type="text" id="modalPlate" readonly>
+            </div>
+            <div class="field">
+                <label>الفرع</label>
+                <input type="text" id="modalBranch" readonly>
+            </div>
+            <div class="field">
+                <label>وجهة الورشة</label>
+                <input type="text" id="modalWorkshop" readonly>
+            </div>
+            <div class="field">
+                <label>نوع الصيانة</label>
+                <input type="text" id="modalType" readonly>
+            </div>
+            <div class="field">
+                <label>الممشى</label>
+                <input type="text" id="modalKM" readonly>
+            </div>
+            <div class="field full-width">
+                <label>وصف العطل المرسل من الفرع</label>
+                <textarea id="modalReason" readonly></textarea>
+            </div>
+            <div class="field full-width">
+                <label>تشخيص الورشة والأعطال الفعلية</label>
+                <textarea id="modalFaults"></textarea>
+            </div>
+            <div class="field">
+                <label>تكلفة الإصلاح</label>
+                <input type="number" id="modalCost" placeholder="0.00">
+            </div>
+            <div class="field">
+                <label>مدة التنفيذ المتوقعة</label>
+                <input type="text" id="modalDays" placeholder="مثال: 3 أيام">
+            </div>
+            <div class="field full-width">
+                <label>ملاحظات الورشة</label>
+                <textarea id="modalWorkshopNotes"></textarea>
+            </div>
+        </div>
+        <div style="margin-top: 20px; display:flex; gap: 12px; justify-content:flex-end; flex-wrap:wrap;">
+            <button class="btn save" onclick="submitWorkshopReport()">إرسال للفرع للموافقة</button>
+            <button class="btn cancel" onclick="closeWorkshopModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let requests = [];
+    let currentEditIndex = null;
+
+    function loadRequests() {
+        requests = JSON.parse(localStorage.getItem('saden_maintenance_db')) || [];
+        renderRequests();
+    }
+
+    function renderRequests() {
+        const filter = document.getElementById('workshopFilter').value;
+        const table = document.getElementById('requestTable');
+        const filtered = requests.filter(item => item.workshop === filter || (filter === 'ورشة خارجية' && item.workshop === 'ورشة خارجية'));
+        table.innerHTML = filtered.map((item, index) => {
+            const statusClass = getStatusClass(item.status);
+            return `
+                <tr>
+                    <td>${item.orderNo}</td>
+                    <td>${item.date || '---'}</td>
+                    <td>${item.plate}</td>
+                    <td>${item.branch || '---'}</td>
+                    <td>${item.workshop}${item.workshop === 'ورشة خارجية' && item.externalName ? ' - ' + item.externalName : ''}</td>
+                    <td class="status ${statusClass}">${item.status || 'جديد'}</td>
+                    <td><button class="btn view" onclick="openWorkshopModal(${requests.indexOf(item)})">معالجة</button></td>
+                </tr>
+            `;
+        }).join('');
+
+        if (!filtered.length) table.innerHTML = '<tr><td colspan="7" style="padding:16px; text-align:center; color:#475569;">لا توجد طلبات لصيانة هذه الورشة حالياً.</td></tr>';
+    }
+
+    function getStatusClass(status) {
+        if (status === 'جديد') return 'new';
+        if (status === 'قيد المعالجة') return 'processing';
+        if (status === 'بانتظار موافقة الفرع') return 'waiting';
+        if (status === 'موافقة') return 'approved';
+        if (status === 'مرفوض') return 'rejected';
+        return '';
+    }
+
+    function openWorkshopModal(index) {
+        currentEditIndex = index;
+        const item = requests[index];
+        document.getElementById('modalOrderNo').value = item.orderNo;
+        document.getElementById('modalPlate').value = item.plate;
+        document.getElementById('modalBranch').value = item.branch || '---';
+        document.getElementById('modalWorkshop').value = item.workshop + (item.workshop === 'ورشة خارجية' && item.externalName ? ' - ' + item.externalName : '');
+        document.getElementById('modalType').value = item.type;
+        document.getElementById('modalKM').value = item.km ? item.km + ' كم' : '---';
+        document.getElementById('modalReason').value = item.reason || '---';
+        document.getElementById('modalFaults').value = item.workshopFaults || '';
+        document.getElementById('modalCost').value = item.repairCost || '';
+        document.getElementById('modalDays').value = item.executionDays || '';
+        document.getElementById('modalWorkshopNotes').value = item.workshopNotes || '';
+        document.getElementById('workshopModal').style.display = 'block';
+    }
+
+    function closeWorkshopModal() {
+        document.getElementById('workshopModal').style.display = 'none';
+        currentEditIndex = null;
+    }
+
+    function submitWorkshopReport() {
+        if (currentEditIndex === null) return;
+        const faults = document.getElementById('modalFaults').value.trim();
+        const cost = parseFloat(document.getElementById('modalCost').value) || 0;
+        const days = document.getElementById('modalDays').value.trim();
+        const notes = document.getElementById('modalWorkshopNotes').value.trim();
+
+        if (!faults || cost <= 0 || !days) {
+            alert('يرجى تعبئة التشخيص، التكلفة، ومدة التنفيذ قبل إرسال الطلب.');
+            return;
+        }
+
+        const request = requests[currentEditIndex];
+        request.workshopFaults = faults;
+        request.repairCost = cost;
+        request.executionDays = days;
+        request.workshopNotes = notes;
+        request.status = 'بانتظار موافقة الفرع';
+        request.workshopUpdatedAt = new Date().toISOString();
+
+        localStorage.setItem('saden_maintenance_db', JSON.stringify(requests));
+        loadRequests();
+        closeWorkshopModal();
+        alert('تم إرسال تقرير الورشة للفرع بنجاح.');
+    }
+
+    window.onclick = function(event) {
+        if (event.target === document.getElementById('workshopModal')) closeWorkshopModal();
+    };
+
+    window.onload = loadRequests;
+</script>
+</body>
+</html>

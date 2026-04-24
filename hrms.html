@@ -67,6 +67,148 @@
         .data-value { font-weight: bold; font-size: 14px; color: var(--navy); }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* === داش بورد الموظفين === */
+        .hrms-dashboard {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar-stats {
+            background: var(--navy);
+            border-radius: 16px;
+            padding: 25px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .sidebar-stats h3 {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+            color: #60a5fa;
+        }
+
+        .sidebar-stat-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            gap: 10px;
+        }
+
+        .sidebar-stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar-stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            flex-grow: 1;
+        }
+
+        .sidebar-stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            background: rgba(96, 165, 250, 0.2);
+            padding: 6px 12px;
+            border-radius: 8px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .stats-grid-top {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card-top {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-top: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .stat-card-top:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .stat-card-top.saudi { border-top-color: #059669; }
+        .stat-card-top.non-saudi { border-top-color: #f59e0b; }
+        .stat-card-top.female { border-top-color: #ec4899; }
+        .stat-card-top.male { border-top-color: #3b82f6; }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value-top {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--navy);
+            margin: 10px 0;
+        }
+
+        .stat-label-top {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        @media (max-width: 1200px) {
+            .hrms-dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-stats {
+                position: relative;
+                top: 0;
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
+                height: auto;
+            }
+
+            .sidebar-stat-item {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 5px;
+            }
+
+            .stats-grid-top {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hrms-dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats-grid-top {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
@@ -149,10 +291,9 @@
                 <div class="section-content">
                     <div class="grid">
                         <div class="field"><label>المسمى الوظيفي</label><input type="text" id="company_job"></div>
-                        <div class="field"><label>تاريخ الإلتحاق</label><input type="date" id="join_date"></div>
+                        <div class="field"><label>تاريخ الإلتحاق</label><input type="date" id="join_date" onchange="calculateVacationBalance()"></div>
                         <div class="field"><label>تاريخ المباشرة (بعد الإجازة)</label><input type="date" id="rejoin_date"></div>
-                        <div class="field"><label>الإدارة</label><select id="dept"><option>الموارد البشرية</option><option>المالية</option><option>التشغيل</option><option>التسويق</option></select></div>
-                    </div>
+                        <div class="field"><label>الإدارة</label><select id="dept"><option>الموارد البشرية</option><option>المالية</option><option>التشغيل</option><option>التسويق</option></select></div>                        <div class=\"field\"><label>المدير المباشر</label><input type=\"text\" id=\"direct_manager\"></div>                    </div>
                 </div>
             </div>
 
@@ -179,7 +320,8 @@
                 <div class="section-content">
                     <div class="grid">
                         <div class="field"><label>نظام الدوام</label><select id="work_type"><option>ثابت</option><option>شفتات</option></select></div>
-                        <div class="field"><label>رصيد الإجازات</label><input type="number" id="vacation_balance" value="30"></div>
+                        <div class="field"><label>تاريخ آخر عودة من إجازة</label><input type="date" id="last_return_date" onchange="calculateVacationBalance()"></div>
+                        <div class="field"><label>رصيد الإجازات السنوي</label><input type="number" id="vacation_balance" readonly style="background:#f0f0f0; cursor:not-allowed;"></div>
                     </div>
                 </div>
             </div>
@@ -237,6 +379,69 @@
 
     <div id="list-tab" class="tab-body">
         <header><h1>سجل الموظفين النشطين</h1></header>
+        
+        <!-- داش بورد الموظفين -->
+        <div class="hrms-dashboard">
+            <!-- الشبكة العلوية -->
+            <div class="stats-grid-top">
+                <div class="stat-card-top">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value-top" id="total-count">0</div>
+                    <div class="stat-label-top">إجمالي الموظفين</div>
+                </div>
+                <div class="stat-card-top saudi">
+                    <div class="stat-icon">🇸🇦</div>
+                    <div class="stat-value-top" id="saudi-count">0</div>
+                    <div class="stat-label-top">سعوديين</div>
+                </div>
+                <div class="stat-card-top non-saudi">
+                    <div class="stat-icon">🌍</div>
+                    <div class="stat-value-top" id="non-saudi-count">0</div>
+                    <div class="stat-label-top">غير سعوديين</div>
+                </div>
+                <div class="stat-card-top female">
+                    <div class="stat-icon">👩</div>
+                    <div class="stat-value-top" id="female-count">0</div>
+                    <div class="stat-label-top">إناث</div>
+                </div>
+                <div class="stat-card-top male">
+                    <div class="stat-icon">👨</div>
+                    <div class="stat-value-top" id="male-count">0</div>
+                    <div class="stat-label-top">ذكور</div>
+                </div>
+            </div>
+
+            <!-- البار الجانبي الأيسر -->
+            <div class="sidebar-stats">
+                <h3>📊 ملخص إحصائي</h3>
+                
+                <div class="sidebar-stat-item">
+                    <span class="sidebar-stat-label">👥 الإجمالي</span>
+                    <span class="sidebar-stat-value" id="sb-total">0</span>
+                </div>
+                
+                <div class="sidebar-stat-item">
+                    <span class="sidebar-stat-label">🇸🇦 سعوديين</span>
+                    <span class="sidebar-stat-value" id="sb-saudi">0</span>
+                </div>
+                
+                <div class="sidebar-stat-item">
+                    <span class="sidebar-stat-label">🌍 غير سعوديين</span>
+                    <span class="sidebar-stat-value" id="sb-non-saudi">0</span>
+                </div>
+                
+                <div class="sidebar-stat-item">
+                    <span class="sidebar-stat-label">👩 إناث</span>
+                    <span class="sidebar-stat-value" id="sb-female">0</span>
+                </div>
+                
+                <div class="sidebar-stat-item">
+                    <span class="sidebar-stat-label">👨 ذكور</span>
+                    <span class="sidebar-stat-value" id="sb-male">0</span>
+                </div>
+            </div>
+        </div>
+
         <div class="employees-grid" id="list-container"></div>
     </div>
 </div>
@@ -260,6 +465,62 @@
     function loadDB() {
         db = JSON.parse(localStorage.getItem('saden_employees') || '[]');
         renderList();
+        // توليد الرقم الوظيفي التلقائي عند فتح الصفحة للإضافة
+        document.getElementById('emp_number').value = generateEmpNumber();
+    }
+
+    function generateEmpNumber() {
+        if(db.length === 0) return '1001';
+        const lastNum = parseInt(db[db.length - 1].emp_number || '1000');
+        return (lastNum + 1).toString();
+    }
+
+    function calculateVacationBalance() {
+        const lastReturnDate = document.getElementById('last_return_date').value;
+        const joinDate = document.getElementById('join_date').value;
+        
+        if(!lastReturnDate) {
+            document.getElementById('vacation_balance').value = '';
+            return;
+        }
+        
+        const returnDate = new Date(lastReturnDate);
+        const today = new Date();
+        
+        // حساب الفرق بالأيام من تاريخ آخر عودة إلى اليوم
+        const diffTime = today - returnDate;
+        const daysSinceReturn = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        // الإجازة السنوية حسب قانون مكتب العمل السعودي:
+        // - الحد الأدنى: 21 يوم سنوياً
+        // - من 5-9 سنوات: +1 يوم لكل سنة إضافية
+        // - 10 سنوات فما فوق: 30 يوم
+        
+        let annualVacation = 21; // الحد الأدنى
+        
+        if(joinDate) {
+            const startDate = new Date(joinDate);
+            const yearsOfService = Math.floor((today - startDate) / (365.25 * 24 * 60 * 60 * 1000));
+            
+            if(yearsOfService >= 10) {
+                annualVacation = 30;
+            } else if(yearsOfService >= 5) {
+                annualVacation = 21 + (yearsOfService - 4);
+            }
+        }
+        
+        // حساب الأيام المستحقة من بداية السنة (الإجازة السنوية موزعة على 365 يوم)
+        const accrualPerDay = annualVacation / 365;
+        const earnedDays = Math.floor(daysSinceReturn * accrualPerDay);
+        
+        document.getElementById('vacation_balance').value = Math.max(0, earnedDays);
+    }
+
+    function resetForm() {
+        document.getElementById('hrForm').reset();
+        document.getElementById('emp_number').value = generateEmpNumber();
+        document.getElementById('vacation_balance').value = '';
+        document.getElementById('edit-id').value = '-1';
     }
 
     function saveDB() {
@@ -371,11 +632,53 @@
     }
 
     saveDB();
-    e.target.reset();
+    resetForm();
     switchTab(null, 'list-tab');
 }
+    function calculateStats() {
+        const stats = {
+            total: db.length,
+            saudi: 0,
+            nonSaudi: 0,
+            female: 0,
+            male: 0
+        };
+
+        db.forEach(emp => {
+            // حساب السعوديين
+            if(emp.emp_national && (emp.emp_national.includes('سعود') || emp.emp_national === 'السعودية')) {
+                stats.saudi++;
+            } else if(emp.emp_national) {
+                stats.nonSaudi++;
+            }
+
+            // حساب الجنس
+            if(emp.gender === 'أنثى') {
+                stats.female++;
+            } else if(emp.gender === 'ذكر') {
+                stats.male++;
+            }
+        });
+
+        // تحديث الشبكة العلوية
+        document.getElementById('total-count').innerText = stats.total;
+        document.getElementById('saudi-count').innerText = stats.saudi;
+        document.getElementById('non-saudi-count').innerText = stats.nonSaudi;
+        document.getElementById('female-count').innerText = stats.female;
+        document.getElementById('male-count').innerText = stats.male;
+
+        // تحديث البار الجانبي
+        document.getElementById('sb-total').innerText = stats.total;
+        document.getElementById('sb-saudi').innerText = stats.saudi;
+        document.getElementById('sb-non-saudi').innerText = stats.nonSaudi;
+        document.getElementById('sb-female').innerText = stats.female;
+        document.getElementById('sb-male').innerText = stats.male;
+    }
+
     function renderList() {
         const cont = document.getElementById('list-container');
+        calculateStats();
+        
         if(db.length === 0) {
             cont.innerHTML = '<p style="grid-column:1/-1; text-align:center;">لا توجد بيانات موظفين حالياً</p>';
             return;
@@ -401,6 +704,8 @@
                     <span>🪪 ${emp.id_number || '-'}</span>
                     <span>🏢 ${emp.dept || 'بدون إدارة'}</span>
                 </div>
+                ${emp.direct_manager ? `<div class="emp-card-meta" style="border-top: 1px solid #e2e8f0; margin-top: 10px; padding-top: 10px;"><span>👔 مدير: ${emp.direct_manager}</span></div>` : ''}
+                ${emp.vacation_balance ? `<div style="background: #ecfdf5; padding: 10px; border-radius: 8px; text-align: center; margin-top: 10px; border: 1px solid #86efac;"><span style="font-size: 12px; color: #059669; font-weight: bold;">✓ إجازة متاحة: ${emp.vacation_balance} أيام</span></div>` : ''}
                 <div class="emp-card-contacts">
                     <a class="${waClass}" href="${waHref}" target="_blank" onclick="event.stopPropagation();">
                         <span>🟢</span><span>WhatsApp</span>
@@ -491,7 +796,8 @@
             company_job: "المسمى الوظيفي",
             join_date: "تاريخ الالتحاق",
             rejoin_date: "تاريخ المباشرة",
-            dept: "الإدارة"
+            dept: "الإدارة",
+            direct_manager: "المدير المباشر"
         }
     },
 
@@ -509,7 +815,8 @@
         t: "الحضور والإجازات",
         f: {
             work_type: "نظام الدوام",
-            vacation_balance: "رصيد الإجازات"
+            last_return_date: "تاريخ آخر عودة من إجازة",
+            vacation_balance: "رصيد الإجازات السنوي"
         }
     },
 

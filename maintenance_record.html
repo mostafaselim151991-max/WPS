@@ -67,7 +67,22 @@
         
         <div id="modalBody" class="detail-grid"></div>
 
+        <!-- قسم الورشة الجديد -->
+        <div id="workshopSection" style="display:none; margin-top: 25px; padding-top: 20px; border-top: 2px solid #eff6ff;">
+            <h3 style="margin-top:0; color:#2563eb;">📋 تقرير الورشة</h3>
+            <div class="detail-grid">
+                <div class="detail-item full-width"><label>تشخيص الأعطال من الورشة</label><span id="workshopFaults">---</span></div>
+                <div class="detail-item"><label>تكلفة الإصلاح</label><span id="workshopCost">---</span></div>
+                <div class="detail-item"><label>مدة التنفيذ</label><span id="workshopDays">---</span></div>
+                <div class="detail-item full-width"><label>ملاحظات الورشة</label><span id="workshopNotes">---</span></div>
+            </div>
+        </div>
+
         <div style="margin-top: 25px; text-align: left; border-top: 1px solid #eee; padding-top: 20px;">
+            <div id="branchActionButtons" style="display:none;">
+                <button class="btn-action btn-view" onclick="approveRequest()" style="padding: 12px 30px; background:#10b981">✅ الموافقة على الإصلاح</button>
+                <button class="btn-action btn-delete" onclick="rejectRequest()" style="padding: 12px 30px;">❌ رفض الإصلاح</button>
+            </div>
             <button class="btn-action btn-view" onclick="window.print()" style="padding: 12px 30px;">طباعة التقرير 🖨️</button>
             <button class="btn-action btn-edit" id="modalEditBtn" style="padding: 12px 30px;">تعديل الطلب 📝</button>
             <button class="btn-action btn-delete" onclick="closeModal()" style="padding: 12px 30px; background:#64748b">إغلاق</button>
@@ -83,27 +98,50 @@
         logs = JSON.parse(localStorage.getItem('saden_maintenance_db')) || [];
         fleet = JSON.parse(localStorage.getItem('saden_fleet_db')) || [];
         const body = document.getElementById('logBody');
-        body.innerHTML = logs.map((log, index) => `
+        body.innerHTML = logs.map((log, index) => {
+            let statusIcon = '📝';
+            let statusColor = '#3b82f6';
+            
+            if (log.status === 'جديد') {
+                statusIcon = '🆕';
+                statusColor = '#3b82f6';
+            } else if (log.status === 'قيد المعالجة') {
+                statusIcon = '⚙️';
+                statusColor = '#f59e0b';
+            } else if (log.status === 'بانتظار موافقة الفرع') {
+                statusIcon = '⏳';
+                statusColor = '#c2410c';
+            } else if (log.status === 'موافقة') {
+                statusIcon = '✅';
+                statusColor = '#10b981';
+            } else if (log.status === 'مرفوض') {
+                statusIcon = '❌';
+                statusColor = '#ef4444';
+            } else if (log.status === 'تم التنفيذ') {
+                statusIcon = '✔️';
+                statusColor = '#065f46';
+            }
+
+            return `
             <tr>
                 <td><b>${log.orderNo}</b></td>
                 <td>${log.date || 'غير محدد'}</td>
                 <td>${log.plate}</td>
                 <td>${log.type}</td>
-                <td><span style="color: ${log.status === 'جديد' ? '#3b82f6' : '#f59e0b'}">${log.status}</span></td>
+                <td><span style="color: ${statusColor}; font-weight:bold">${statusIcon} ${log.status}</span></td>
                 <td>
                     <button class="btn-action btn-view" onclick="openModal(${index})">👁️ عرض شامل</button>
                     <button class="btn-action btn-edit" onclick="goToEdit(${index})">✏️</button>
                     <button class="btn-action btn-delete" onclick="deleteOrder(${index})">🗑️</button>
                 </td>
             </tr>
-        `).join('');
+        `}).join('');
     }
 
     function openModal(index) {
         const item = logs[index];
         const carInfo = fleet.find(c => c.plate === item.plate) || {};
         
-        // الأولوية للفرع المخزن في الطلب، وإذا لم يوجد نجلب من بيانات السيارة
         const branchDisplay = item.branch || carInfo.branch || 'غير محدد';
 
         const body = document.getElementById('modalBody');
@@ -131,7 +169,25 @@
             <div class="detail-item full-width"><label>ملاحظات إضافية للإدارة</label><span>${item.desc || 'لا يوجد ملاحظات'}</span></div>
         `;
         
+        // عرض قسم الورشة إذا كان هناك تقرير
+        const workshopSection = document.getElementById('workshopSection');
+        const branchActionButtons = document.getElementById('branchActionButtons');
+        
+        if (item.status === 'بانتظار موافقة الفرع') {
+            workshopSection.style.display = 'block';
+            document.getElementById('workshopFaults').innerText = item.workshopFaults || '---';
+            document.getElementById('workshopCost').innerText = item.repairCost ? item.repairCost + ' ريال' : '---';
+            document.getElementById('workshopDays').innerText = item.executionDays || '---';
+            document.getElementById('workshopNotes').innerText = item.workshopNotes || '---';
+            branchActionButtons.style.display = 'flex';
+            branchActionButtons.style.gap = '8px';
+        } else {
+            workshopSection.style.display = 'none';
+            branchActionButtons.style.display = 'none';
+        }
+        
         document.getElementById('modalEditBtn').onclick = () => goToEdit(index);
+        window.currentModalIndex = index;
         document.getElementById('viewModal').style.display = 'block';
     }
 
@@ -147,6 +203,38 @@
             localStorage.setItem('saden_maintenance_db', JSON.stringify(logs));
             loadLogs();
         }
+    }
+
+    function approveRequest() {
+        const index = window.currentModalIndex;
+        if (index === null || index === undefined) return;
+        
+        logs[index].status = 'موافقة';
+        logs[index].branchApprovedAt = new Date().toISOString();
+        logs[index].branchApprovedBy = 'الفرع - ' + logs[index].branch;
+        
+        localStorage.setItem('saden_maintenance_db', JSON.stringify(logs));
+        loadLogs();
+        closeModal();
+        alert('تم الموافقة على طلب الإصلاح. سيتم إرسال البيانات للورشة للتنفيذ.');
+    }
+
+    function rejectRequest() {
+        const reason = prompt('يرجى كتابة سبب الرفض:');
+        if (!reason) return;
+
+        const index = window.currentModalIndex;
+        if (index === null || index === undefined) return;
+        
+        logs[index].status = 'مرفوض';
+        logs[index].rejectionReason = reason;
+        logs[index].branchRejectedAt = new Date().toISOString();
+        logs[index].branchRejectedBy = 'الفرع - ' + logs[index].branch;
+        
+        localStorage.setItem('saden_maintenance_db', JSON.stringify(logs));
+        loadLogs();
+        closeModal();
+        alert('تم رفض طلب الإصلاح. سيتم إبلاغ الورشة بقرار الفرع.');
     }
 
     window.onclick = function(event) {

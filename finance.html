@@ -2,115 +2,278 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>سادن ERP | دليل الحسابات المتكامل</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <title>سادن ERP | نظام الحسابات المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --navy: #0f172a; --blue: #2563eb; --emerald: #059669; 
-            --rose: #e11d48; --amber: #d97706; --bg: #f8fafc; 
+        :root {
+            --navy: #0f172a;
+            --blue: #2563eb;
+            --emerald: #059669;
+            --rose: #e11d48;
+            --amber: #d97706;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --border: #e2e8f0;
         }
-        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
-        
-        .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); padding: 30px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--navy); padding-bottom: 20px; margin-bottom: 25px; }
-        
-        /* تصميم الشجرة الشجرية */
-        .coa-tree, .coa-tree ul { list-style: none; padding-right: 25px; margin: 0; }
-        .coa-tree ul { display: none; border-right: 1px dashed #cbd5e1; }
-        
-        .node-row { 
-            display: flex; align-items: center; gap: 12px; padding: 10px 15px; 
-            border-bottom: 1px solid #f1f5f9; cursor: pointer; border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-        .node-row:hover { background: #f1f5f9; transform: translateX(-5px); }
-        
-        .plus-btn { 
-            width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; 
-            background: #e2e8f0; border-radius: 6px; font-weight: bold; font-size: 16px; color: var(--navy);
-        }
-        .plus-btn.active { background: var(--navy); color: white; }
-
-        .acc-code { font-family: 'Courier New', monospace; background: #eff6ff; padding: 3px 8px; border-radius: 4px; color: var(--blue); font-weight: bold; min-width: 65px; text-align: center; }
-        .acc-name { font-weight: 600; flex-grow: 1; font-size: 15px; }
-        
-        /* ألوان الفئات */
-        .badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: bold; color: white; }
-        .cat-1 { background: var(--emerald); } /* أصول */
-        .cat-2 { background: var(--rose); }    /* خصوم */
-        .cat-3 { background: var(--navy); }    /* ملكية */
-        .cat-4 { background: var(--blue); }    /* إيرادات */
-        .cat-5 { background: var(--amber); }   /* مصروفات */
-        .cat-9 { background: #64748b; }        /* ختامية */
-
-        .btn-add { background: var(--navy); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-family: 'Tajawal'; font-weight: bold; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 20px; background: var(--bg); color: var(--text); font-family: 'Tajawal', sans-serif; }
+        .container { max-width: 1180px; margin: auto; background: var(--surface); border-radius: 18px; box-shadow: 0 18px 45px rgba(15,23,42,.08); overflow: hidden; }
+        .page-header { padding: 28px 32px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+        .page-header h1 { margin: 0; font-size: 26px; }
+        .page-header p { margin: 6px 0 0; color: var(--muted); }
+        .tab-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 32px; border-bottom: 1px solid var(--border); background: #f8fafc; }
+        .tab-bar button { border: none; background: transparent; padding: 12px 18px; border-radius: 12px; cursor: pointer; color: var(--muted); font-weight: 600; transition: all .2s ease; }
+        .tab-bar button.active { background: var(--navy); color: white; box-shadow: 0 8px 20px rgba(37,99,235,.18); }
+        .content-area { padding: 32px; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .grid { display: grid; gap: 20px; }
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+        .card h2 { margin: 0 0 14px; font-size: 18px; }
+        label { display: block; margin-bottom: 8px; color: var(--muted); font-size: 13px; }
+        input, select, textarea { width: 100%; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; background: #f8fafc; color: var(--text); font-size: 14px; }
+        textarea { min-height: 110px; resize: vertical; }
+        button.primary { background: var(--navy); color: white; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 700; }
+        button.secondary { background: #eef2ff; color: var(--navy); border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { text-align: right; padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        th { color: var(--muted); font-weight: 700; }
+        .small-note { color: var(--muted); font-size: 13px; margin-top: 8px; }
+        .badge { display: inline-flex; align-items: center; justify-content: center; padding: 5px 10px; border-radius: 999px; color: white; font-size: 12px; font-weight: 700; }
+        .badge.asset { background: var(--emerald); }
+        .badge.liability { background: var(--rose); }
+        .summary-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+        .summary-card { background: #f8fafc; border-radius: 16px; padding: 18px; }
+        .summary-card h3 { margin: 0 0 10px; font-size: 15px; color: var(--muted); }
+        .summary-card p { margin: 0; font-size: 26px; font-weight: 700; }
+        .alert { background: #fef3c7; color: #92400e; padding: 14px 18px; border-radius: 14px; margin-bottom: 20px; border: 1px solid #fde68a; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <div class="header">
+    <div class="page-header">
         <div>
-            <h2 style="margin:0">دليل الحسابات الشامل | شركة سادن</h2>
-            <p style="margin:5px 0 0; color: #64748b;">الهيكل المحاسبي المتكامل (أصول - خصوم - ملكية - إيرادات - مصروفات)</p>
+            <h1>نظام الحسابات الذكي</h1>
+            <p>ابدأ بإدارة قيودك، فواتيرك، سجلات الأصول والتقارير المالية وفق معايير سعودية.</p>
         </div>
-        <button class="btn-add">📥 تصدير الدليل (Excel)</button>
+        <button class="primary" onclick="resetData()">🧹 إعادة ضبط البيانات</button>
     </div>
 
-    <div id="coaContainer" class="coa-tree">
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="coa">دليل الحسابات</button>
+        <button class="tab-btn" data-tab="journal">القيد اليومي</button>
+        <button class="tab-btn" data-tab="invoices">الفواتير</button>
+        <button class="tab-btn" data-tab="assets">الأصول</button>
+        <button class="tab-btn" data-tab="reports">التقارير</button>
+    </div>
+
+    <div class="content-area">
+        <div id="coa" class="section active">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h2>دليل الحسابات</h2>
+                    <div id="coaContainer"></div>
+                    <p class="small-note">يمكنك بناء شجرة الحسابات وحفظها محلياً.</p>
+                </div>
+                <div class="card">
+                    <h2>إضافة حساب جديد</h2>
+                    <label>رمز الحساب</label>
+                    <input id="newAccountCode" placeholder="مثال: 12003" />
+                    <label>اسم الحساب</label>
+                    <input id="newAccountName" placeholder="مثال: البنك الأهلي" />
+                    <label>الحساب الأب</label>
+                    <select id="newAccountParent"></select>
+                    <label>الفئة</label>
+                    <select id="newAccountCategory">
+                        <option value="cat-1">أصول</option>
+                        <option value="cat-2">خصوم</option>
+                        <option value="cat-3">حقوق الملكية</option>
+                        <option value="cat-4">إيرادات</option>
+                        <option value="cat-5">مصروفات</option>
+                        <option value="cat-9">ختامي</option>
+                    </select>
+                    <button class="primary" onclick="addAccount()">إضافة الحساب</button>
+                    <p class="small-note">يجب أن يكون رمز الحساب فريداً وأن يُحدّد الحساب الأب.</p>
+                </div>
+            </div>
         </div>
+
+        <div id="journal" class="section">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h2>إضافة قيد يومي</h2>
+                    <label>التاريخ</label>
+                    <input type="date" id="journalDate" />
+                    <label>الحساب المدين</label>
+                    <select id="journalDebit"></select>
+                    <label>الحساب الدائن</label>
+                    <select id="journalCredit"></select>
+                    <label>المبلغ</label>
+                    <input type="number" id="journalAmount" placeholder="0.00" />
+                    <label>الوصف</label>
+                    <textarea id="journalNotes" placeholder="أدخل وصفاً للقيد..." ></textarea>
+                    <button class="primary" onclick="addJournalEntry()">حفظ القيد</button>
+                </div>
+                <div class="card">
+                    <h2>القيود اليومية</h2>
+                    <div id="journalList"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="invoices" class="section">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h2>إضافة فاتورة</h2>
+                    <label>نوع الفاتورة</label>
+                    <select id="invoiceType" onchange="renderInvoiceForm()">
+                        <option value="sales">مبيعات</option>
+                        <option value="purchase">مشتريات</option>
+                    </select>
+                    <label>العميل / المورد</label>
+                    <input id="invoiceParty" placeholder="اسم العميل أو المورد" />
+                    <label>القيمة الإجمالية</label>
+                    <input type="number" id="invoiceAmount" placeholder="0.00" />
+                    <label>الوصف</label>
+                    <textarea id="invoiceNotes" placeholder="وصف الفاتورة..." ></textarea>
+                    <button class="primary" onclick="addInvoice()">حفظ الفاتورة</button>
+                </div>
+                <div class="card">
+                    <h2>قائمة الفواتير</h2>
+                    <div id="invoiceList"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="assets" class="section">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h2>سجل الأصول الثابتة</h2>
+                    <label>اسم الأصل</label>
+                    <input id="assetName" placeholder="مثال: رافعة كهربائية" />
+                    <label>التاريخ</label>
+                    <input type="date" id="assetDate" />
+                    <label>القيمة الأصلية</label>
+                    <input type="number" id="assetValue" placeholder="0.00" />
+                    <label>معدل الاستهلاك السنوي (%)</label>
+                    <input type="number" id="assetRate" placeholder="مثال: 10" />
+                    <button class="primary" onclick="addAsset()">إضافة الأصل</button>
+                </div>
+                <div class="card">
+                    <h2>قائمة الأصول</h2>
+                    <div id="assetList"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="reports" class="section">
+            <div class="alert">في هذا القسم تجد التقارير المالية الأساسية: ميزانية، قائمة دخل، وزكاة.</div>
+            <div class="summary-grid">
+                <div class="summary-card"><h3>إجمالي الأصول</h3><p id="reportAssets">0</p></div>
+                <div class="summary-card"><h3>إجمالي الخصوم</h3><p id="reportLiabilities">0</p></div>
+                <div class="summary-card"><h3>إجمالي حقوق الملكية</h3><p id="reportEquity">0</p></div>
+                <div class="summary-card"><h3>صافي الربح</h3><p id="reportNetProfit">0</p></div>
+            </div>
+            <div class="grid grid-2" style="margin-top: 24px;">
+                <div class="card">
+                    <h2>قائمة الدخل</h2>
+                    <div id="incomeStatement"></div>
+                </div>
+                <div class="card">
+                    <h2>الميزانية العمومية</h2>
+                    <div id="balanceSheet"></div>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 24px;">
+                <h2>تقرير الزكاة</h2>
+                <div id="zakatReport"></div>
+            </div>
+            <div class="card" style="margin-top: 24px;">
+                <h2>ميزان المراجعة المبسّط</h2>
+                <div id="trialBalance"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // الدليل الكامل المدمج (سادن + حقوق الملكية)
-    const sadenCOA = [
-        // 1- الأصول (من صورتك)
+    const defaultCOA = [
         { id: 1, code: '1', name: 'الأصول', parent: 0, cat: 'cat-1' },
         { id: 11, code: '11', name: 'الأصول الثابتة', parent: 1, cat: 'cat-1' },
         { id: 11001, code: '11001', name: 'مباني', parent: 11, cat: 'cat-1' },
         { id: 11002, code: '11002', name: 'السيارات', parent: 11, cat: 'cat-1' },
-        { id: 11007, code: '11007', name: 'آلات ومعدات الورش والحفر', parent: 11, cat: 'cat-1' },
         { id: 12, code: '12', name: 'الأموال الجاهزة', parent: 1, cat: 'cat-1' },
         { id: 12001, code: '12001', name: 'الصناديق', parent: 12, cat: 'cat-1' },
         { id: 12002, code: '12002', name: 'البنوك', parent: 12, cat: 'cat-1' },
-        { id: 13, code: '13', name: 'عهد نقدية', parent: 1, cat: 'cat-1' },
-        { id: 15, code: '15', name: 'ضريبة المشتريات (VAT Input)', parent: 1, cat: 'cat-1' },
-
-        // 2- الخصوم (من صورتك)
-        { id: 2, code: '2', name: 'الخصوم (الالتزامات)', parent: 0, cat: 'cat-2' },
+        { id: 2, code: '2', name: 'الخصوم', parent: 0, cat: 'cat-2' },
         { id: 25, code: '25', name: 'ضريبة المبيعات (VAT Output)', parent: 2, cat: 'cat-2' },
-        { id: 28, code: '28', name: 'الموردون ودائنون مختلفون', parent: 2, cat: 'cat-2' },
-        { id: 29, code: '29', name: 'مصروفات مستحقة', parent: 2, cat: 'cat-2' },
-
-        // 3- حقوق الملكية (الإضافة التصحيحية)
+        { id: 28, code: '28', name: 'الموردون', parent: 2, cat: 'cat-2' },
         { id: 3, code: '3', name: 'حقوق الملكية', parent: 0, cat: 'cat-3' },
-        { id: 31, code: '31', name: 'رأس المال المدفوع', parent: 3, cat: 'cat-3' },
-        { id: 32, code: '32', name: 'جاري المالك / الشركاء', parent: 3, cat: 'cat-3' },
-        { id: 33, code: '33', name: 'أرباح مبقاة (مدورة)', parent: 3, cat: 'cat-3' },
-
-        // 4- الإيرادات
         { id: 4, code: '4', name: 'الإيرادات', parent: 0, cat: 'cat-4' },
-        { id: 41, code: '41', name: 'إيرادات مبيعات النشاط', parent: 4, cat: 'cat-4' },
-        { id: 411, code: '411', name: 'إيرادات الفروع (جيزان/الرياض)', parent: 41, cat: 'cat-4' },
-
-        // 5- المصروفات (تشمل تكاليف المشروعات)
-        { id: 5, code: '5', name: 'المصروفات', parent: 0, cat: 'cat-5' },
-        { id: 51, code: '51', name: 'تكلفة تشغيلية للمشروعات (مباشرة)', parent: 5, cat: 'cat-5' },
-        { id: 52, code: '52', name: 'مصروفات عمومية وإدارية', parent: 5, cat: 'cat-5' },
-        { id: 53, code: '53', name: 'رواتب وأجور الموظفين', parent: 5, cat: 'cat-5' },
-
-        // 9- الحسابات الختامية
-        { id: 9, code: '9', name: 'الحسابات الختامية', parent: 0, cat: 'cat-9' },
-        { id: 91, code: '91', name: 'ملخص القائمة (أرباح وخسائر)', parent: 9, cat: 'cat-9' }
+        { id: 5, code: '5', name: 'المصروفات', parent: 0, cat: 'cat-5' }
     ];
 
+    const state = {
+        coa: [],
+        journal: [],
+        sales: [],
+        purchase: [],
+        assets: []
+    };
+
+    const STORAGE_KEYS = {
+        coa: 'saden_coa',
+        journal: 'saden_journal_entries',
+        sales: 'saden_sales_invoices',
+        purchase: 'saden_purchase_invoices',
+        assets: 'saden_fixed_assets'
+    };
+
+    function getStorage(key, fallback) {
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return fallback;
+            return JSON.parse(raw);
+        } catch (err) {
+            return fallback;
+        }
+    }
+
+    function saveStorage(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    function initApp() {
+        state.coa = getStorage(STORAGE_KEYS.coa, defaultCOA);
+        state.journal = getStorage(STORAGE_KEYS.journal, []);
+        state.sales = getStorage(STORAGE_KEYS.sales, []);
+        state.purchase = getStorage(STORAGE_KEYS.purchase, []);
+        state.assets = getStorage(STORAGE_KEYS.assets, []);
+
+        renderCOA();
+        renderAccountOptions();
+        renderJournalList();
+        renderInvoiceList();
+        renderAssetList();
+        renderReports();
+    }
+
+    function renderCOA() {
+        const container = document.getElementById('coaContainer');
+        container.innerHTML = buildTree(0).replace('<ul>', '<ul style="display:block; padding:0">');
+        renderAccountParentOptions();
+    }
+
     function buildTree(parentId) {
-        const children = sadenCOA.filter(item => item.parent === parentId);
-        if (children.length === 0) return '';
+        const children = state.coa.filter(item => item.parent === parentId);
+        if (!children.length) return '';
 
         let html = '<ul>';
         children.forEach(acc => {
-            const hasSub = sadenCOA.some(s => s.parent === acc.id);
+            const hasSub = state.coa.some(item => item.parent === acc.id);
             html += `
                 <li>
                     <div class="node-row" onclick="toggleNode(this)">
@@ -128,26 +291,349 @@
     }
 
     function getCatName(cat) {
-        const names = { 'cat-1': 'أصول', 'cat-2': 'خصوم', 'cat-3': 'ملكية', 'cat-4': 'إيراد', 'cat-5': 'مصروف', 'cat-9': 'ختامي' };
-        return names[cat];
+        return { 'cat-1': 'أصول', 'cat-2': 'خصوم', 'cat-3': 'ملكية', 'cat-4': 'إيرادات', 'cat-5': 'مصروف', 'cat-9': 'ختامي' }[cat] || 'عام';
     }
 
     function toggleNode(el) {
         const sub = el.nextElementSibling;
         const btn = el.querySelector('.plus-btn');
         if (sub && sub.tagName === 'UL') {
-            const isHidden = sub.style.display === 'none' || sub.style.display === '';
-            sub.style.display = isHidden ? 'block' : 'none';
+            const show = sub.style.display === 'none' || !sub.style.display;
+            sub.style.display = show ? 'block' : 'none';
             if (btn) {
-                btn.innerText = isHidden ? '-' : '+';
-                btn.classList.toggle('active', isHidden);
+                btn.innerText = show ? '-' : '+';
+                btn.classList.toggle('active', show);
             }
         }
     }
 
-    // تشغيل البناء
-    document.getElementById('coaContainer').innerHTML = buildTree(0).replace('<ul>', '<ul style="display:block; padding:0">');
-</script>
+    function renderAccountParentOptions() {
+        const select = document.getElementById('newAccountParent');
+        select.innerHTML = '<option value="0">رئيسي</option>' + state.coa.map(acc => `<option value="${acc.id}">${acc.code} - ${acc.name}</option>`).join('');
+    }
 
+    function renderAccountOptions() {
+        const options = state.coa.map(acc => `<option value="${acc.code}">${acc.code} - ${acc.name}</option>`).join('');
+        document.getElementById('journalDebit').innerHTML = options;
+        document.getElementById('journalCredit').innerHTML = options;
+    }
+
+    function addAccount() {
+        const code = document.getElementById('newAccountCode').value.trim();
+        const name = document.getElementById('newAccountName').value.trim();
+        const parent = Number(document.getElementById('newAccountParent').value);
+        const cat = document.getElementById('newAccountCategory').value;
+
+        if (!code || !name) {
+            alert('يرجى إدخال رمز واسم الحساب.');
+            return;
+        }
+        if (state.coa.some(acc => acc.code === code)) {
+            alert('هذا الرمز مستخدم بالفعل. اختر رمزاً آخر.');
+            return;
+        }
+
+        const newId = Date.now();
+        state.coa.push({ id: newId, code, name, parent, cat });
+        saveStorage(STORAGE_KEYS.coa, state.coa);
+        document.getElementById('newAccountCode').value = '';
+        document.getElementById('newAccountName').value = '';
+        renderCOA();
+        renderAccountOptions();
+    }
+
+    function addJournalEntry() {
+        const date = document.getElementById('journalDate').value;
+        const debit = document.getElementById('journalDebit').value;
+        const credit = document.getElementById('journalCredit').value;
+        const amount = parseFloat(document.getElementById('journalAmount').value) || 0;
+        const notes = document.getElementById('journalNotes').value.trim();
+
+        if (!date || !debit || !credit || amount <= 0) {
+            alert('يرجى ملء جميع الحقول بالمعلومات الصحيحة.');
+            return;
+        }
+        if (debit === credit) {
+            alert('الحساب المدين والدائن لا يمكن أن يكونا نفس الحساب.');
+            return;
+        }
+
+        const entry = { id: Date.now(), date, debit, credit, amount, notes };
+        state.journal.unshift(entry);
+        saveStorage(STORAGE_KEYS.journal, state.journal);
+        renderJournalList();
+        renderReports();
+        document.getElementById('journalDate').value = '';
+        document.getElementById('journalAmount').value = '';
+        document.getElementById('journalNotes').value = '';
+    }
+
+    function renderJournalList() {
+        const container = document.getElementById('journalList');
+        if (!state.journal.length) {
+            container.innerHTML = '<p class="small-note">لا توجد قيود بعد. أضف أول قيد اليوم.</p>';
+            return;
+        }
+        container.innerHTML = `
+            <table>
+                <thead><tr><th>التاريخ</th><th>المدين</th><th>الدائن</th><th>المبلغ</th><th>الوصف</th></tr></thead>
+                <tbody>${state.journal.map(entry => `
+                    <tr>
+                        <td>${entry.date}</td>
+                        <td>${entry.debit}</td>
+                        <td>${entry.credit}</td>
+                        <td>${entry.amount.toFixed(2)}</td>
+                        <td>${entry.notes}</td>
+                    </tr>`).join('')}</tbody>
+            </table>`;
+    }
+
+    function addInvoice() {
+        const type = document.getElementById('invoiceType').value;
+        const party = document.getElementById('invoiceParty').value.trim();
+        const amount = parseFloat(document.getElementById('invoiceAmount').value) || 0;
+        const notes = document.getElementById('invoiceNotes').value.trim();
+
+        if (!party || amount <= 0) {
+            alert('يرجى ملء العميل/المورد والقيمة الصحيحة.');
+            return;
+        }
+
+        const invoice = { id: Date.now(), type, party, amount, notes, date: new Date().toISOString().split('T')[0] };
+        if (type === 'sales') state.sales.unshift(invoice);
+        else state.purchase.unshift(invoice);
+
+        autoCreateJournalForInvoice(invoice);
+        saveStorage(STORAGE_KEYS.sales, state.sales);
+        saveStorage(STORAGE_KEYS.purchase, state.purchase);
+        saveStorage(STORAGE_KEYS.journal, state.journal);
+        renderInvoiceList();
+        renderJournalList();
+        renderReports();
+        document.getElementById('invoiceParty').value = '';
+        document.getElementById('invoiceAmount').value = '';
+        document.getElementById('invoiceNotes').value = '';
+    }
+
+    function renderInvoiceList() {
+        const container = document.getElementById('invoiceList');
+        if (!state.sales.length && !state.purchase.length) {
+            container.innerHTML = '<p class="small-note">لا توجد فواتير حتى الآن.</p>';
+            return;
+        }
+
+        const salesTable = state.sales.length ? `
+            <h3 style="margin-top:0">فواتير المبيعات</h3>
+            <table>
+                <thead><tr><th>التاريخ</th><th>العميل</th><th>القيمة</th><th>الوصف</th></tr></thead>
+                <tbody>${state.sales.map(inv => `
+                    <tr>
+                        <td>${inv.date}</td>
+                        <td>${inv.party}</td>
+                        <td>${inv.amount.toFixed(2)}</td>
+                        <td>${inv.notes}</td>
+                    </tr>`).join('')}</tbody>
+            </table>` : '<p class="small-note">لا توجد فواتير مبيعات.</p>';
+
+        const purchaseTable = state.purchase.length ? `
+            <h3>فواتير المشتريات</h3>
+            <table>
+                <thead><tr><th>التاريخ</th><th>المورد</th><th>القيمة</th><th>الوصف</th></tr></thead>
+                <tbody>${state.purchase.map(inv => `
+                    <tr>
+                        <td>${inv.date}</td>
+                        <td>${inv.party}</td>
+                        <td>${inv.amount.toFixed(2)}</td>
+                        <td>${inv.notes}</td>
+                    </tr>`).join('')}</tbody>
+            </table>` : '<p class="small-note">لا توجد فواتير مشتريات.</p>';
+
+        container.innerHTML = salesTable + purchaseTable;
+    }
+
+    function addAsset() {
+        const name = document.getElementById('assetName').value.trim();
+        const date = document.getElementById('assetDate').value;
+        const value = parseFloat(document.getElementById('assetValue').value) || 0;
+        const rate = parseFloat(document.getElementById('assetRate').value) || 0;
+
+        if (!name || !date || value <= 0 || rate <= 0) {
+            alert('يرجى ملء بيانات الأصل بشكل كامل وصحيح.');
+            return;
+        }
+
+        const depreciation = value * (rate / 100);
+        const asset = { id: Date.now(), name, date, value, rate, depreciation };
+        state.assets.unshift(asset);
+        saveStorage(STORAGE_KEYS.assets, state.assets);
+        renderAssetList();
+        document.getElementById('assetName').value = '';
+        document.getElementById('assetDate').value = '';
+        document.getElementById('assetValue').value = '';
+        document.getElementById('assetRate').value = '';
+    }
+
+    function renderAssetList() {
+        const container = document.getElementById('assetList');
+        if (!state.assets.length) {
+            container.innerHTML = '<p class="small-note">لا توجد أصول مدخلة حتى الآن.</p>';
+            return;
+        }
+        container.innerHTML = `
+            <table>
+                <thead><tr><th>الأصل</th><th>التاريخ</th><th>القيمة</th><th>معدل الاستهلاك</th><th>الاستهلاك السنوي</th></tr></thead>
+                <tbody>${state.assets.map(asset => `
+                    <tr>
+                        <td>${asset.name}</td>
+                        <td>${asset.date}</td>
+                        <td>${asset.value.toFixed(2)}</td>
+                        <td>${asset.rate}%</td>
+                        <td>${asset.depreciation.toFixed(2)}</td>
+                    </tr>`).join('')}</tbody>
+            </table>`;
+    }
+
+    function renderReports() {
+        const { revenue, expenses, netProfit } = generateIncomeStatement();
+        const balanceData = calculateTrialBalance();
+        const { assetsTotal, liabilitiesTotal, equityTotal } = generateBalanceSheet(balanceData, netProfit);
+        const zakatData = generateZakatReport(balanceData, netProfit);
+
+        document.getElementById('reportAssets').textContent = assetsTotal.toFixed(2);
+        document.getElementById('reportLiabilities').textContent = liabilitiesTotal.toFixed(2);
+        document.getElementById('reportEquity').textContent = equityTotal.toFixed(2);
+        document.getElementById('reportNetProfit').textContent = netProfit.toFixed(2);
+
+        document.getElementById('incomeStatement').innerHTML = `
+            <table>
+                <tbody>
+                    <tr><td>الإيرادات</td><td>${revenue.toFixed(2)}</td></tr>
+                    <tr><td>المصروفات</td><td>${expenses.toFixed(2)}</td></tr>
+                    <tr><th>صافي الربح</th><th>${netProfit.toFixed(2)}</th></tr>
+                </tbody>
+            </table>`;
+
+        document.getElementById('balanceSheet').innerHTML = `
+            <table>
+                <tbody>
+                    <tr><td>إجمالي الأصول</td><td>${assetsTotal.toFixed(2)}</td></tr>
+                    <tr><td>إجمالي الخصوم</td><td>${liabilitiesTotal.toFixed(2)}</td></tr>
+                    <tr><td>حقوق الملكية</td><td>${equityTotal.toFixed(2)}</td></tr>
+                </tbody>
+            </table>`;
+
+        document.getElementById('zakatReport').innerHTML = `
+            <table>
+                <tbody>
+                    <tr><td>صافي الربح</td><td>${netProfit.toFixed(2)}</td></tr>
+                    <tr><td>مجموعة الأصول السائلة</td><td>${zakatData.liquidAssets.toFixed(2)}</td></tr>
+                    <tr><td>قيمة الزكاة التقديرية (2.5%)</td><td>${zakatData.zakat.toFixed(2)}</td></tr>
+                </tbody>
+            </table>
+            <p class="small-note">التقرير تقديري ويجب مراجعته قبل التقديم للهيئة.</p>`;
+
+        const balanceHtml = balanceData.length ? `
+            <table>
+                <thead><tr><th>الحساب</th><th>المدين</th><th>الدائن</th></tr></thead>
+                <tbody>${balanceData.map(row => `
+                    <tr>
+                        <td>${row.account}</td>
+                        <td>${row.debit}</td>
+                        <td>${row.credit}</td>
+                    </tr>`).join('')}</tbody>
+            </table>` : '<p class="small-note">لا توجد قيود لحساب ميزان المراجعة.</p>';
+
+        document.getElementById('trialBalance').innerHTML = balanceHtml;
+    }
+
+    function generateIncomeStatement() {
+        const revenue = state.sales.reduce((sum, inv) => sum + inv.amount, 0);
+        const expenses = state.purchase.reduce((sum, inv) => sum + inv.amount, 0);
+        const netProfit = revenue - expenses;
+        return { revenue, expenses, netProfit };
+    }
+
+    function getAccountCategory(code) {
+        const account = state.coa.find(acc => acc.code === code);
+        return account ? account.cat : null;
+    }
+
+    function calculateTrialBalance() {
+        const map = {};
+        state.journal.forEach(entry => {
+            map[entry.debit] = (map[entry.debit] || 0) + entry.amount;
+            map[entry.credit] = (map[entry.credit] || 0) - entry.amount;
+        });
+
+        return Object.keys(map).map(account => {
+            const amount = map[account];
+            return {
+                account,
+                category: getAccountCategory(account),
+                balance: amount,
+                debit: amount > 0 ? amount.toFixed(2) : '0.00',
+                credit: amount < 0 ? Math.abs(amount).toFixed(2) : '0.00'
+            };
+        });
+    }
+
+    function generateBalanceSheet(trialBalance, netProfit) {
+        const assetsTotal = trialBalance.reduce((sum, row) => row.category === 'cat-1' ? sum + Math.max(row.balance, 0) : sum, 0);
+        const liabilitiesTotal = trialBalance.reduce((sum, row) => row.category === 'cat-2' ? sum + Math.max(-row.balance, 0) : sum, 0);
+        const equityTotal = assetsTotal - liabilitiesTotal;
+        return { assetsTotal, liabilitiesTotal, equityTotal };
+    }
+
+    function generateZakatReport(trialBalance, netProfit) {
+        const cashBalance = trialBalance.reduce((sum, row) => {
+            if (row.account === '12001' || row.account === '12002') return sum + Math.max(row.balance, 0);
+            return sum;
+        }, 0);
+        const liquidAssets = cashBalance + Math.max(netProfit, 0);
+        const zakat = liquidAssets * 0.025;
+        return { liquidAssets, zakat };
+    }
+
+    function autoCreateJournalForInvoice(invoice) {
+        if (invoice.type === 'sales') {
+            state.journal.unshift({
+                id: Date.now() + 1,
+                date: invoice.date,
+                debit: '12002',
+                credit: '4',
+                amount: invoice.amount,
+                notes: `فاتورة مبيعات إلى ${invoice.party}`
+            });
+        } else {
+            state.journal.unshift({
+                id: Date.now() + 1,
+                date: invoice.date,
+                debit: '5',
+                credit: '28',
+                amount: invoice.amount,
+                notes: `فاتورة مشتريات من ${invoice.party}`
+            });
+        }
+    }
+
+    function resetData() {
+        if (!confirm('هل تريد مسح جميع بيانات الحسابات؟')) return;
+        localStorage.removeItem(STORAGE_KEYS.coa);
+        localStorage.removeItem(STORAGE_KEYS.journal);
+        localStorage.removeItem(STORAGE_KEYS.sales);
+        localStorage.removeItem(STORAGE_KEYS.purchase);
+        localStorage.removeItem(STORAGE_KEYS.assets);
+        initApp();
+        alert('تم إعادة ضبط البيانات بنجاح.');
+    }
+
+    function changeTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+        document.querySelectorAll('.section').forEach(section => section.classList.toggle('active', section.id === tab));
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => changeTab(btn.dataset.tab)));
+    initApp();
+</script>
 </body>
 </html>
