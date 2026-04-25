@@ -149,9 +149,8 @@
             max-width: 100%;
         }
 
-            .sidebar-info-item {
-                margin-bottom: 0;
-            }
+        .sidebar-info-item {
+            margin-bottom: 0;
         }
 
         /* === كروت إحصائيات محسنة === */
@@ -412,6 +411,17 @@
                     <div class="stat-label-enhanced">ذكور</div>
                 </div>
             </div>
+        </div>
+
+        <div style="background:white; border-radius:12px; padding:15px 20px; margin-bottom:20px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+            <input type="text" id="searchInput" placeholder="🔍  ابحث بالاسم أو الرقم الوظيفي أو رقم الهوية..."
+                oninput="renderList()"
+                style="flex:1; min-width:250px; padding:11px 15px; border:1px solid var(--border); border-radius:8px; font-family:'Tajawal'; font-size:15px; background:#f8fafc;">
+            <button onclick="document.getElementById('searchInput').value=''; renderList();"
+                style="padding:10px 18px; background:#f1f5f9; border:1px solid var(--border); border-radius:8px; cursor:pointer; font-family:'Tajawal'; color:#64748b; font-size:14px;">
+                مسح ✕
+            </button>
+            <span id="searchResultCount" style="font-size:13px; color:#64748b; white-space:nowrap;"></span>
         </div>
 
         <div class="employees-grid" id="list-container"></div>
@@ -768,30 +778,58 @@
     function renderList() {
         const cont = document.getElementById('list-container');
         calculateStats();
-        
+
+        const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+        const resultCount = document.getElementById('searchResultCount');
+
+        const filtered = db.map((emp, i) => ({ emp, i })).filter(({ emp }) => {
+            if (!query) return true;
+            return (emp.emp_name || '').toLowerCase().includes(query) ||
+                   (emp.emp_number || '').toLowerCase().includes(query) ||
+                   (emp.id_number || '').toLowerCase().includes(query);
+        });
+
+        if (resultCount) {
+            resultCount.textContent = query
+                ? `نتائج البحث: ${filtered.length} من ${db.length} موظف`
+                : `إجمالي الموظفين: ${db.length}`;
+        }
+
         if(db.length === 0) {
             cont.innerHTML = '<p style="grid-column:1/-1; text-align:center;">لا توجد بيانات موظفين حالياً</p>';
             return;
         }
-        
-        cont.innerHTML = db.map((emp, i) => {
+
+        if(filtered.length === 0) {
+            cont.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#64748b;">لا توجد نتائج مطابقة للبحث</p>';
+            return;
+        }
+
+        cont.innerHTML = filtered.map(({ emp, i }) => {
             const waNumber = normalizePhoneNumber(emp.phone_number);
             const waHref = waNumber ? `https://wa.me/${waNumber}` : '#';
             const waClass = waNumber ? 'emp-card-contact' : 'emp-card-contact disabled';
             const emailHref = emp.email ? `mailto:${emp.email}` : '#';
             const emailClass = emp.email ? 'emp-card-contact' : 'emp-card-contact disabled';
+
+            function highlight(text) {
+                if (!query || !text) return text || '';
+                const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark style="background:#fef08a;border-radius:3px;padding:0 2px;">$1</mark>');
+            }
+
             return `
             <div class="emp-card" onclick="openProfile(${i})">
                 <div class="emp-card-header">
                     ${emp.profile_pic ? `<img src="${emp.profile_pic}" class="emp-card-pic" alt="صورة">` : `<div class="emp-card-placeholder">👤</div>`}
                     <div>
-                        <div class="emp-card-title">${emp.emp_name}</div>
+                        <div class="emp-card-title">${highlight(emp.emp_name)}</div>
                         <div class="emp-card-role">💼 ${emp.company_job || 'بدون مسمى'}</div>
                     </div>
                 </div>
                 <div class="emp-card-meta">
-                    <span>🆔 ${emp.emp_number || '-'}</span>
-                    <span>🪪 ${emp.id_number || '-'}</span>
+                    <span>🆔 ${highlight(emp.emp_number || '-')}</span>
+                    <span>🪪 ${highlight(emp.id_number || '-')}</span>
                     <span>🏢 ${emp.dept || 'بدون إدارة'}</span>
                 </div>
                 ${emp.direct_manager ? `<div class="emp-card-meta" style="border-top: 1px solid #e2e8f0; margin-top: 10px; padding-top: 10px;"><span>👔 مدير: ${emp.direct_manager}</span></div>` : ''}
