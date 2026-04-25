@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحقيقات والأحكام - سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #7c3aed;
+            --accent-light: rgba(124, 58, 237, 0.08);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --text-muted: #64748b;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .page-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 25px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h2 { margin: 0; font-size: 1.4rem; }
+        .page-header p { margin: 4px 0 0; opacity: 0.7; font-size: 0.9rem; }
+
+        .badge-count {
+            background: var(--accent);
+            color: white;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: var(--white);
+            padding: 18px;
+            border-radius: var(--radius);
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-top: 4px solid var(--accent);
+        }
+
+        .stat-box.green { border-top-color: var(--success); }
+        .stat-box.orange { border-top-color: var(--warning); }
+        .stat-box.red { border-top-color: var(--danger); }
+        .stat-box.blue { border-top-color: var(--info); }
+
+        .stat-box .num { font-size: 2rem; font-weight: bold; color: var(--primary); }
+        .stat-box .lbl { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+        .toolbar {
+            background: var(--white);
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .toolbar input, .toolbar select {
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-size: 14px;
+            background: var(--bg);
+        }
+
+        .toolbar input { flex: 1; min-width: 200px; }
+
+        .btn {
+            padding: 9px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-outline { background: white; color: var(--primary); border: 1px solid var(--border); }
+
+        .table-wrap {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead { background: var(--primary); color: white; }
+        thead th { padding: 14px 12px; font-size: 13px; white-space: nowrap; }
+        tbody tr { border-bottom: 1px solid var(--border); transition: background 0.2s; }
+        tbody tr:hover { background: var(--accent-light); }
+        tbody td { padding: 12px; font-size: 14px; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-new { background: #fef3c7; color: #92400e; }
+        .status-open { background: #ede9fe; color: #5b21b6; }
+        .status-verdict { background: #dbeafe; color: #1e40af; }
+        .status-closed { background: #d1fae5; color: #065f46; }
+        .status-appealed { background: #fee2e2; color: #991b1b; }
+
+        .verdict-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .verdict-warning { background: #fef3c7; color: #92400e; }
+        .verdict-deduct { background: #fee2e2; color: #991b1b; }
+        .verdict-dismiss { background: #1f2937; color: white; }
+        .verdict-acquit { background: #d1fae5; color: #065f46; }
+        .verdict-pending { background: #f1f5f9; color: #64748b; }
+
+        .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+        .action-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Tajawal';
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .action-view { background: #e0f2fe; color: #0369a1; }
+        .action-edit { background: #fef3c7; color: #92400e; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 750px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .modal h3 {
+            margin: 0 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--accent);
+            color: var(--primary);
+        }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-grid .full { grid-column: 1 / -1; }
+        .form-grid .third { grid-column: span 1; }
+
+        .field-group { display: flex; flex-direction: column; gap: 6px; }
+        .field-group label { font-size: 13px; font-weight: bold; color: var(--accent); }
+
+        .field-group input,
+        .field-group select,
+        .field-group textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-size: 14px;
+            background: var(--bg);
+        }
+
+        .field-group textarea { resize: vertical; min-height: 80px; }
+
+        .section-title {
+            grid-column: 1 / -1;
+            font-weight: bold;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-top: 10px;
+            font-size: 15px;
+        }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+        .detail-section { background: var(--bg); border-radius: 10px; padding: 15px; margin-top: 15px; }
+        .detail-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: var(--text-muted); min-width: 180px; font-weight: bold; }
+        .detail-section-title { font-weight: bold; color: var(--accent); margin: 15px 0 8px; font-size: 14px; }
+
+        @media print {
+            .toolbar, .modal-overlay { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div>
+        <h2>🔍 التحقيقات والأحكام</h2>
+        <p>الشئون القانونية - شركة سادن للاستشارات الجيولوجية</p>
+    </div>
+    <span class="badge-count" id="totalBadge">0 تحقيق</span>
+</div>
+
+<div class="stats-row">
+    <div class="stat-box">
+        <div class="num" id="statTotal">0</div>
+        <div class="lbl">إجمالي التحقيقات</div>
+    </div>
+    <div class="stat-box orange">
+        <div class="num" id="statOngoing">0</div>
+        <div class="lbl">جارية</div>
+    </div>
+    <div class="stat-box blue">
+        <div class="num" id="statVerdict">0</div>
+        <div class="lbl">صدر بها حكم</div>
+    </div>
+    <div class="stat-box green">
+        <div class="num" id="statClosed">0</div>
+        <div class="lbl">مغلقة</div>
+    </div>
+    <div class="stat-box red">
+        <div class="num" id="statAppealed">0</div>
+        <div class="lbl">مستأنفة</div>
+    </div>
+</div>
+
+<div class="toolbar">
+    <input type="text" id="searchInput" placeholder="ابحث باسم الموظف أو رقم التحقيق..." oninput="renderTable()">
+    <select id="filterStatus" onchange="renderTable()">
+        <option value="">كل الحالات</option>
+        <option value="جارية">جارية</option>
+        <option value="صدر حكم">صدر حكم</option>
+        <option value="مغلقة">مغلقة</option>
+        <option value="مستأنفة">مستأنفة</option>
+    </select>
+    <select id="filterVerdict" onchange="renderTable()">
+        <option value="">كل الأحكام</option>
+        <option value="إنذار كتابي">إنذار كتابي</option>
+        <option value="خصم من الراتب">خصم من الراتب</option>
+        <option value="إيقاف عن العمل">إيقاف عن العمل</option>
+        <option value="فصل تأديبي">فصل تأديبي</option>
+        <option value="براءة">براءة</option>
+        <option value="لم يُحدد">لم يُحدد</option>
+    </select>
+    <button class="btn btn-primary" onclick="openAddModal()">+ فتح تحقيق جديد</button>
+    <button class="btn btn-outline" onclick="window.print()">طباعة 📥</button>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم التحقيق</th>
+                <th>اسم الموظف</th>
+                <th>الرقم الوظيفي</th>
+                <th>الفرع</th>
+                <th>سبب التحقيق</th>
+                <th>تاريخ الفتح</th>
+                <th>المحقق</th>
+                <th>الحكم</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<!-- Modal الإضافة/التعديل -->
+<div class="modal-overlay" id="formModal">
+    <div class="modal">
+        <h3 id="modalTitle">فتح تحقيق جديد</h3>
+        <div class="form-grid">
+            <div class="section-title">بيانات الموظف</div>
+            <div class="field-group full">
+                <label>اختر الموظف من السجل</label>
+                <select id="f_empSelect" onchange="fillEmployeeData()">
+                    <option value="">-- اختر موظفاً --</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>اسم الموظف</label>
+                <input type="text" id="f_name" placeholder="الاسم الكامل">
+            </div>
+            <div class="field-group">
+                <label>الرقم الوظيفي</label>
+                <input type="text" id="f_empId" placeholder="SAD-XXX">
+            </div>
+            <div class="field-group">
+                <label>الفرع</label>
+                <input type="text" id="f_branch" placeholder="الفرع">
+            </div>
+            <div class="field-group">
+                <label>المسمى الوظيفي</label>
+                <input type="text" id="f_title" placeholder="المسمى الوظيفي">
+            </div>
+
+            <div class="section-title">بيانات التحقيق</div>
+            <div class="field-group">
+                <label>سبب التحقيق</label>
+                <select id="f_reason">
+                    <option value="">-- اختر --</option>
+                    <option>إهمال في العمل</option>
+                    <option>مخالفة لوائح الشركة</option>
+                    <option>غياب متكرر</option>
+                    <option>سرقة أو اختلاس</option>
+                    <option>تصرف غير لائق</option>
+                    <option>تزوير مستندات</option>
+                    <option>إفشاء أسرار الشركة</option>
+                    <option>أخرى</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>تاريخ فتح التحقيق</label>
+                <input type="date" id="f_openDate">
+            </div>
+            <div class="field-group">
+                <label>المحقق المسئول</label>
+                <input type="text" id="f_investigator" placeholder="اسم المحقق">
+            </div>
+            <div class="field-group">
+                <label>تاريخ الجلسة القادمة</label>
+                <input type="date" id="f_nextSession">
+            </div>
+            <div class="field-group full">
+                <label>وقائع وتفاصيل التحقيق</label>
+                <textarea id="f_details" placeholder="اكتب تفاصيل المخالفة والوقائع..."></textarea>
+            </div>
+
+            <div class="section-title">الحكم والقرار</div>
+            <div class="field-group">
+                <label>الحكم</label>
+                <select id="f_verdict">
+                    <option value="لم يُحدد">لم يُحدد بعد</option>
+                    <option value="إنذار كتابي">إنذار كتابي</option>
+                    <option value="خصم من الراتب">خصم من الراتب</option>
+                    <option value="إيقاف عن العمل">إيقاف عن العمل</option>
+                    <option value="فصل تأديبي">فصل تأديبي</option>
+                    <option value="براءة">براءة</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>تاريخ إصدار الحكم</label>
+                <input type="date" id="f_verdictDate">
+            </div>
+            <div class="field-group">
+                <label>الحالة</label>
+                <select id="f_status">
+                    <option>جارية</option>
+                    <option>صدر حكم</option>
+                    <option>مغلقة</option>
+                    <option>مستأنفة</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>مدة الإيقاف / مبلغ الخصم (إن وجد)</label>
+                <input type="text" id="f_penalty" placeholder="مثال: 3 أيام / 500 ريال">
+            </div>
+            <div class="field-group full">
+                <label>نص القرار النهائي</label>
+                <textarea id="f_decision" placeholder="نص القرار الرسمي الصادر..."></textarea>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="saveInvestigation()">حفظ</button>
+            <button class="btn btn-outline" onclick="closeModal('formModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal التفاصيل -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal">
+        <h3>تفاصيل التحقيق</h3>
+        <div id="viewContent"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal('viewModal')">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'saden_investigations';
+
+    let investigations = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+        { id: "INV-001", name: "إسلام عزت", empId: "SAD-101", branch: "الرياض", title: "محلل نظم جودة", reason: "غياب متكرر", openDate: "2026-02-15", investigator: "أحمد الغامدي", nextSession: "2026-04-30", details: "غياب الموظف لمدة 5 أيام متواصلة دون إذن.", verdict: "إنذار كتابي", verdictDate: "2026-03-01", status: "مغلقة", penalty: "", decision: "تم توجيه إنذار كتابي أول للموظف وإحاطته علماً بعواقب التكرار." },
+        { id: "INV-002", name: "خالد العتيبي", empId: "SAD-202", branch: "جدة", title: "جيولوجي", reason: "مخالفة لوائح الشركة", openDate: "2026-03-20", investigator: "فريق الموارد البشرية", nextSession: "2026-05-05", details: "استخدام معدات الشركة لأغراض شخصية.", verdict: "لم يُحدد", verdictDate: "", status: "جارية", penalty: "", decision: "" }
+    ];
+
+    let editIndex = -1;
+
+    function loadEmployeesSelect(selectId) {
+        const employees = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+        const select = document.getElementById(selectId);
+        const firstOpt = select.querySelector('option:first-child');
+        select.innerHTML = '';
+        select.appendChild(firstOpt.cloneNode(true));
+        employees.forEach(emp => {
+            const opt = document.createElement('option');
+            opt.value = emp.emp_number;
+            opt.textContent = `${emp.emp_name} (${emp.emp_number})`;
+            opt.dataset.name = emp.emp_name;
+            opt.dataset.empId = emp.emp_number;
+            opt.dataset.branch = emp.dept || '';
+            opt.dataset.title = emp.company_job || '';
+            select.appendChild(opt);
+        });
+    }
+
+    function fillEmployeeData() {
+        const select = document.getElementById('f_empSelect');
+        const selected = select.options[select.selectedIndex];
+        if (!selected || !selected.value) return;
+        document.getElementById('f_name').value = selected.dataset.name || '';
+        document.getElementById('f_empId').value = selected.dataset.empId || '';
+        document.getElementById('f_branch').value = selected.dataset.branch || '';
+        document.getElementById('f_title').value = selected.dataset.title || '';
+    }
+
+    function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(investigations));
+    }
+
+    function getStatusClass(status) {
+        const map = { 'جارية': 'status-open', 'صدر حكم': 'status-verdict', 'مغلقة': 'status-closed', 'مستأنفة': 'status-appealed' };
+        return map[status] || 'status-new';
+    }
+
+    function getVerdictClass(verdict) {
+        const map = { 'إنذار كتابي': 'verdict-warning', 'خصم من الراتب': 'verdict-deduct', 'إيقاف عن العمل': 'verdict-deduct', 'فصل تأديبي': 'verdict-dismiss', 'براءة': 'verdict-acquit', 'لم يُحدد': 'verdict-pending' };
+        return map[verdict] || 'verdict-pending';
+    }
+
+    function updateStats() {
+        const total = investigations.length;
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statOngoing').textContent = investigations.filter(i => i.status === 'جارية').length;
+        document.getElementById('statVerdict').textContent = investigations.filter(i => i.status === 'صدر حكم').length;
+        document.getElementById('statClosed').textContent = investigations.filter(i => i.status === 'مغلقة').length;
+        document.getElementById('statAppealed').textContent = investigations.filter(i => i.status === 'مستأنفة').length;
+        document.getElementById('totalBadge').textContent = total + ' تحقيق';
+    }
+
+    function renderTable() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const status = document.getElementById('filterStatus').value;
+        const verdict = document.getElementById('filterVerdict').value;
+
+        const filtered = investigations.filter(inv => {
+            const matchSearch = !search || inv.name.toLowerCase().includes(search) || inv.id.toLowerCase().includes(search);
+            const matchStatus = !status || inv.status === status;
+            const matchVerdict = !verdict || inv.verdict === verdict;
+            return matchSearch && matchStatus && matchVerdict;
+        });
+
+        const tbody = document.getElementById('tableBody');
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:30px; color:#64748b;">لا توجد بيانات</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map((inv, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td><strong>${inv.id}</strong></td>
+                <td>${inv.name}</td>
+                <td>${inv.empId}</td>
+                <td>${inv.branch}</td>
+                <td>${inv.reason}</td>
+                <td>${inv.openDate}</td>
+                <td>${inv.investigator}</td>
+                <td><span class="verdict-badge ${getVerdictClass(inv.verdict)}">${inv.verdict}</span></td>
+                <td><span class="status-badge ${getStatusClass(inv.status)}">${inv.status}</span></td>
+                <td>
+                    <div class="action-btns">
+                        <button class="action-btn action-view" onclick="viewInvestigation('${inv.id}')">عرض</button>
+                        <button class="action-btn action-edit" onclick="editInvestigation('${inv.id}')">تعديل</button>
+                        <button class="action-btn" style="background:#fee2e2;color:#991b1b;" onclick="deleteInvestigation('${inv.id}')">حذف</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openAddModal() {
+        editIndex = -1;
+        document.getElementById('modalTitle').textContent = 'فتح تحقيق جديد';
+        ['f_name','f_empId','f_branch','f_title','f_investigator','f_penalty','f_details','f_decision','f_verdictDate','f_nextSession'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('f_reason').value = '';
+        document.getElementById('f_verdict').value = 'لم يُحدد';
+        document.getElementById('f_status').value = 'جارية';
+        document.getElementById('f_openDate').value = new Date().toISOString().split('T')[0];
+        loadEmployeesSelect('f_empSelect');
+        document.getElementById('f_empSelect').value = '';
+        document.getElementById('formModal').classList.add('active');
+    }
+
+    function editInvestigation(id) {
+        const idx = investigations.findIndex(i => i.id === id);
+        if (idx === -1) return;
+        const inv = investigations[idx];
+        editIndex = idx;
+        document.getElementById('modalTitle').textContent = 'تعديل التحقيق: ' + inv.id;
+        loadEmployeesSelect('f_empSelect');
+        document.getElementById('f_empSelect').value = '';
+        document.getElementById('f_name').value = inv.name;
+        document.getElementById('f_empId').value = inv.empId;
+        document.getElementById('f_branch').value = inv.branch;
+        document.getElementById('f_title').value = inv.title;
+        document.getElementById('f_reason').value = inv.reason;
+        document.getElementById('f_openDate').value = inv.openDate;
+        document.getElementById('f_investigator').value = inv.investigator;
+        document.getElementById('f_nextSession').value = inv.nextSession;
+        document.getElementById('f_details').value = inv.details;
+        document.getElementById('f_verdict').value = inv.verdict;
+        document.getElementById('f_verdictDate').value = inv.verdictDate;
+        document.getElementById('f_status').value = inv.status;
+        document.getElementById('f_penalty').value = inv.penalty;
+        document.getElementById('f_decision').value = inv.decision;
+        document.getElementById('formModal').classList.add('active');
+    }
+
+    function saveInvestigation() {
+        const name = document.getElementById('f_name').value.trim();
+        const empId = document.getElementById('f_empId').value.trim();
+        const branch = document.getElementById('f_branch').value.trim();
+        const reason = document.getElementById('f_reason').value;
+
+        if (!name || !empId || !branch || !reason) {
+            alert('يرجى تعبئة الحقول الأساسية: الاسم، الرقم الوظيفي، الفرع، سبب التحقيق');
+            return;
+        }
+
+        const entry = {
+            id: editIndex === -1 ? 'INV-' + String(investigations.length + 1).padStart(3, '0') : investigations[editIndex].id,
+            name,
+            empId,
+            branch,
+            title: document.getElementById('f_title').value.trim(),
+            reason,
+            openDate: document.getElementById('f_openDate').value,
+            investigator: document.getElementById('f_investigator').value.trim(),
+            nextSession: document.getElementById('f_nextSession').value,
+            details: document.getElementById('f_details').value.trim(),
+            verdict: document.getElementById('f_verdict').value,
+            verdictDate: document.getElementById('f_verdictDate').value,
+            status: document.getElementById('f_status').value,
+            penalty: document.getElementById('f_penalty').value.trim(),
+            decision: document.getElementById('f_decision').value.trim()
+        };
+
+        if (editIndex === -1) {
+            investigations.push(entry);
+        } else {
+            investigations[editIndex] = entry;
+        }
+
+        save();
+        renderTable();
+        updateStats();
+        closeModal('formModal');
+    }
+
+    function viewInvestigation(id) {
+        const inv = investigations.find(x => x.id === id);
+        if (!inv) return;
+        document.getElementById('viewContent').innerHTML = `
+            <div class="detail-section">
+                <div class="detail-section-title">بيانات الموظف</div>
+                <div class="detail-row"><span class="detail-label">رقم التحقيق:</span><span>${inv.id}</span></div>
+                <div class="detail-row"><span class="detail-label">اسم الموظف:</span><span>${inv.name}</span></div>
+                <div class="detail-row"><span class="detail-label">الرقم الوظيفي:</span><span>${inv.empId}</span></div>
+                <div class="detail-row"><span class="detail-label">المسمى الوظيفي:</span><span>${inv.title || '-'}</span></div>
+                <div class="detail-row"><span class="detail-label">الفرع:</span><span>${inv.branch}</span></div>
+                <div class="detail-section-title">بيانات التحقيق</div>
+                <div class="detail-row"><span class="detail-label">سبب التحقيق:</span><span>${inv.reason}</span></div>
+                <div class="detail-row"><span class="detail-label">تاريخ الفتح:</span><span>${inv.openDate}</span></div>
+                <div class="detail-row"><span class="detail-label">المحقق المسئول:</span><span>${inv.investigator || '-'}</span></div>
+                <div class="detail-row"><span class="detail-label">الجلسة القادمة:</span><span>${inv.nextSession || '-'}</span></div>
+                <div class="detail-row"><span class="detail-label">الحالة:</span><span class="status-badge ${getStatusClass(inv.status)}">${inv.status}</span></div>
+                <div class="detail-row"><span class="detail-label">وقائع التحقيق:</span><span>${inv.details || '-'}</span></div>
+                <div class="detail-section-title">الحكم والقرار</div>
+                <div class="detail-row"><span class="detail-label">الحكم:</span><span class="verdict-badge ${getVerdictClass(inv.verdict)}">${inv.verdict}</span></div>
+                <div class="detail-row"><span class="detail-label">تاريخ الحكم:</span><span>${inv.verdictDate || '-'}</span></div>
+                <div class="detail-row"><span class="detail-label">العقوبة (إن وجدت):</span><span>${inv.penalty || '-'}</span></div>
+                <div class="detail-row"><span class="detail-label">نص القرار:</span><span>${inv.decision || '-'}</span></div>
+            </div>
+        `;
+        document.getElementById('viewModal').classList.add('active');
+    }
+
+    function deleteInvestigation(id) {
+        if (!confirm('هل أنت متأكد من حذف هذا التحقيق؟')) return;
+        investigations = investigations.filter(i => i.id !== id);
+        save();
+        renderTable();
+        updateStats();
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    renderTable();
+    updateStats();
+</script>
+</body>
+</html>

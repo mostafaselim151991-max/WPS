@@ -3,496 +3,577 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شكاوى الموظفين - الشئون القانونية</title>
+    <title>شكاوى الموظفين - سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #0f172a;
-            --accent: #3b82f6;
+            --accent: #d32f2f;
+            --accent-light: rgba(211, 47, 47, 0.08);
             --success: #10b981;
             --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #06b6d4;
+            --info: #3b82f6;
+            --bg: #f4f7f6;
+            --white: #ffffff;
             --border: #e2e8f0;
-            --bg: #f8fafc;
+            --text-muted: #64748b;
+            --radius: 12px;
         }
-        
-        body { font-family: 'Tajawal', Arial, sans-serif; background: var(--bg); color: var(--primary); }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        
-        .page-header { background: linear-gradient(135deg, var(--primary), var(--danger)); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .page-header h1 { font-size: 2.5rem; margin-bottom: 10px; }
-        .page-header p { opacity: 0.9; font-size: 1.1rem; }
-        
-        .tabs { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid var(--border); }
-        .tab-btn { background: none; border: none; padding: 12px 24px; font-size: 1rem; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.3s; font-weight: 500; }
-        .tab-btn:hover { color: var(--accent); }
-        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 12px; border-right: 5px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .stat-card.new { border-right-color: var(--info); }
-        .stat-card.processing { border-right-color: var(--warning); }
-        .stat-card.resolved { border-right-color: var(--success); }
-        
-        .stat-value { font-size: 2.5rem; font-weight: bold; color: var(--primary); }
-        .stat-label { font-size: 0.9rem; color: #64748b; margin-top: 5px; }
-        
-        .form-section { background: white; padding: 25px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-weight: 500; margin-bottom: 8px; color: var(--primary); }
-        .form-group input, .form-group select, .form-group textarea { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem; }
-        .form-group textarea { resize: vertical; min-height: 100px; grid-column: 1 / -1; }
-        
-        .form-actions { display: flex; gap: 10px; margin-top: 20px; grid-column: 1 / -1; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .page-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 25px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h2 { margin: 0; font-size: 1.4rem; }
+        .page-header p { margin: 4px 0 0; opacity: 0.7; font-size: 0.9rem; }
+
+        .badge-count {
+            background: var(--accent);
+            color: white;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .toolbar {
+            background: var(--white);
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .toolbar input, .toolbar select {
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-size: 14px;
+            background: var(--bg);
+        }
+
+        .toolbar input { flex: 1; min-width: 200px; }
+
+        .btn {
+            padding: 9px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
         .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
-        .btn-secondary { background: var(--border); color: var(--primary); }
-        .btn-secondary:hover { background: #cbd5e1; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-danger:hover { background: #dc2626; }
         .btn-success { background: var(--success); color: white; }
-        .btn-success:hover { background: #059669; }
-        
-        .cases-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .cases-table thead { background: linear-gradient(135deg, var(--primary), var(--danger)); color: white; }
-        .cases-table th { padding: 15px; text-align: right; font-weight: 600; }
-        .cases-table td { padding: 15px; border-top: 1px solid var(--border); }
-        .cases-table tbody tr:hover { background: #f0f9ff; }
-        
-        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
-        .status-new { background: #cffafe; color: #164e63; }
-        .status-processing { background: #fef3c7; color: #92400e; }
-        .status-resolved { background: #dcfce7; color: #166534; }
-        
-        .action-buttons { display: flex; gap: 8px; }
-        .action-btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s; }
-        .edit-btn { background: #dbeafe; color: #0284c7; }
-        .edit-btn:hover { background: #bfdbfe; }
-        .delete-btn { background: #fee2e2; color: #dc2626; }
-        .delete-btn:hover { background: #fecaca; }
-        .view-btn { background: #e0e7ff; color: #3730a3; }
-        .view-btn:hover { background: #c7d2fe; }
-        
-        .empty-state { text-align: center; padding: 60px 20px; color: #64748b; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
-        .modal-header { font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 15px; }
-        .detail-row { display: grid; grid-template-columns: 150px 1fr; gap: 20px; margin-bottom: 15px; }
-        .detail-label { font-weight: 600; color: var(--accent); }
-        .detail-value { color: var(--primary); }
-        .modal-footer { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
-        
-        .search-section { display: grid; grid-template-columns: 1fr 150px; gap: 15px; margin-bottom: 20px; }
-        .search-input { padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; }
-        .filter-select { padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px; }
-        
-        @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .form-group textarea { grid-column: 1; }
-            .form-actions { flex-direction: column; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .cases-table { font-size: 0.9rem; }
-            .cases-table th, .cases-table td { padding: 10px; }
-            .action-buttons { flex-direction: column; }
-            .page-header h1 { font-size: 1.8rem; }
+        .btn-info { background: var(--info); color: white; }
+        .btn-outline { background: white; color: var(--primary); border: 1px solid var(--border); }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: var(--white);
+            padding: 18px;
+            border-radius: var(--radius);
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-top: 4px solid var(--accent);
+        }
+
+        .stat-box.green { border-top-color: var(--success); }
+        .stat-box.orange { border-top-color: var(--warning); }
+        .stat-box.blue { border-top-color: var(--info); }
+
+        .stat-box .num { font-size: 2rem; font-weight: bold; color: var(--primary); }
+        .stat-box .lbl { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+        .table-wrap {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead { background: var(--primary); color: white; }
+        thead th { padding: 14px 12px; font-size: 13px; white-space: nowrap; }
+        tbody tr { border-bottom: 1px solid var(--border); transition: background 0.2s; }
+        tbody tr:hover { background: var(--accent-light); }
+        tbody td { padding: 12px; font-size: 14px; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-new { background: #fef3c7; color: #92400e; }
+        .status-open { background: #dbeafe; color: #1e40af; }
+        .status-closed { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+
+        .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+        .action-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Tajawal';
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .action-view { background: #e0f2fe; color: #0369a1; }
+        .action-edit { background: #fef3c7; color: #92400e; }
+        .action-close { background: #d1fae5; color: #065f46; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 700px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .modal h3 {
+            margin: 0 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--accent);
+            color: var(--primary);
+        }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-grid .full { grid-column: 1 / -1; }
+
+        .field-group { display: flex; flex-direction: column; gap: 6px; }
+        .field-group label { font-size: 13px; font-weight: bold; color: var(--accent); }
+
+        .field-group input,
+        .field-group select,
+        .field-group textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-size: 14px;
+            background: var(--bg);
+        }
+
+        .field-group textarea { resize: vertical; min-height: 90px; }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+        .detail-section { background: var(--bg); border-radius: 10px; padding: 15px; margin-top: 15px; }
+        .detail-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: var(--text-muted); min-width: 160px; font-weight: bold; }
+
+        @media print {
+            .toolbar, .modal-overlay { display: none !important; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="page-header">
-            <h1>📢 شكاوى الموظفين</h1>
-            <p>نظام تسجيل ومتابعة شكاوى الموظفين والعاملين بالشركة</p>
-        </div>
 
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab(event, 'dashboard-tab')">📊 لوحة التحكم</button>
-            <button class="tab-btn" onclick="switchTab(event, 'complaints-tab')">📋 سجل الشكاوى</button>
-            <button class="tab-btn" onclick="switchTab(event, 'add-tab')">➕ تسجيل شكوى جديدة</button>
-        </div>
+<div class="page-header">
+    <div>
+        <h2>⚖️ شكاوى الموظفين</h2>
+        <p>الشئون القانونية - شركة سادن للاستشارات الجيولوجية</p>
+    </div>
+    <span class="badge-count" id="totalBadge">0 شكوى</span>
+</div>
 
-        <div id="dashboard-tab" class="tab-content active">
-            <div class="stats-grid">
-                <div class="stat-card new">
-                    <div class="stat-value" id="new-count">0</div>
-                    <div class="stat-label">🆕 شكاوى جديدة</div>
-                </div>
-                <div class="stat-card processing">
-                    <div class="stat-value" id="processing-count">0</div>
-                    <div class="stat-label">⏳ قيد المعالجة</div>
-                </div>
-                <div class="stat-card resolved">
-                    <div class="stat-value" id="resolved-count">0</div>
-                    <div class="stat-label">✅ مُحلولة</div>
-                </div>
-            </div>
+<div class="stats-row">
+    <div class="stat-box">
+        <div class="num" id="statTotal">0</div>
+        <div class="lbl">إجمالي الشكاوى</div>
+    </div>
+    <div class="stat-box orange">
+        <div class="num" id="statNew">0</div>
+        <div class="lbl">شكاوى جديدة</div>
+    </div>
+    <div class="stat-box blue">
+        <div class="num" id="statOpen">0</div>
+        <div class="lbl">قيد المعالجة</div>
+    </div>
+    <div class="stat-box green">
+        <div class="num" id="statClosed">0</div>
+        <div class="lbl">مغلقة / منتهية</div>
+    </div>
+</div>
 
-            <div class="form-section">
-                <h2 style="margin-bottom: 20px; color: var(--accent);">📈 ملخص إحصائي</h2>
-                <div style="display: grid; gap: 15px;">
-                    <div style="display: grid; grid-template-columns: auto 1fr; gap: 15px; align-items: center;">
-                        <strong>إجمالي الشكاوى:</strong>
-                        <div style="height: 30px; background: var(--border); border-radius: 8px; display: flex; align-items: center; padding: 0 15px; font-size: 1.1rem; font-weight: bold;" id="total-count">0</div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: auto 1fr; gap: 15px; align-items: center;">
-                        <strong>معدل الحل:</strong>
-                        <div style="height: 30px; background: var(--border); border-radius: 8px; display: flex; align-items: center; padding: 0 15px; font-size: 1.1rem; font-weight: bold; color: var(--success);" id="resolution-rate">0%</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="toolbar">
+    <input type="text" id="searchInput" placeholder="ابحث باسم الموظف أو رقمه أو الفرع..." oninput="renderTable()">
+    <select id="filterStatus" onchange="renderTable()">
+        <option value="">كل الحالات</option>
+        <option value="جديدة">جديدة</option>
+        <option value="قيد المعالجة">قيد المعالجة</option>
+        <option value="مغلقة">مغلقة</option>
+        <option value="مرفوضة">مرفوضة</option>
+    </select>
+    <select id="filterBranch" onchange="renderTable()">
+        <option value="">كل الفروع</option>
+        <option value="الرياض">الرياض</option>
+        <option value="جدة">جدة</option>
+        <option value="الدمام">الدمام</option>
+    </select>
+    <button class="btn btn-primary" onclick="openAddModal()">+ تسجيل شكوى جديدة</button>
+    <button class="btn btn-outline" onclick="window.print()">طباعة 📥</button>
+</div>
 
-        <div id="complaints-tab" class="tab-content">
-            <div class="search-section">
-                <input type="text" id="searchInput" class="search-input" placeholder="ابحث عن الموظف أو موضوع الشكوى..." onkeyup="filterComplaints()">
-                <select id="statusFilter" class="filter-select" onchange="filterComplaints()">
-                    <option value="">جميع الحالات</option>
-                    <option value="جديدة">🆕 جديدة</option>
-                    <option value="قيد المعالجة">⏳ قيد المعالجة</option>
-                    <option value="مُحلولة">✅ مُحلولة</option>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم الشكوى</th>
+                <th>اسم الموظف</th>
+                <th>الرقم الوظيفي</th>
+                <th>الفرع</th>
+                <th>نوع الشكوى</th>
+                <th>ضد</th>
+                <th>تاريخ التقديم</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<!-- Modal الإضافة/التعديل -->
+<div class="modal-overlay" id="formModal">
+    <div class="modal">
+        <h3 id="modalTitle">تسجيل شكوى جديدة</h3>
+        <div class="form-grid">
+            <div class="field-group full">
+                <label>اختر الموظف من السجل</label>
+                <select id="f_empSelect" onchange="fillEmployeeData('complaints')">
+                    <option value="">-- اختر موظفاً --</option>
                 </select>
             </div>
-
-            <table class="cases-table" id="complaintsTable">
-                <thead>
-                    <tr>
-                        <th>رقم الشكوى</th>
-                        <th>اسم الموظف</th>
-                        <th>الموضوع</th>
-                        <th>التاريخ</th>
-                        <th>الحالة</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody id="complaintsBody">
-                    <tr><td colspan="6" class="empty-state">لا توجد شكاوى مسجلة</td></tr>
-                </tbody>
-            </table>
+            <div class="field-group">
+                <label>اسم الموظف مقدم الشكوى</label>
+                <input type="text" id="f_name" placeholder="الاسم الكامل">
+            </div>
+            <div class="field-group">
+                <label>الرقم الوظيفي</label>
+                <input type="text" id="f_empId" placeholder="SAD-XXX">
+            </div>
+            <div class="field-group">
+                <label>الفرع</label>
+                <input type="text" id="f_branch" placeholder="الفرع">
+            </div>
+            <div class="field-group">
+                <label>الجهة / الشخص المُشتكى عليه</label>
+                <input type="text" id="f_against" placeholder="اسم الشخص أو الجهة">
+            </div>
+            <div class="field-group">
+                <label>نوع الشكوى</label>
+                <select id="f_type">
+                    <option value="">-- اختر --</option>
+                    <option>تحرش أو مضايقة</option>
+                    <option>ظلم وظيفي</option>
+                    <option>عدم صرف المستحقات</option>
+                    <option>خصم غير مبرر</option>
+                    <option>بيئة عمل غير آمنة</option>
+                    <option>تمييز وظيفي</option>
+                    <option>أخرى</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>تاريخ التقديم</label>
+                <input type="date" id="f_date">
+            </div>
+            <div class="field-group">
+                <label>الحالة</label>
+                <select id="f_status">
+                    <option>جديدة</option>
+                    <option>قيد المعالجة</option>
+                    <option>مغلقة</option>
+                    <option>مرفوضة</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>المسئول عن المعالجة</label>
+                <input type="text" id="f_handler" placeholder="اسم المسئول القانوني">
+            </div>
+            <div class="field-group full">
+                <label>تفاصيل الشكوى</label>
+                <textarea id="f_details" placeholder="اكتب تفاصيل الشكوى هنا..."></textarea>
+            </div>
+            <div class="field-group full">
+                <label>ملاحظات / قرار</label>
+                <textarea id="f_notes" placeholder="ملاحظات أو القرار النهائي..."></textarea>
+            </div>
         </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="saveComplaint()">حفظ</button>
+            <button class="btn btn-outline" onclick="closeModal('formModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
 
-        <div id="add-tab" class="tab-content">
-            <div class="form-section">
-                <h2 style="margin-bottom: 20px; color: var(--accent);">➕ تسجيل شكوى جديدة</h2>
-                <form id="complaintForm" onsubmit="handleSaveComplaint(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>اسم الموظف</label>
-                            <input type="text" id="empName" placeholder="اسم الموظف المشتكي" required>
-                        </div>
-                        <div class="form-group">
-                            <label>رقم الموظف</label>
-                            <input type="text" id="empNumber" placeholder="رقم الموظف">
-                        </div>
-                        <div class="form-group">
-                            <label>الإدارة</label>
-                            <input type="text" id="department" placeholder="الإدارة أو القسم">
-                        </div>
-                        <div class="form-group">
-                            <label>موضوع الشكوى</label>
-                            <input type="text" id="subject" placeholder="موضوع الشكوى" required>
-                        </div>
-                        <div class="form-group">
-                            <label>تاريخ الشكوى</label>
-                            <input type="date" id="complaintDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label>درجة الأهمية</label>
-                            <select id="priority" required>
-                                <option value="عالية">🔴 عالية</option>
-                                <option value="متوسطة">🟡 متوسطة</option>
-                                <option value="منخفضة">🟢 منخفضة</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>الحالة</label>
-                            <select id="status" required>
-                                <option value="جديدة">🆕 جديدة</option>
-                                <option value="قيد المعالجة">⏳ قيد المعالجة</option>
-                                <option value="مُحلولة">✅ مُحلولة</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>تفاصيل الشكوى</label>
-                            <textarea id="details" placeholder="اشرح تفاصيل الشكوى كاملة" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>الإجراء المتخذ</label>
-                            <textarea id="action" placeholder="الإجراء الذي تم اتخاذه أو سيتم اتخاذه"></textarea>
-                        </div>
+<!-- Modal التفاصيل -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal">
+        <h3>تفاصيل الشكوى</h3>
+        <div id="viewContent"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal('viewModal')">إغلاق</button>
+        </div>
+    </div>
+</div>
 
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-success">💾 حفظ الشكوى</button>
-                            <button type="reset" class="btn btn-secondary">🔄 مسح البيانات</button>
-                        </div>
+<script>
+    const STORAGE_KEY = 'saden_complaints';
+
+    let complaints = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+        { id: "CMP-001", name: "أحمد منصور", empId: "SAD-102", branch: "الرياض", type: "خصم غير مبرر", against: "المدير المالي", date: "2026-03-10", status: "قيد المعالجة", handler: "المستشار القانوني", details: "تم خصم مبلغ من الراتب دون إشعار مسبق أو توضيح السبب.", notes: "جاري التحقق من كشف الراتب." },
+        { id: "CMP-002", name: "محمد سليم", empId: "SAD-201", branch: "جدة", type: "ظلم وظيفي", against: "مدير الفرع", date: "2026-04-01", status: "جديدة", handler: "", details: "تم تجاوزه في الترقية رغم استيفاء جميع الشروط.", notes: "" },
+        { id: "CMP-003", name: "فهد خالد", empId: "SAD-301", branch: "الدمام", type: "بيئة عمل غير آمنة", against: "إدارة الموقع", date: "2026-02-20", status: "مغلقة", handler: "فريق السلامة", details: "غياب معدات الحماية الشخصية في الموقع.", notes: "تم توفير المعدات وإغلاق الشكوى." }
+    ];
+
+    let editIndex = -1;
+
+    function loadEmployeesSelect(selectId) {
+        const employees = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+        const select = document.getElementById(selectId);
+        const firstOpt = select.querySelector('option:first-child');
+        select.innerHTML = '';
+        select.appendChild(firstOpt.cloneNode(true));
+        employees.forEach(emp => {
+            const opt = document.createElement('option');
+            opt.value = emp.emp_number;
+            opt.textContent = `${emp.emp_name} (${emp.emp_number})`;
+            opt.dataset.name = emp.emp_name;
+            opt.dataset.empId = emp.emp_number;
+            opt.dataset.branch = emp.dept || '';
+            opt.dataset.title = emp.company_job || '';
+            select.appendChild(opt);
+        });
+    }
+
+    function fillEmployeeData(context) {
+        const select = document.getElementById('f_empSelect');
+        const selected = select.options[select.selectedIndex];
+        if (!selected || !selected.value) return;
+        document.getElementById('f_name').value = selected.dataset.name || '';
+        document.getElementById('f_empId').value = selected.dataset.empId || '';
+        document.getElementById('f_branch').value = selected.dataset.branch || '';
+    }
+
+    function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(complaints));
+    }
+
+    function getStatusClass(status) {
+        const map = { 'جديدة': 'status-new', 'قيد المعالجة': 'status-open', 'مغلقة': 'status-closed', 'مرفوضة': 'status-rejected' };
+        return map[status] || 'status-new';
+    }
+
+    function updateStats() {
+        const total = complaints.length;
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statNew').textContent = complaints.filter(c => c.status === 'جديدة').length;
+        document.getElementById('statOpen').textContent = complaints.filter(c => c.status === 'قيد المعالجة').length;
+        document.getElementById('statClosed').textContent = complaints.filter(c => c.status === 'مغلقة').length;
+        document.getElementById('totalBadge').textContent = total + ' شكوى';
+    }
+
+    function renderTable() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const status = document.getElementById('filterStatus').value;
+        const branch = document.getElementById('filterBranch').value;
+
+        const filtered = complaints.filter(c => {
+            const matchSearch = !search || c.name.toLowerCase().includes(search) || c.empId.toLowerCase().includes(search) || c.branch.includes(search);
+            const matchStatus = !status || c.status === status;
+            const matchBranch = !branch || c.branch === branch;
+            return matchSearch && matchStatus && matchBranch;
+        });
+
+        const tbody = document.getElementById('tableBody');
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:30px; color:#64748b;">لا توجد بيانات</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map((c, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td><strong>${c.id}</strong></td>
+                <td>${c.name}</td>
+                <td>${c.empId}</td>
+                <td>${c.branch}</td>
+                <td>${c.type}</td>
+                <td>${c.against}</td>
+                <td>${c.date}</td>
+                <td><span class="status-badge ${getStatusClass(c.status)}">${c.status}</span></td>
+                <td>
+                    <div class="action-btns">
+                        <button class="action-btn action-view" onclick="viewComplaint('${c.id}')">عرض</button>
+                        <button class="action-btn action-edit" onclick="editComplaint('${c.id}')">تعديل</button>
+                        <button class="action-btn" style="background:#fee2e2;color:#991b1b;" onclick="deleteComplaint('${c.id}')">حذف</button>
                     </div>
-                </form>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openAddModal() {
+        editIndex = -1;
+        document.getElementById('modalTitle').textContent = 'تسجيل شكوى جديدة';
+        ['f_name','f_empId','f_branch','f_against','f_handler','f_details','f_notes'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('f_empSelect').value = '';
+        document.getElementById('f_type').value = '';
+        document.getElementById('f_status').value = 'جديدة';
+        document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
+        loadEmployeesSelect('f_empSelect');
+        document.getElementById('formModal').classList.add('active');
+    }
+
+    function editComplaint(id) {
+        const idx = complaints.findIndex(c => c.id === id);
+        if (idx === -1) return;
+        const c = complaints[idx];
+        editIndex = idx;
+        document.getElementById('modalTitle').textContent = 'تعديل الشكوى: ' + c.id;
+        loadEmployeesSelect('f_empSelect');
+        document.getElementById('f_empSelect').value = '';
+        document.getElementById('f_name').value = c.name;
+        document.getElementById('f_empId').value = c.empId;
+        document.getElementById('f_branch').value = c.branch;
+        document.getElementById('f_against').value = c.against;
+        document.getElementById('f_type').value = c.type;
+        document.getElementById('f_date').value = c.date;
+        document.getElementById('f_status').value = c.status;
+        document.getElementById('f_handler').value = c.handler;
+        document.getElementById('f_details').value = c.details;
+        document.getElementById('f_notes').value = c.notes;
+        document.getElementById('formModal').classList.add('active');
+    }
+
+    function saveComplaint() {
+        const name = document.getElementById('f_name').value.trim();
+        const empId = document.getElementById('f_empId').value.trim();
+        const branch = document.getElementById('f_branch').value.trim();
+        const type = document.getElementById('f_type').value;
+
+        if (!name || !empId || !branch || !type) {
+            alert('يرجى تعبئة الحقول الأساسية: الاسم، الرقم الوظيفي، الفرع، نوع الشكوى');
+            return;
+        }
+
+        const entry = {
+            id: editIndex === -1 ? 'CMP-' + String(complaints.length + 1).padStart(3, '0') : complaints[editIndex].id,
+            name,
+            empId,
+            branch,
+            against: document.getElementById('f_against').value.trim(),
+            type,
+            date: document.getElementById('f_date').value,
+            status: document.getElementById('f_status').value,
+            handler: document.getElementById('f_handler').value.trim(),
+            details: document.getElementById('f_details').value.trim(),
+            notes: document.getElementById('f_notes').value.trim()
+        };
+
+        if (editIndex === -1) {
+            complaints.push(entry);
+        } else {
+            complaints[editIndex] = entry;
+        }
+
+        save();
+        renderTable();
+        updateStats();
+        closeModal('formModal');
+    }
+
+    function viewComplaint(id) {
+        const c = complaints.find(x => x.id === id);
+        if (!c) return;
+        document.getElementById('viewContent').innerHTML = `
+            <div class="detail-section">
+                <div class="detail-row"><span class="detail-label">رقم الشكوى:</span><span>${c.id}</span></div>
+                <div class="detail-row"><span class="detail-label">اسم الموظف:</span><span>${c.name}</span></div>
+                <div class="detail-row"><span class="detail-label">الرقم الوظيفي:</span><span>${c.empId}</span></div>
+                <div class="detail-row"><span class="detail-label">الفرع:</span><span>${c.branch}</span></div>
+                <div class="detail-row"><span class="detail-label">المُشتكى عليه:</span><span>${c.against}</span></div>
+                <div class="detail-row"><span class="detail-label">نوع الشكوى:</span><span>${c.type}</span></div>
+                <div class="detail-row"><span class="detail-label">تاريخ التقديم:</span><span>${c.date}</span></div>
+                <div class="detail-row"><span class="detail-label">الحالة:</span><span class="status-badge ${getStatusClass(c.status)}">${c.status}</span></div>
+                <div class="detail-row"><span class="detail-label">المسئول عن المعالجة:</span><span>${c.handler || 'لم يُحدد'}</span></div>
+                <div class="detail-row"><span class="detail-label">تفاصيل الشكوى:</span><span>${c.details || '-'}</span></div>
+                <div class="detail-row"><span class="detail-label">ملاحظات / قرار:</span><span>${c.notes || '-'}</span></div>
             </div>
-        </div>
-    </div>
+        `;
+        document.getElementById('viewModal').classList.add('active');
+    }
 
-    <div id="detailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">تفاصيل الشكوى</div>
-            <div id="modalBody"></div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="closeModal()">إغلاق</button>
-            </div>
-        </div>
-    </div>
+    function deleteComplaint(id) {
+        if (!confirm('هل أنت متأكد من حذف هذه الشكوى؟')) return;
+        complaints = complaints.filter(c => c.id !== id);
+        save();
+        renderTable();
+        updateStats();
+    }
 
-    <script>
-        let complaints = JSON.parse(localStorage.getItem('saden_complaints')) || [];
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
 
-        function switchTab(event, tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        function handleSaveComplaint(event) {
-            event.preventDefault();
-            
-            const newComplaint = {
-                id: Date.now(),
-                complaintNumber: 'SH-' + Date.now().toString().slice(-6),
-                empName: document.getElementById('empName').value,
-                empNumber: document.getElementById('empNumber').value,
-                department: document.getElementById('department').value,
-                subject: document.getElementById('subject').value,
-                complaintDate: document.getElementById('complaintDate').value,
-                priority: document.getElementById('priority').value,
-                status: document.getElementById('status').value,
-                details: document.getElementById('details').value,
-                action: document.getElementById('action').value,
-                createdAt: new Date().toISOString()
-            };
-
-            complaints.push(newComplaint);
-            saveToLocalStorage();
-            document.getElementById('complaintForm').reset();
-            alert('✅ تم حفظ الشكوى بنجاح');
-            switchTab({ target: document.querySelector('[onclick*="complaints-tab"]') }, 'complaints-tab');
-            renderComplaints();
-        }
-
-        function renderComplaints() {
-            const tbody = document.getElementById('complaintsBody');
-            
-            if (complaints.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">لا توجد شكاوى مسجلة</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = complaints.map(c => `
-                <tr>
-                    <td><strong>${c.complaintNumber}</strong></td>
-                    <td>${c.empName}</td>
-                    <td>${c.subject}</td>
-                    <td>${new Date(c.complaintDate).toLocaleDateString('ar-SA')}</td>
-                    <td><span class="status-badge status-${getStatusClass(c.status)}">${c.status}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-btn view-btn" onclick="viewDetails(${c.id})">👁️ عرض</button>
-                            <button class="action-btn edit-btn" onclick="editComplaint(${c.id})">✏️ تعديل</button>
-                            <button class="action-btn delete-btn" onclick="deleteComplaint(${c.id})">🗑️ حذف</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-
-            updateStats();
-        }
-
-        function updateStats() {
-            const newCount = complaints.filter(c => c.status === 'جديدة').length;
-            const processingCount = complaints.filter(c => c.status === 'قيد المعالجة').length;
-            const resolvedCount = complaints.filter(c => c.status === 'مُحلولة').length;
-            const total = complaints.length;
-            const resolutionRate = total > 0 ? Math.round((resolvedCount / total) * 100) : 0;
-
-            document.getElementById('new-count').innerText = newCount;
-            document.getElementById('processing-count').innerText = processingCount;
-            document.getElementById('resolved-count').innerText = resolvedCount;
-            document.getElementById('total-count').innerText = total;
-            document.getElementById('resolution-rate').innerText = resolutionRate + '%';
-        }
-
-        function viewDetails(complaintId) {
-            const complaint = complaints.find(c => c.id === complaintId);
-            if (!complaint) return;
-
-            const modal = document.getElementById('detailsModal');
-            const body = document.getElementById('modalBody');
-
-            body.innerHTML = `
-                <div class="detail-row">
-                    <div class="detail-label">رقم الشكوى:</div>
-                    <div class="detail-value">${complaint.complaintNumber}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">اسم الموظف:</div>
-                    <div class="detail-value">${complaint.empName}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">الإدارة:</div>
-                    <div class="detail-value">${complaint.department || '-'}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">الموضوع:</div>
-                    <div class="detail-value">${complaint.subject}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">درجة الأهمية:</div>
-                    <div class="detail-value">${complaint.priority}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">الحالة:</div>
-                    <div class="detail-value"><span class="status-badge status-${getStatusClass(complaint.status)}">${complaint.status}</span></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">التاريخ:</div>
-                    <div class="detail-value">${new Date(complaint.complaintDate).toLocaleDateString('ar-SA')}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">التفاصيل:</div>
-                    <div class="detail-value" style="white-space: pre-wrap;">${complaint.details}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">الإجراء المتخذ:</div>
-                    <div class="detail-value" style="white-space: pre-wrap;">${complaint.action || '-'}</div>
-                </div>
-            `;
-
-            modal.classList.add('active');
-        }
-
-        function editComplaint(complaintId) {
-            const complaint = complaints.find(c => c.id === complaintId);
-            if (!complaint) return;
-
-            document.getElementById('empName').value = complaint.empName;
-            document.getElementById('empNumber').value = complaint.empNumber;
-            document.getElementById('department').value = complaint.department;
-            document.getElementById('subject').value = complaint.subject;
-            document.getElementById('complaintDate').value = complaint.complaintDate;
-            document.getElementById('priority').value = complaint.priority;
-            document.getElementById('status').value = complaint.status;
-            document.getElementById('details').value = complaint.details;
-            document.getElementById('action').value = complaint.action;
-
-            document.getElementById('complaintForm').dataset.editId = complaintId;
-            
-            switchTab({ target: document.querySelector('[onclick*="add-tab"]') }, 'add-tab');
-            window.scrollTo(0, 0);
-        }
-
-        function deleteComplaint(complaintId) {
-            const complaint = complaints.find(c => c.id === complaintId);
-            if (!complaint) return;
-
-            if (confirm(`⚠️ هل أنت متأكد من حذف الشكوى: ${complaint.complaintNumber}؟`)) {
-                complaints = complaints.filter(c => c.id !== complaintId);
-                saveToLocalStorage();
-                renderComplaints();
-                alert('✅ تم حذف الشكوى بنجاح');
-            }
-        }
-
-        function filterComplaints() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-
-            const tbody = document.getElementById('complaintsBody');
-            const filtered = complaints.filter(c => {
-                const matchesSearch = c.empName.toLowerCase().includes(searchTerm) || c.subject.toLowerCase().includes(searchTerm);
-                const matchesStatus = !statusFilter || c.status === statusFilter;
-                return matchesSearch && matchesStatus;
-            });
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">لا توجد نتائج مطابقة</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = filtered.map(c => `
-                <tr>
-                    <td><strong>${c.complaintNumber}</strong></td>
-                    <td>${c.empName}</td>
-                    <td>${c.subject}</td>
-                    <td>${new Date(c.complaintDate).toLocaleDateString('ar-SA')}</td>
-                    <td><span class="status-badge status-${getStatusClass(c.status)}">${c.status}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-btn view-btn" onclick="viewDetails(${c.id})">👁️ عرض</button>
-                            <button class="action-btn edit-btn" onclick="editComplaint(${c.id})">✏️ تعديل</button>
-                            <button class="action-btn delete-btn" onclick="deleteComplaint(${c.id})">🗑️ حذف</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function getStatusClass(status) {
-            switch(status) {
-                case 'جديدة': return 'new';
-                case 'قيد المعالجة': return 'processing';
-                case 'مُحلولة': return 'resolved';
-                default: return 'new';
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('detailsModal').classList.remove('active');
-        }
-
-        function saveToLocalStorage() {
-            localStorage.setItem('saden_complaints', JSON.stringify(complaints));
-        }
-
-        document.getElementById('complaintForm').addEventListener('submit', function(e) {
-            const editId = this.dataset.editId;
-            if (editId) {
-                e.preventDefault();
-                const index = complaints.findIndex(c => c.id === parseInt(editId));
-                if (index !== -1) {
-                    complaints[index] = {
-                        ...complaints[index],
-                        empName: document.getElementById('empName').value,
-                        empNumber: document.getElementById('empNumber').value,
-                        department: document.getElementById('department').value,
-                        subject: document.getElementById('subject').value,
-                        complaintDate: document.getElementById('complaintDate').value,
-                        priority: document.getElementById('priority').value,
-                        status: document.getElementById('status').value,
-                        details: document.getElementById('details').value,
-                        action: document.getElementById('action').value
-                    };
-                    saveToLocalStorage();
-                    alert('✅ تم تحديث الشكوى بنجاح');
-                    this.dataset.editId = '';
-                    this.reset();
-                    renderComplaints();
-                    switchTab({ target: document.querySelector('[onclick*="complaints-tab"]') }, 'complaints-tab');
-                }
-            }
-        });
-
-        window.addEventListener('load', () => {
-            renderComplaints();
-        });
-
-        document.getElementById('detailsModal').addEventListener('click', (e) => {
-            if (e.target.id === 'detailsModal') closeModal();
-        });
-    </script>
+    renderTable();
+    updateStats();
+</script>
 </body>
 </html>

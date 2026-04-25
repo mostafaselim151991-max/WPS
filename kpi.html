@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام KPIs الفروع والموظفين - سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --saden-red: #d32f2f;
+            --saden-dark: #2c3e50;
+            --bg-gray: #f4f7f6;
+            --success: #27ae60;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg-gray);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .header {
+            background: var(--saden-dark);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            opacity: 0.8;
+        }
+
+        .admin-panel {
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            align-items: flex-end;
+        }
+        
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field label {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--saden-red);
+        }
+
+        select, input {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Tajawal';
+            font-size: 15px;
+            background: white;
+            transition: var(--transition);
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--saden-red);
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+        }
+
+        input:invalid {
+            border-color: var(--danger);
+        }
+
+        .btn-print {
+            padding: 12px;
+            cursor: pointer;
+            font-family: 'Tajawal';
+            width: 100%;
+            background: var(--saden-dark);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+
+        .btn-print:hover {
+            background: #34495e;
+            transform: translateY(-2px);
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-top: 8px solid var(--saden-red);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .employee-header {
+            background: #f9f9f9;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .employee-header h3 {
+            margin: 0;
+            color: var(--saden-dark);
+            font-size: 1.5rem;
+        }
+        
+        .metrics-grid {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-box {
+            background: var(--bg-gray);
+            padding: 15px;
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+
+        .metric-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: #ddd;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+
+        .results-area {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 25px;
+            padding: 0 30px 30px;
+        }
+
+        .score-circle {
+            background: var(--saden-dark);
+            color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .score-circle span {
+            font-size: 1rem;
+        }
+
+        .total-score {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .grade-label {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            border: 1px solid #eee;
+        }
+        
+        .btn-save {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Tajawal';
+            width: 100%;
+            margin-top: 10px;
+            transition: var(--transition);
+        }
+
+        .btn-save:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .edit-zone {
+            display: none;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        @media print {
+            .admin-panel, .btn-save {
+                display: none;
+            }
+
+            .kpi-card {
+                box-shadow: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .results-area {
+                grid-template-columns: 1fr;
+            }
+
+            .control-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h2 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>منظومة سجلات الأداء بالفروع</h2>
+        <p>إدارة الجودة - شركة سادن للاستشارات الجيولوجية</p>
+    </div>
+
+    <div class="admin-panel">
+        <div class="control-grid">
+            <div class="field">
+                <label for="branchSelect">1. اختر الفرع</label>
+                <select id="branchSelect" aria-label="اختيار الفرع">
+                    <option value="">-- اختر الفرع --</option>
+                    <option value="الرياض">فرع الرياض</option>
+                    <option value="جدة">فرع جدة</option>
+                    <option value="الدمام">فرع الدمام</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="employeeSelect">2. اسم الموظف</label>
+                <select id="employeeSelect" disabled aria-label="اختيار الموظف">
+                    <option value="">اختر الفرع أولاً</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>&nbsp;</label>
+                <button type="button" class="btn-print" onclick="window.print()">طباعة التقرير 📥</button>
+            </div>
+        </div>
+        
+        <div id="editZone" class="edit-zone">
+            <div class="scores-grid">
+                <div class="field">
+                    <label for="in_att">الحضور</label>
+                    <input type="number" id="in_att" min="0" max="100" step="1" required aria-label="الالتزام بالحضور">
+                </div>
+                <div class="field">
+                    <label for="in_res">الاستجابة</label>
+                    <input type="number" id="in_res" min="0" max="100" step="1" required aria-label="الاستجابة للرؤساء">
+                </div>
+                <div class="field">
+                    <label for="in_team">التعامل</label>
+                    <input type="number" id="in_team" min="0" max="100" step="1" required aria-label="التعامل مع الزملاء">
+                </div>
+                <div class="field">
+                    <label for="in_skill">المهارة</label>
+                    <input type="number" id="in_skill" min="0" max="100" step="1" required aria-label="المهارة والحرفية">
+                </div>
+                <div class="field">
+                    <label for="in_prod">الإنتاجية</label>
+                    <input type="number" id="in_prod" min="0" max="100" step="1" required aria-label="الإنتاجية">
+                </div>
+            </div>
+            <button type="button" class="btn-save" onclick="updateCurrentEmployee()">حفظ التعديلات في السجل ✅</button>
+        </div>
+    </div>
+
+    <div class="kpi-card" id="kpiCard" style="display: none;">
+        <div class="employee-header">
+            <div>
+                <h3 id="displayName">اسم الموظف</h3>
+                <small id="displayTitle">المسمى الوظيفي</small> | <small id="displayBranch" style="color:var(--saden-red); font-weight:bold;"></small>
+            </div>
+            <div style="text-align: left;">
+                <div style="font-weight: bold;">أبريل 2026</div>
+                <small>رقم الموظف: <span id="displayId">--</span></small>
+            </div>
+        </div>
+
+        <div class="metrics-grid" id="metricsDisplay"></div>
+
+        <div class="results-area">
+            <div class="score-circle">
+                <span>التقييم الإجمالي</span>
+                <div class="total-score" id="totalScore">0</div>
+                <div class="grade-label" id="gradeLabel">--</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="kpiChart" height="150" role="img" aria-label="مخطط رادار لمؤشرات الأداء"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const KPISystem = {
+        employees: [
+            { id: "SAD-101", branch: "الرياض", name: "إسلام عزت", title: "محلل نظم جودة", scores: [95, 92, 90, 88, 85] },
+            { id: "SAD-102", branch: "الرياض", name: "أحمد منصور", title: "مفتش ميداني", scores: [80, 70, 85, 75, 90] },
+            { id: "SAD-201", branch: "جدة", name: "محمد سليم", title: "مدير إداري", scores: [98, 95, 95, 90, 95] },
+            { id: "SAD-202", branch: "جدة", name: "خالد العتيبي", title: "جيولوجي", scores: [88, 80, 75, 85, 80] },
+            { id: "SAD-301", branch: "الدمام", name: "فهد خالد", title: "فني مختبر", scores: [75, 80, 70, 65, 80] }
+        ],
+
+        chart: null,
+
+        kpiLabels: ['الالتزام بالحضور', 'الاستجابة للرؤساء', 'التعامل مع الزملاء', 'المهارة والحرفية', 'الإنتاجية'],
+        
+        getElement: (id) => document.getElementById(id),
+
+        validateScore: (score) => {
+            const num = parseInt(score);
+            return !isNaN(num) && num >= 0 && num <= 100 ? num : 0;
+        },
+
+        getScoreColor: (score) => {
+            if (score >= 85) return '#27ae60';
+            if (score >= 70) return '#f1c40f';
+            return '#e74c3c';
+        },
+
+        showElement: (id, display = 'block') => {
+            const elem = KPISystem.getElement(id);
+            if (elem) elem.style.display = display;
+        },
+
+        hideElement: (id) => {
+            const elem = KPISystem.getElement(id);
+            if (elem) elem.style.display = 'none';
+        }
+    };
+
+    function filterEmployees() {
+        const branch = KPISystem.getElement('branchSelect').value;
+        const empSelect = KPISystem.getElement('employeeSelect');
+        
+        empSelect.innerHTML = '<option value="">-- اختر الموظف --</option>';
+        
+        if (branch) {
+            const filtered = KPISystem.employees.filter(e => e.branch === branch);
+            filtered.forEach(emp => {
+                const opt = document.createElement('option');
+                opt.value = emp.id;
+                opt.textContent = emp.name;
+                empSelect.appendChild(opt);
+            });
+            empSelect.disabled = false;
+        } else {
+            empSelect.innerHTML = '<option value="">اختر الفرع أولاً</option>';
+            empSelect.disabled = true;
+        }
+        
+        KPISystem.hideElement('kpiCard');
+        KPISystem.hideElement('editZone');
+    }
+
+    function loadEmployeeData() {
+        const id = KPISystem.getElement('employeeSelect').value;
+        if (!id) return;
+
+        const emp = KPISystem.employees.find(e => e.id === id);
+        if (!emp) return;
+        
+        KPISystem.getElement('displayName').textContent = emp.name;
+        KPISystem.getElement('displayTitle').textContent = emp.title;
+        KPISystem.getElement('displayBranch').textContent = emp.branch;
+        KPISystem.getElement('displayId').textContent = emp.id;
+        
+        ['att', 'res', 'team', 'skill', 'prod'].forEach((field, i) => {
+            KPISystem.getElement('in_' + field).value = emp.scores[i];
+        });
+
+        KPISystem.showElement('kpiCard');
+        KPISystem.showElement('editZone');
+        renderMetrics(emp.scores);
+    }
+
+    function updateCurrentEmployee() {
+        const id = KPISystem.getElement('employeeSelect').value;
+        const emp = KPISystem.employees.find(e => e.id === id);
+        
+        if (!emp) return;
+
+        const newScores = ['att', 'res', 'team', 'skill', 'prod'].map(field => {
+            const value = KPISystem.getElement('in_' + field).value;
+            return KPISystem.validateScore(value);
+        });
+
+        if (newScores.some(s => s === 0 && confirm('بعض القيم غير صحيحة أو صفر. هل تريد المتابعة؟')) || newScores.every(s => s > 0)) {
+            emp.scores = newScores;
+            renderMetrics(emp.scores);
+            
+            const successMsg = `تم تحديث بيانات ${emp.name} بفرع ${emp.branch}`;
+            alert(successMsg);
+        }
+    }
+
+    function renderMetrics(scores) {
+        let html = '';
+        let sum = 0;
+
+        scores.forEach((s, i) => {
+            sum += s;
+            const color = KPISystem.getScoreColor(s);
+            html += `
+                <div class="metric-box">
+                    <div class="metric-header">
+                        <span>${KPISystem.kpiLabels[i]}</span>
+                        <span>${s}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width:${s}%; background:${color}"></div>
+                    </div>
+                </div>`;
+        });
+
+        KPISystem.getElement('metricsDisplay').innerHTML = html;
+        
+        const avg = Math.round(sum / scores.length);
+        KPISystem.getElement('totalScore').textContent = avg;
+        
+        const lbl = KPISystem.getElement('gradeLabel');
+        if (avg >= 90) {
+            lbl.textContent = "ممتاز";
+            lbl.style.color = "#2ecc71";
+        } else if (avg >= 75) {
+            lbl.textContent = "جيد جداً";
+            lbl.style.color = "#f1c40f";
+        } else {
+            lbl.textContent = "يحتاج متابعة";
+            lbl.style.color = "#e74c3c";
+        }
+
+        updateChart(scores);
+    }
+
+    function updateChart(data) {
+        const ctx = KPISystem.getElement('kpiChart').getContext('2d');
+        
+        if (KPISystem.chart) {
+            KPISystem.chart.destroy();
+        }
+
+        KPISystem.chart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['الحضور', 'الاستجابة', 'الزملاء', 'المهارة', 'الإنتاجية'],
+                datasets: [{
+                    label: 'التقييم الحالي',
+                    data: data,
+                    backgroundColor: 'rgba(211, 47, 47, 0.2)',
+                    borderColor: '#d32f2f',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#d32f2f',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20,
+                            font: {
+                                family: 'Tajawal'
+                            }
+                        },
+                        pointLabels: {
+                            font: {
+                                family: 'Tajawal',
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(44, 62, 80, 0.9)',
+                        titleFont: {
+                            family: 'Tajawal'
+                        },
+                        bodyFont: {
+                            family: 'Tajawal'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        KPISystem.getElement('branchSelect').addEventListener('change', filterEmployees);
+        KPISystem.getElement('employeeSelect').addEventListener('change', loadEmployeeData);
+
+        ['att', 'res', 'team', 'skill', 'prod'].forEach(field => {
+            const input = KPISystem.getElement('in_' + field);
+            input.addEventListener('input', (e) => {
+                let val = parseInt(e.target.value);
+                if (val > 100) e.target.value = 100;
+                if (val < 0) e.target.value = 0;
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

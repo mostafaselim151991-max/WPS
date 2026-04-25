@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خصم من المدير المباشر - سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #b45309;
+            --accent-light: rgba(180, 83, 9, 0.08);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --text-muted: #64748b;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .page-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 25px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h2 { margin: 0; font-size: 1.4rem; }
+        .page-header p { margin: 4px 0 0; opacity: 0.7; font-size: 0.9rem; }
+
+        .badge-count {
+            background: var(--accent);
+            color: white;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: var(--white);
+            padding: 18px;
+            border-radius: var(--radius);
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-top: 4px solid var(--accent);
+        }
+
+        .stat-box.green { border-top-color: var(--success); }
+        .stat-box.orange { border-top-color: var(--warning); }
+        .stat-box.red { border-top-color: var(--danger); }
+        .stat-box.blue { border-top-color: var(--info); }
+
+        .stat-box .num { font-size: 2rem; font-weight: bold; color: var(--primary); }
+        .stat-box .num.amount { font-size: 1.4rem; }
+        .stat-box .lbl { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+        .toolbar {
+            background: var(--white);
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .toolbar input, .toolbar select {
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-size: 14px;
+            background: var(--bg);
+        }
+
+        .toolbar input { flex: 1; min-width: 200px; }
+
+        .btn {
+            padding: 9px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-outline { background: white; color: var(--primary); border: 1px solid var(--border); }
+
+        .table-wrap {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead { background: var(--primary); color: white; }
+        thead th { padding: 14px 12px; font-size: 13px; white-space: nowrap; }
+        tbody tr { border-bottom: 1px solid var(--border); transition: background 0.2s; }
+        tbody tr:hover { background: var(--accent-light); }
+        tbody td { padding: 12px; font-size: 14px; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .status-applied { background: #dbeafe; color: #1e40af; }
+
+        .amount-cell { font-weight: bold; color: var(--danger); }
+
+        .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+        .action-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Tajawal';
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .action-view { background: #e0f2fe; color: #0369a1; }
+        .action-edit { background: #fef3c7; color: #92400e; }
+        .action-approve { background: #d1fae5; color: #065f46; }
+        .action-reject { background: #fee2e2; color: #991b1b; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 720px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .modal h3 {
+            margin: 0 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--accent);
+            color: var(--primary);
+        }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-grid .full { grid-column: 1 / -1; }
+
+        .field-group { display: flex; flex-direction: column; gap: 6px; }
+        .field-group label { font-size: 13px; font-weight: bold; color: var(--accent); }
+
+        .field-group input,
+        .field-group select,
+        .field-group textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-size: 14px;
+            background: var(--bg);
+        }
+
+        .field-group textarea { resize: vertical; min-height: 80px; }
+
+        .section-title {
+            grid-column: 1 / -1;
+            font-weight: bold;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-top: 10px;
+            font-size: 15px;
+        }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+        .detail-section { background: var(--bg); border-radius: 10px; padding: 15px; margin-top: 15px; }
+        .detail-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: var(--text-muted); min-width: 180px; font-weight: bold; }
+        .detail-section-title { font-weight: bold; color: var(--accent); margin: 15px 0 8px; font-size: 14px; }
+
+        .approval-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .approval-box h4 { margin: 0 0 10px; color: #92400e; }
+
+        @media print {
+            .toolbar, .modal-overlay { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div>
+        <h2>💸 خصم من المدير المباشر</h2>
+        <p>الشئون القانونية - شركة سادن للاستشارات الجيولوجية</p>
+    </div>
+    <span class="badge-count" id="totalBadge">0 طلب</span>
+</div>
+
+<div class="stats-row">
+    <div class="stat-box">
+        <div class="num" id="statTotal">0</div>
+        <div class="lbl">إجمالي طلبات الخصم</div>
+    </div>
+    <div class="stat-box orange">
+        <div class="num" id="statPending">0</div>
+        <div class="lbl">بانتظار الموافقة</div>
+    </div>
+    <div class="stat-box green">
+        <div class="num" id="statApproved">0</div>
+        <div class="lbl">معتمدة</div>
+    </div>
+    <div class="stat-box blue">
+        <div class="num" id="statApplied">0</div>
+        <div class="lbl">مُطبقة على الراتب</div>
+    </div>
+    <div class="stat-box red">
+        <div class="num amount" id="statTotalAmount">0 ر.س</div>
+        <div class="lbl">إجمالي مبالغ الخصم</div>
+    </div>
+</div>
+
+<div class="toolbar">
+    <input type="text" id="searchInput" placeholder="ابحث باسم الموظف أو المدير أو الفرع..." oninput="renderTable()">
+    <select id="filterStatus" onchange="renderTable()">
+        <option value="">كل الحالات</option>
+        <option value="بانتظار الموافقة">بانتظار الموافقة</option>
+        <option value="معتمدة">معتمدة</option>
+        <option value="مرفوضة">مرفوضة</option>
+        <option value="مُطبقة">مُطبقة</option>
+    </select>
+    <select id="filterBranch" onchange="renderTable()">
+        <option value="">كل الفروع</option>
+        <option value="الرياض">الرياض</option>
+        <option value="جدة">جدة</option>
+        <option value="الدمام">الدمام</option>
+    </select>
+    <select id="filterMonth" onchange="renderTable()">
+        <option value="">كل الشهور</option>
+        <option value="2026-01">يناير 2026</option>
+        <option value="2026-02">فبراير 2026</option>
+        <option value="2026-03">مارس 2026</option>
+        <option value="2026-04">أبريل 2026</option>
+        <option value="2026-05">مايو 2026</option>
+    </select>
+    <button class="btn btn-primary" onclick="openAddModal()">+ طلب خصم جديد</button>
+    <button class="btn btn-outline" onclick="window.print()">طباعة 📥</button>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم الطلب</th>
+                <th>اسم الموظف</th>
+                <th>الرقم الوظيفي</th>
+                <th>الفرع</th>
+                <th>المدير المباشر</th>
+                <th>سبب الخصم</th>
+                <th>مبلغ الخصم</th>
+                <th>الشهر المُطبق</th>
+                <th>تاريخ الطلب</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<!-- Modal الإضافة/التعديل -->
+<div class="modal-overlay" id="formModal">
+    <div class="modal">
+        <h3 id="modalTitle">طلب خصم جديد</h3>
+        <div class="form-grid">
+            <div class="section-title">بيانات الموظف</div>
+            <div class="field-group full">
+                <label>اختر الموظف من السجل</label>
+                <select id="f_empSelect" onchange="fillEmployeeData()">
+                    <option value="">-- اختر موظفاً --</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>اسم الموظف</label>
+                <input type="text" id="f_name" placeholder="الاسم الكامل">
+            </div>
+            <div class="field-group">
+                <label>الرقم الوظيفي</label>
+                <input type="text" id="f_empId" placeholder="SAD-XXX">
+            </div>
+            <div class="field-group">
+                <label>الفرع</label>
+                <input type="text" id="f_branch" placeholder="الفرع">
+            </div>
+            <div class="field-group">
+                <label>المسمى الوظيفي</label>
+                <input type="text" id="f_title" placeholder="المسمى الوظيفي">
+            </div>
+
+            <div class="section-title">بيانات الخصم</div>
+            <div class="field-group">
+                <label>المدير المباشر (مقدم الطلب)</label>
+                <input type="text" id="f_manager" placeholder="اسم المدير">
+            </div>
+            <div class="field-group">
+                <label>سبب الخصم</label>
+                <select id="f_reason">
+                    <option value="">-- اختر --</option>
+                    <option>تأخر عن العمل</option>
+                    <option>غياب غير مبرر</option>
+                    <option>إهمال في أداء المهام</option>
+                    <option>مخالفة تعليمات السلامة</option>
+                    <option>إتلاف ممتلكات الشركة</option>
+                    <option>مخالفة لوائح العمل</option>
+                    <option>أخرى</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>مبلغ الخصم (ريال)</label>
+                <input type="number" id="f_amount" min="1" placeholder="0">
+            </div>
+            <div class="field-group">
+                <label>نسبة الخصم من الراتب %</label>
+                <input type="number" id="f_percent" min="0" max="50" placeholder="0">
+            </div>
+            <div class="field-group">
+                <label>الشهر المُطبق عليه الخصم</label>
+                <input type="month" id="f_applyMonth">
+            </div>
+            <div class="field-group">
+                <label>تاريخ الطلب</label>
+                <input type="date" id="f_reqDate">
+            </div>
+            <div class="field-group full">
+                <label>تفاصيل المخالفة</label>
+                <textarea id="f_details" placeholder="اكتب تفاصيل المخالفة التي أدت إلى طلب الخصم..."></textarea>
+            </div>
+
+            <div class="section-title">الموافقة والاعتماد</div>
+            <div class="field-group">
+                <label>الحالة</label>
+                <select id="f_status">
+                    <option>بانتظار الموافقة</option>
+                    <option>معتمدة</option>
+                    <option>مرفوضة</option>
+                    <option>مُطبقة</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>المعتمد من قِبل</label>
+                <input type="text" id="f_approver" placeholder="اسم المعتمد">
+            </div>
+            <div class="field-group full">
+                <label>ملاحظات الاعتماد / سبب الرفض</label>
+                <textarea id="f_notes" placeholder="ملاحظات..."></textarea>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="saveDeduction()">حفظ</button>
+            <button class="btn btn-outline" onclick="closeModal('formModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal التفاصيل -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal">
+        <h3>تفاصيل طلب الخصم</h3>
+        <div id="viewContent"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal('viewModal')">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'saden_deductions';
+
+    let deductions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+        { id: "DED-001", name: "أحمد منصور", empId: "SAD-102", branch: "الرياض", title: "مفتش ميداني", manager: "محمد الغامدي", reason: "غياب غير مبرر", amount: 350, percent: 5, applyMonth: "2026-04", reqDate: "2026-04-05", details: "غياب الموظف يومي 1 و2 أبريل دون إخطار مسبق.", status: "معتمدة", approver: "مدير الموارد البشرية", notes: "تم اعتماد الخصم وفق لائحة العمل." },
+        { id: "DED-002", name: "فهد خالد", empId: "SAD-301", branch: "الدمام", title: "فني مختبر", manager: "سعد العتيبي", reason: "تأخر عن العمل", amount: 120, percent: 2, applyMonth: "2026-04", reqDate: "2026-04-10", details: "تأخر الموظف 5 مرات خلال شهر أبريل.", status: "بانتظار الموافقة", approver: "", notes: "" }
+    ];
+
+    let editIndex = -1;
+
+    function loadEmployeesSelect(selectId) {
+        const employees = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+        const select = document.getElementById(selectId);
+        const firstOpt = select.querySelector('option:first-child');
+        select.innerHTML = '';
+        select.appendChild(firstOpt.cloneNode(true));
+        employees.forEach(emp => {
+            const opt = document.createElement('option');
+            opt.value = emp.emp_number;
+            opt.textContent = `${emp.emp_name} (${emp.emp_number})`;
+            opt.dataset.name = emp.emp_name;
+            opt.dataset.empId = emp.emp_number;
+            opt.dataset.branch = emp.dept || '';
+            opt.dataset.title = emp.company_job || '';
+            opt.dataset.manager = emp.direct_manager || '';
+            select.appendChild(opt);
+        });
+    }
+
+    function fillEmployeeData() {
+        const select = document.getElementById('f_empSelect');
+        const selected = select.options[select.selectedIndex];
+        if (!selected || !selected.value) return;
+        document.getElementById('f_name').value = selected.dataset.name || '';
+        document.getElementById('f_empId').value = selected.dataset.empId || '';
+        document.getElementById('f_branch').value = selected.dataset.branch || '';
+        document.getElementById('f_title').value = selected.dataset.title || '';
+        if (selected.dataset.manager) {
+            document.getElementById('f_manager').value = selected.dataset.manager;
+        }
+    }
+
+    function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(deductions));
+    }
+
+    function getStatusClass(status) {
+        const map = { 'بانتظار الموافقة': 'status-pending', 'معتمدة': 'status-approved', 'مرفوضة': 'status-rejected', 'مُطبقة': 'status-applied' };
+        return map[status] || 'status-pending';
+    }
+
+    function updateStats() {
+        const total = deductions.length;
+        const totalAmount = deductions
+            .filter(d => d.status === 'معتمدة' || d.status === 'مُطبقة')
+            .reduce((sum, d) => sum + Number(d.amount), 0);
+
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statPending').textContent = deductions.filter(d => d.status === 'بانتظار الموافقة').length;
+        document.getElementById('statApproved').textContent = deductions.filter(d => d.status === 'معتمدة').length;
+        document.getElementById('statApplied').textContent = deductions.filter(d => d.status === 'مُطبقة').length;
+        document.getElementById('statTotalAmount').textContent = totalAmount.toLocaleString('ar-SA') + ' ر.س';
+        document.getElementById('totalBadge').textContent = total + ' طلب';
+    }
+
+    function renderTable() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const status = document.getElementById('filterStatus').value;
+        const branch = document.getElementById('filterBranch').value;
+        const month = document.getElementById('filterMonth').value;
+
+        const filtered = deductions.filter(d => {
+            const matchSearch = !search || d.name.toLowerCase().includes(search) || d.manager.toLowerCase().includes(search) || d.branch.includes(search);
+            const matchStatus = !status || d.status === status;
+            const matchBranch = !branch || d.branch === branch;
+            const matchMonth = !month || d.applyMonth === month;
+            return matchSearch && matchStatus && matchBranch && matchMonth;
+        });
+
+        const tbody = document.getElementById('tableBody');
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:30px; color:#64748b;">لا توجد بيانات</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map((d, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td><strong>${d.id}</strong></td>
+                <td>${d.name}</td>
+                <td>${d.empId}</td>
+                <td>${d.branch}</td>
+                <td>${d.manager}</td>
+                <td>${d.reason}</td>
+                <td class="amount-cell">${Number(d.amount).toLocaleString('ar-SA')} ر.س</td>
+                <td>${d.applyMonth}</td>
+                <td>${d.reqDate}</td>
+                <td><span class="status-badge ${getStatusClass(d.status)}">${d.status}</span></td>
+                <td>
+                    <div class="action-btns">
+                        <button class="action-btn action-view" onclick="viewDeduction('${d.id}')">عرض</button>
+                        <button class="action-btn action-edit" onclick="editDeduction('${d.id}')">تعديل</button>
+                        <button class="action-btn" style="background:#fee2e2;color:#991b1b;" onclick="deleteDeduction('${d.id}')">حذف</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openAddModal() {
+        editIndex = -1;
+        document.getElementById('modalTitle').textContent = 'طلب خصم جديد';
+        ['f_name','f_empId','f_branch','f_title','f_manager','f_amount','f_percent','f_approver','f_details','f_notes'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('f_reason').value = '';
+        document.getElementById('f_status').value = 'بانتظار الموافقة';
+        document.getElementById('f_reqDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('f_applyMonth').value = new Date().toISOString().slice(0, 7);
+        loadEmployeesSelect('f_empSelect');
+        document.getElementById('f_empSelect').value = '';
+        document.getElementById('formModal').classList.add('active');
+    }
+
+    function editDeduction(id) {
+        const idx = deductions.findIndex(d => d.id === id);
+        if (idx === -1) return;
+        const d = deductions[idx];
+        editIndex = idx;
+        document.getElementById('modalTitle').textContent = 'تعديل طلب الخصم: ' + d.id;
+        loadEmployeesSelect('f_empSelect');
+        document.getElementById('f_empSelect').value = '';
+        document.getElementById('f_name').value = d.name;
+        document.getElementById('f_empId').value = d.empId;
+        document.getElementById('f_branch').value = d.branch;
+        document.getElementById('f_title').value = d.title;
+        document.getElementById('f_manager').value = d.manager;
+        document.getElementById('f_reason').value = d.reason;
+        document.getElementById('f_amount').value = d.amount;
+        document.getElementById('f_percent').value = d.percent;
+        document.getElementById('f_applyMonth').value = d.applyMonth;
+        document.getElementById('f_reqDate').value = d.reqDate;
+        document.getElementById('f_details').value = d.details;
+        document.getElementById('f_status').value = d.status;
+        document.getElementById('f_approver').value = d.approver;
+        document.getElementById('f_notes').value = d.notes;
+        document.getElementById('formModal').classList.add('active');
+    }
+
+    function saveDeduction() {
+        const name = document.getElementById('f_name').value.trim();
+        const empId = document.getElementById('f_empId').value.trim();
+        const branch = document.getElementById('f_branch').value;
+        const manager = document.getElementById('f_manager').value.trim();
+        const amount = document.getElementById('f_amount').value;
+
+        if (!name || !empId || !branch || !manager || !amount) {
+            alert('يرجى تعبئة الحقول الأساسية: الاسم، الرقم الوظيفي، الفرع، المدير، مبلغ الخصم');
+            return;
+        }
+
+        const entry = {
+            id: editIndex === -1 ? 'DED-' + String(deductions.length + 1).padStart(3, '0') : deductions[editIndex].id,
+            name,
+            empId,
+            branch,
+            title: document.getElementById('f_title').value.trim(),
+            manager,
+            reason: document.getElementById('f_reason').value,
+            amount: parseFloat(amount) || 0,
+            percent: parseFloat(document.getElementById('f_percent').value) || 0,
+            applyMonth: document.getElementById('f_applyMonth').value,
+            reqDate: document.getElementById('f_reqDate').value,
+            details: document.getElementById('f_details').value.trim(),
+            status: document.getElementById('f_status').value,
+            approver: document.getElementById('f_approver').value.trim(),
+            notes: document.getElementById('f_notes').value.trim()
+        };
+
+        if (editIndex === -1) {
+            deductions.push(entry);
+        } else {
+            deductions[editIndex] = entry;
+        }
+
+        save();
+        renderTable();
+        updateStats();
+        closeModal('formModal');
+    }
+
+    function viewDeduction(id) {
+        const d = deductions.find(x => x.id === id);
+        if (!d) return;
+        document.getElementById('viewContent').innerHTML = `
+            <div class="detail-section">
+                <div class="detail-section-title">بيانات الموظف</div>
+                <div class="detail-row"><span class="detail-label">رقم الطلب:</span><span>${d.id}</span></div>
+                <div class="detail-row"><span class="detail-label">اسم الموظف:</span><span>${d.name}</span></div>
+                <div class="detail-row"><span class="detail-label">الرقم الوظيفي:</span><span>${d.empId}</span></div>
+                <div class="detail-row"><span class="detail-label">المسمى الوظيفي:</span><span>${d.title || '-'}</span></div>
+                <div class="detail-row"><span class="detail-label">الفرع:</span><span>${d.branch}</span></div>
+
+                <div class="detail-section-title">بيانات الخصم</div>
+                <div class="detail-row"><span class="detail-label">المدير المباشر:</span><span>${d.manager}</span></div>
+                <div class="detail-row"><span class="detail-label">سبب الخصم:</span><span>${d.reason}</span></div>
+                <div class="detail-row"><span class="detail-label">مبلغ الخصم:</span><span style="color:#ef4444; font-weight:bold;">${Number(d.amount).toLocaleString('ar-SA')} ريال</span></div>
+                <div class="detail-row"><span class="detail-label">نسبة الخصم:</span><span>${d.percent}%</span></div>
+                <div class="detail-row"><span class="detail-label">الشهر المُطبق:</span><span>${d.applyMonth}</span></div>
+                <div class="detail-row"><span class="detail-label">تاريخ الطلب:</span><span>${d.reqDate}</span></div>
+                <div class="detail-row"><span class="detail-label">تفاصيل المخالفة:</span><span>${d.details || '-'}</span></div>
+
+                <div class="detail-section-title">الاعتماد</div>
+                <div class="detail-row"><span class="detail-label">الحالة:</span><span class="status-badge ${getStatusClass(d.status)}">${d.status}</span></div>
+                <div class="detail-row"><span class="detail-label">المعتمد من قِبل:</span><span>${d.approver || 'لم يُعتمد بعد'}</span></div>
+                <div class="detail-row"><span class="detail-label">ملاحظات:</span><span>${d.notes || '-'}</span></div>
+            </div>
+        `;
+        document.getElementById('viewModal').classList.add('active');
+    }
+
+    function deleteDeduction(id) {
+        if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
+        deductions = deductions.filter(d => d.id !== id);
+        save();
+        renderTable();
+        updateStats();
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    renderTable();
+    updateStats();
+</script>
+</body>
+</html>
