@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فحص بيانات الموظفين</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #1e293b; margin-bottom: 20px; }
+        .section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .section h2 { color: #0284c7; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #0284c7; }
+        button { background: #0284c7; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin: 5px; font-size: 14px; }
+        button:hover { background: #0369a1; }
+        .success { background: #10b981; }
+        .success:hover { background: #059669; }
+        .danger { background: #ef4444; }
+        .danger:hover { background: #dc2626; }
+        pre { background: #f1f5f9; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 12px; }
+        .data-list { list-style: none; }
+        .data-list li { padding: 10px; background: #f8fafc; border-right: 3px solid #0284c7; margin-bottom: 8px; border-radius: 4px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: linear-gradient(135deg, #0284c7, #06b6d4); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .stat-value { font-size: 28px; font-weight: bold; }
+        .stat-label { font-size: 14px; opacity: 0.9; }
+        .error { color: #ef4444; font-weight: bold; }
+        .success-msg { color: #10b981; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 فحص بيانات الموظفين</h1>
+        
+        <div class="section">
+            <h2>📊 إحصائيات البيانات</h2>
+            <div class="stats" id="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-count">0</div>
+                    <div class="stat-label">عدد الموظفين</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-size">0</div>
+                    <div class="stat-label">حجم البيانات (KB)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-storage">0%</div>
+                    <div class="stat-label">استخدام التخزين</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 الإجراءات</h2>
+            <button class="success" onclick="checkLocalStorage()">✓ فحص البيانات</button>
+            <button onclick="exportToJSON()">💾 تحميل البيانات</button>
+            <button class="danger" onclick="clearData()">🗑️ حذف البيانات</button>
+            <button class="success" onclick="loadSampleData()">📥 تحميل بيانات تجريبية</button>
+        </div>
+
+        <div class="section">
+            <h2>📋 البيانات المخزنة</h2>
+            <pre id="data-display">جاري التحميل...</pre>
+        </div>
+
+        <div class="section">
+            <h2>👥 قائمة الموظفين</h2>
+            <ul class="data-list" id="employees-list">
+                <li>لا توجد بيانات</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function checkLocalStorage() {
+            const data = localStorage.getItem('saden_employees');
+            const display = document.getElementById('data-display');
+            
+            if (!data) {
+                display.innerText = '❌ لا توجد بيانات في localStorage';
+                updateStats([]);
+                return;
+            }
+
+            try {
+                const employees = JSON.parse(data);
+                display.innerHTML = `<span class="success-msg">✅ البيانات موجودة</span>\n\n${JSON.stringify(employees, null, 2)}`;
+                updateStats(employees);
+                displayEmployees(employees);
+            } catch (e) {
+                display.innerHTML = `<span class="error">❌ خطأ في تحليل البيانات:</span>\n${e.message}`;
+                updateStats([]);
+            }
+        }
+
+        function updateStats(employees) {
+            document.getElementById('stat-count').innerText = employees.length;
+            
+            const data = localStorage.getItem('saden_employees') || '';
+            const sizeKB = (new Blob([data]).size / 1024).toFixed(2);
+            document.getElementById('stat-size').innerText = sizeKB;
+
+            const usage = ((JSON.stringify(localStorage).length / 5242880) * 100).toFixed(1);
+            document.getElementById('stat-storage').innerText = usage + '%';
+        }
+
+        function displayEmployees(employees) {
+            const list = document.getElementById('employees-list');
+            if (employees.length === 0) {
+                list.innerHTML = '<li class="error">❌ لا توجد موظفين مسجلين</li>';
+                return;
+            }
+
+            list.innerHTML = employees.map((emp, idx) => `
+                <li>
+                    <strong>#${idx + 1}</strong> | 
+                    <strong>${emp.emp_name || 'بدون اسم'}</strong> 
+                    (${emp.emp_number || '-'}) | 
+                    ${emp.company_job || 'بدون مسمى'} | 
+                    ${emp.dept || 'بدون إدارة'}
+                </li>
+            `).join('');
+        }
+
+        function exportToJSON() {
+            const data = localStorage.getItem('saden_employees');
+            if (!data) {
+                alert('❌ لا توجد بيانات للتحميل');
+                return;
+            }
+
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const filename = `saden_employees_${timestamp}.json`;
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            alert(`✅ تم تحميل الملف: ${filename}`);
+        }
+
+        function clearData() {
+            if (confirm('⚠️ تحذير!\nهذا سيحذف جميع بيانات الموظفين بشكل نهائي.\nهل أنت متأكد؟')) {
+                localStorage.removeItem('saden_employees');
+                alert('✅ تم حذف البيانات');
+                location.reload();
+            }
+        }
+
+        function loadSampleData() {
+            const sampleData = [
+                {
+                    emp_number: "1001",
+                    emp_name: "محمد أحمد عبدالله",
+                    emp_national: "سعودي",
+                    gender: "ذكر",
+                    phone_number: "0501234567",
+                    email: "mohammad@saden.com",
+                    company_job: "مدير عام",
+                    dept: "الإدارة العامة",
+                    join_date: "2020-01-15",
+                    base_salary: "8000",
+                    id_number: "1234567890",
+                    vacation_balance: "18"
+                },
+                {
+                    emp_number: "1002",
+                    emp_name: "فاطمة محمود عبدالرحمن",
+                    emp_national: "سعودية",
+                    gender: "أنثى",
+                    phone_number: "0559876543",
+                    email: "fatima@saden.com",
+                    company_job: "مديرة موارد بشرية",
+                    dept: "الموارد البشرية",
+                    join_date: "2021-03-20",
+                    base_salary: "6500",
+                    id_number: "0987654321",
+                    vacation_balance: "15"
+                },
+                {
+                    emp_number: "1003",
+                    emp_name: "علي محمد الحسن",
+                    emp_national: "سعودي",
+                    gender: "ذكر",
+                    phone_number: "0551111111",
+                    email: "ali@saden.com",
+                    company_job: "مهندس برمجيات",
+                    dept: "تقنية المعلومات",
+                    join_date: "2022-06-10",
+                    base_salary: "5500",
+                    id_number: "1122334455",
+                    vacation_balance: "12"
+                },
+                {
+                    emp_number: "1004",
+                    emp_name: "نور سارة يوسف",
+                    emp_national: "سعودية",
+                    gender: "أنثى",
+                    phone_number: "0562222222",
+                    email: "noor@saden.com",
+                    company_job: "مختصة تسويق",
+                    dept: "التسويق والمبيعات",
+                    join_date: "2023-01-05",
+                    base_salary: "4500",
+                    id_number: "5544332211",
+                    vacation_balance: "10"
+                }
+            ];
+
+            localStorage.setItem('saden_employees', JSON.stringify(sampleData));
+            alert('✅ تم تحميل البيانات التجريبية\n4 موظفين جاهزين للاختبار');
+            location.reload();
+        }
+
+        // التحقق التلقائي عند فتح الصفحة
+        window.onload = checkLocalStorage;
+    </script>
+</body>
+</html>

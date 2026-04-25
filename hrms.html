@@ -58,6 +58,9 @@
         .emp-card-contact { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; text-decoration: none; color: #334155; font-size: 12px; }
         .emp-card-contact:hover { background: #eff6ff; border-color: #bde0ff; }
         .emp-card-contact.disabled { opacity: 0.5; pointer-events: none; cursor: default; }
+        .emp-card-delete { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; border: 1px solid #fecaca; background: #fee2e2; color: #dc2626; font-size: 12px; cursor: pointer; font-family: inherit; font-weight: 500; transition: all 0.3s; }
+        .emp-card-delete:hover { background: #fecaca; border-color: #dc2626; transform: scale(1.05); }
+        .emp-card-delete:active { transform: scale(0.95); }
 
         #profile-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; overflow-y:auto; padding:20px; box-sizing: border-box; }
         .view-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); }
@@ -243,6 +246,7 @@
                         <div class="field"><label>الجنسية</label><input type="text" id="emp_national"></div>
                         <div class="field"><label>الجنس</label><select id="gender"><option>ذكر</option><option>أنثى</option></select></div>
                         <div class="field"><label>تاريخ الميلاد</label><input type="date" id="date_birth" onchange="calculateAge()"></div>
+                        <div class="field"><label>العمر</label><input type="number" id="age" readonly></div>
                         <div class="field"><label>المهنة في الإقامة</label><input type="text" id="id_job"></div>
                         <div class="field"><label>الكفالة</label><input type="text" id="company_name"></div>
                         <div class="field"><label>رقم رخصة القيادة</label><input type="text" id="drive_lic"></div>
@@ -759,13 +763,6 @@
         document.getElementById('non-saudi-count').innerText = stats.nonSaudi;
         document.getElementById('female-count').innerText = stats.female;
         document.getElementById('male-count').innerText = stats.male;
-
-        // تحديث البار الجانبي
-        document.getElementById('sb-total').innerText = stats.total;
-        document.getElementById('sb-saudi').innerText = stats.saudi;
-        document.getElementById('sb-non-saudi').innerText = stats.nonSaudi;
-        document.getElementById('sb-female').innerText = stats.female;
-        document.getElementById('sb-male').innerText = stats.male;
     }
 
     function renderList() {
@@ -806,6 +803,9 @@
                     <a class="${emailClass}" href="${emailHref}" target="_blank" onclick="event.stopPropagation();">
                         <span>📧</span><span>Email</span>
                     </a>
+                    <button class="emp-card-delete" onclick="deleteEmployee(${i}); event.stopPropagation();" title="حذف الموظف">
+                        <span>🗑️</span><span>حذف</span>
+                    </button>
                 </div>
             </div>
         `;
@@ -823,6 +823,29 @@
                 document.getElementById('profile_pic').dataset.base64 = e.target.result;
             };
             reader.readAsDataURL(file);
+        }
+    }
+
+    function calculateAge() {
+        const birthDateInput = document.getElementById('date_birth');
+        const ageInput = document.getElementById('age');
+        
+        if (!birthDateInput || !birthDateInput.value) {
+            if (ageInput) ageInput.value = '';
+            return;
+        }
+
+        const birthDate = new Date(birthDateInput.value);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        if (ageInput) {
+            ageInput.value = age > 0 ? age : '';
         }
     }
 
@@ -1033,6 +1056,21 @@
 
     function closeProfile() {
         document.getElementById('profile-overlay').style.display = "none";
+    }
+
+    function deleteEmployee(index) {
+        const emp = db[index];
+        const confirmDelete = confirm(
+            `⚠️ تحذير!\n\nهل أنت متأكد من حذف الموظف:\n\n${emp.emp_name}\n(${emp.emp_number})\n\nهذا الإجراء لا يمكن التراجع عنه!`
+        );
+        
+        if (confirmDelete) {
+            db.splice(index, 1);
+            saveDB();
+            renderList();
+            alert(`✅ تم حذف الموظف: ${emp.emp_name}`);
+            closeProfile();
+        }
     }
 
     loadDB();

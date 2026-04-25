@@ -197,7 +197,16 @@
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'job_offer.html')">⬅️ عروض التوظيف</button>
                 </div>
             </div>
+<div class="dropdown">
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'lawMenu')">⚖️ الشئون القانونية<span style="font-size: 12px; opacity: 0.7; margin-right: 5px;"></span></button>
+                <div id="lawMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'الورشة.html')">⬅️ القضايا الخارجية</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'قسم_الحفر.html')">⬅️ شكاوى الموظفين</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ تحقيقات وأحكام </button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'حركة_السيارات.html')">⬅️ خصم من المدير المباشر </button>
 
+                </div>
+            </div>
             <div class="dropdown">
                 <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'opsMenu')">⚙️ إدارة العمليات</button>
                 <div id="opsMenu" class="dropdown-content">
@@ -252,7 +261,7 @@
                 </div>
             </div>
             <div class="dropdown">
-                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'payrollMenu')">💳 إدارة الرواتب وحماية الأجور<span style="font-size: 12px; opacity: 0.7; margin-right: 5px;">WPS</span></button>
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'payrollMenu')">💳 إدارة الرواتب<span style="font-size: 12px; opacity: 0.7; margin-right: 5px;">WPS</span></button>
                 <div id="payrollMenu" class="dropdown-content">
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'salarydash.html')">📂 رواتب العاملين</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'payroll.html')">📂 إنشاء مسير رواتب شهري</button>
