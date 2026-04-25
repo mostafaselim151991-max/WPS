@@ -215,12 +215,12 @@
 <body>
 
 <div class="tabs-header">
-    <button class="tab-link active" onclick="switchTab(event, 'form-tab')">إضافة / تعديل</button>
-    <button class="tab-link" onclick="switchTab(event, 'list-tab')">سجل الموظفين</button>
+    <button class="tab-link active" onclick="switchTab(event, 'list-tab')">سجل الموظفين</button>
+    <button class="tab-link" onclick="switchTab(event, 'form-tab')">إضافة / تعديل</button>
 </div>
 
 <div class="container">
-    <div id="form-tab" class="tab-body active">
+    <div id="form-tab" class="tab-body">
         <header><h1 id="main-title">إنشاء ملف موظف جديد</h1></header>
         <form id="hrForm" onsubmit="handleSave(event)">
             <input type="hidden" id="edit-id" name="edit-id" value="-1">
@@ -378,7 +378,7 @@
         </form>
     </div>
 
-    <div id="list-tab" class="tab-body">
+    <div id="list-tab" class="tab-body active">
         <header><h1>سجل الموظفين النشطين</h1></header>
         
         <!-- داش بورد الموظفين -->
