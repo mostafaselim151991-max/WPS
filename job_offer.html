@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="mainDoc">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض وظيفي سادن - الإصدار المعتمد</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        :root { --primary-red: #d32f2f; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        
+        .controls { 
+            max-width: 1000px; margin: 0 auto 20px; background: white; padding: 25px; 
+            border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        .field { display: flex; flex-direction: column; }
+        .field label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: var(--primary-red); }
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: 'Tajawal'; }
+        
+        .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+        .btn { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: 'Tajawal'; transition: 0.3s; }
+        .btn-pdf { background: #10b981; color: white; }
+
+        /* تنسيق الورقة الثابت لضمان جودة الـ PDF */
+        #offerContainer { 
+            background: white; width: 210mm; min-height: 297mm; padding: 15mm; 
+            margin: auto; position: relative; box-sizing: border-box;
+            direction: rtl; text-align: right;
+        }
+        
+        .header-info { text-align: right; color: var(--primary-red); font-weight: bold; margin-bottom: 10px; }
+        .main-title { text-align: center; color: var(--primary-red); font-size: 28px; font-weight: bold; margin-bottom: 25px; text-decoration: underline; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; border: 2px solid black; }
+        th, td { border: 1.5px solid black; padding: 8px; text-align: center; font-size: 12px; font-weight: bold; word-wrap: break-word; }
+        th { background-color: #f9f9f9; }
+
+        .user-data { color: var(--primary-red); font-weight: 700; font-size: 14px; }
+        .section-title { background: #000; color: #fff; display: inline-block; padding: 2px 15px; margin-bottom: 10px; font-weight: bold; }
+        .list-items { margin-bottom: 20px; padding-right: 20px; list-style-type: none; }
+        .list-items li { margin-bottom: 8px; font-size: 14px; font-weight: bold; line-height: 1.4; }
+
+        .footer-section { margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .signature-box { text-align: center; width: 45%; }
+        .joining-date-area { margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px; }
+
+        @media print { .controls { display: none; } }
+    </style>
+</head>
+<body onload="setCurrentDate()">
+
+<div class="controls">
+    <h3 style="text-align: center;">✍️ لوحة التحكم - سادن (حل مشكلة العربي)</h3>
+    <div class="input-grid">
+        <div class="field"><label>تاريخ إنشاء العرض</label><input type="text" id="in-offer-date" oninput="updateStaticView('v-offer_date', this.value)"></div>
+        <div class="field"><label>الاسم</label><input type="text" oninput="updateStaticView('v-name', this.value)"></div>
+        <div class="field"><label>رقم الهوية / الجواز</label><input type="text" oninput="updateStaticView('v-id', this.value)"></div>
+        <div class="field"><label>الجنسية</label><input type="text" oninput="updateStaticView('v-nat', this.value)"></div>
+        <div class="field"><label>المؤهل</label><input type="text" oninput="updateStaticView('v-qual', this.value)"></div>
+        <div class="field"><label>المهنة في الإقامة</label><input type="text" oninput="updateStaticView('v-job_iqama', this.value)"></div>
+        <div class="field"><label>المسمى الوظيفي</label><input type="text" oninput="updateStaticView('v-title', this.value)"></div>
+        <div class="field"><label>أساسي</label><input type="number" oninput="updateStaticView('v-base', this.value)"></div>
+        <div class="field"><label>سكن</label><input type="number" oninput="updateStaticView('v-house', this.value)"></div>
+        <div class="field"><label>نقل</label><input type="number" oninput="updateStaticView('v-trans', this.value)"></div>
+        <div class="field"><label>اتصال</label><input type="number" oninput="updateStaticView('v-comm', this.value)"></div>
+        <div class="field"><label>إعاشة</label><input type="number" oninput="updateStaticView('v-food', this.value)"></div>
+        <div class="field"><label>الفرع</label><input type="text" oninput="updateStaticView('v-branch', this.value)"></div>
+        <div class="field"><label>تاريخ المباشرة (اختياري)</label><input type="date" onchange="updateJoiningDate(this.value)"></div>
+    </div>
+    <div class="action-btns">
+        <button class="btn btn-pdf" onclick="downloadPDF()">📥 تحميل ملف PDF المعتمد ✅</button>
+    </div>
+</div>
+
+<div id="pdf-wrapper">
+    <div class="page" id="offerContainer">
+        <div class="header-info">تاريخ إنشاء العرض : <span id="v-offer_date" class="user-data"></span></div>
+        <div class="main-title">عرض وظيفي</div>
+
+        <table>
+            <tr>
+                <th>الاسم</th><th>رقم هوية / جواز سفر</th><th>الجنسية</th><th>المؤهل</th><th>المهنة في الإقامة</th>
+            </tr>
+            <tr class="user-data">
+                <td id="v-name">-</td><td id="v-id">-</td><td id="v-nat">-</td><td id="v-qual">-</td><td id="v-job_iqama">-</td>
+            </tr>
+        </table>
+
+        <div style="text-align: center; font-weight: bold; margin: 15px 0;">يسعدنا أن نقدم لك فرصة عمل بشركة سادن للاستشارات الجيولوجية وفقاً للشروط التالية:</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width: 15%;">المسمى الوظيفي</th>
+                    <th colspan="5" style="width: 45%;">تفاصيل الراتب</th>
+                    <th colspan="3" style="width: 25%;">تفاصيل العقد</th>
+                    <th rowspan="2" style="width: 15%;">فرع العمل</th>
+                </tr>
+                <tr>
+                    <th>أساسي</th><th>سكن</th><th>نقل</th><th>اتصال</th><th>إعاشة</th>
+                    <th>تجربة</th><th>مدة</th><th>نوع</th>
+                </tr>
+            </thead>
+            <tbody class="user-data">
+                <tr>
+                    <td id="v-title">-</td><td id="v-base">0</td><td id="v-house">0</td><td id="v-trans">0</td><td id="v-comm">0</td><td id="v-food">0</td>
+                    <td style="color: black;">90 يوم</td><td style="color: black;">سنة</td><td style="color: black;">محدد</td><td id="v-branch">-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">● المزايا الإضافية</div>
+        <ul class="list-items">
+            <li>1) تذكرة طيران اقتصادية ذهاب وإياب (في حالة السفر فقط).</li>
+            <li>2) توفير مواصلات وسكن مع العاملين بالشركة.</li>
+            <li style="color:red">3) مدة الإجازة 21 يوم سنوياً مدفوعة الأجر.</li>
+            <li>4) التأمين الطبي والتأمينات الاجتماعية (طبقاً للائحة التأمينات).</li>
+        </ul>
+
+        <div class="section-title">● ملاحظات</div>
+        <ul class="list-items">
+            <li>1) العرض الوظيفي المشروط هذا غير ملزم لأي من الطرفين، بناءاً على العقد الموقع سيلتزم الطرفان بأحكامه.</li>
+            <li>2) صلاحية العرض الوظيفي هذا 30 يوم عمل من تاريخ صدوره.</li>
+        </ul>
+
+        <div class="footer-section">
+            <div class="signature-box">إدارة الموارد البشرية</div>
+            <div class="signature-box">
+                توقيع وموافقة المرشح<br><br>
+                ..........................................
+                <div id="date-display-box" class="joining-date-area" style="display: none;">
+                    تاريخ المباشرة المتوقع: <span id="v-start_date" class="user-data"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setCurrentDate() {
+        const today = new Date();
+        const f = today.getDate().toString().padStart(2, '0') + ' / ' + (today.getMonth() + 1).toString().padStart(2, '0') + ' / ' + today.getFullYear();
+        document.getElementById('v-offer_date').innerText = f;
+        document.getElementById('in-offer-date').value = f;
+    }
+
+    function updateStaticView(id, val) { document.getElementById(id).innerText = val || "-"; }
+
+    function updateJoiningDate(val) {
+        if(val) {
+            const d = new Date(val);
+            const f = d.getDate().toString().padStart(2, '0') + ' / ' + (d.getMonth() + 1).toString().padStart(2, '0') + ' / ' + d.getFullYear();
+            document.getElementById('v-start_date').innerText = f;
+            document.getElementById('date-display-box').style.display = 'block';
+        } else { document.getElementById('date-display-box').style.display = 'none'; }
+    }
+
+    async function downloadPDF() {
+        const element = document.getElementById('offerContainer');
+        const { jsPDF } = window.jspdf;
+
+        try {
+            // الخطوة 1: تحويل العنصر لصورة عالية الدقة (Snapshot)
+            const canvas = await html2canvas(element, {
+                scale: 4, // دقة 4 تضمن وضوحاً فائقاً للنصوص العربية
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff",
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight
+            });
+
+            // الخطوة 2: تحويل الـ Canvas لبيانات صورة
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+            // الخطوة 3: إنشاء الـ PDF ووضع الصورة داخله بمقاس A4
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            
+            // إضافة الصورة لتغطي الصفحة بالكامل
+            pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+            
+            // الخطوة 4: الحفظ
+            pdf.save('Job_Offer_Saden.pdf');
+
+        } catch (error) {
+            console.error("PDF Export Error:", error);
+            alert("حدث خطأ أثناء إنشاء الملف. يرجى التأكد من استقرار الإنترنت وتجربة متصفح كروم.");
+        }
+    }
+</script>
+</body>
+</html>

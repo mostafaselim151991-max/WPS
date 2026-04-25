@@ -70,58 +70,8 @@
 
         /* === داش بورد الموظفين === */
         .hrms-dashboard {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            gap: 20px;
+            display: block;
             margin-bottom: 30px;
-        }
-
-        .sidebar-stats {
-            background: var(--navy);
-            border-radius: 16px;
-            padding: 25px;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            height: fit-content;
-            position: sticky;
-            top: 100px;
-        }
-
-        .sidebar-stats h3 {
-            margin: 0 0 20px 0;
-            font-size: 16px;
-            border-bottom: 2px solid rgba(255,255,255,0.2);
-            padding-bottom: 10px;
-            color: #60a5fa;
-        }
-
-        .sidebar-stat-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            gap: 10px;
-        }
-
-        .sidebar-stat-item:last-child {
-            border-bottom: none;
-        }
-
-        .sidebar-stat-label {
-            font-size: 13px;
-            opacity: 0.9;
-            flex-grow: 1;
-        }
-
-        .sidebar-stat-value {
-            font-size: 22px;
-            font-weight: bold;
-            background: rgba(96, 165, 250, 0.2);
-            padding: 6px 12px;
-            border-radius: 8px;
-            min-width: 50px;
-            text-align: center;
         }
 
         .stats-grid-top {
@@ -131,84 +81,133 @@
             margin-bottom: 20px;
         }
 
-        .stat-card-top {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            border-top: 4px solid var(--primary);
-            transition: all 0.3s ease;
-            cursor: default;
-        }
-
-        .stat-card-top:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-        }
-
-        .stat-card-top.saudi { border-top-color: #059669; }
-        .stat-card-top.non-saudi { border-top-color: #f59e0b; }
-        .stat-card-top.female { border-top-color: #ec4899; }
-        .stat-card-top.male { border-top-color: #3b82f6; }
-
-        .stat-icon {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        .stat-value-top {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--navy);
-            margin: 10px 0;
-        }
-
-        .stat-label-top {
-            font-size: 13px;
-            color: #64748b;
-            font-weight: 500;
-        }
-
         @media (max-width: 1200px) {
-            .hrms-dashboard {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar-stats {
-                position: relative;
-                top: 0;
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
-                gap: 10px;
-                height: auto;
-            }
-
-            .sidebar-stat-item {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 5px;
-            }
-
             .stats-grid-top {
-                display: none;
+                grid-template-columns: repeat(3, 1fr);
             }
         }
 
         @media (max-width: 768px) {
-            .hrms-dashboard {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar-stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
             .stats-grid-top {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* === نظام التقييم الجديد === */
+        .evaluation-period {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .evaluation-period-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .evaluation-period-title {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-weight: bold;
+            color: #0284c7;
+        }
+
+        .remove-eval-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .remove-eval-btn:hover {
+            background: #dc2626;
+        }
+
+        .evaluation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        /* === صفحة بيانات الموظف === */
+        .profile-container {
+            display: block;
+            max-width: 100%;
+        }
+
+            .sidebar-info-item {
+                margin-bottom: 0;
+            }
+        }
+
+        /* === كروت إحصائيات محسنة === */
+        .stat-card-enhanced {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-top: 5px solid var(--primary);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(2, 132, 199, 0.05);
+            border-radius: 0 0 0 50px;
+        }
+
+        .stat-card-enhanced:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon-enhanced {
+            font-size: 40px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-value-enhanced {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--navy);
+            margin: 10px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label-enhanced {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-card-enhanced.green { border-top-color: #10b981; }
+        .stat-card-enhanced.orange { border-top-color: #f59e0b; }
+        .stat-card-enhanced.pink { border-top-color: #ec4899; }
+        .stat-card-enhanced.blue { border-top-color: #3b82f6; }
     </style>
 </head>
 <body>
@@ -293,7 +292,8 @@
                         <div class="field"><label>المسمى الوظيفي</label><input type="text" id="company_job"></div>
                         <div class="field"><label>تاريخ الإلتحاق</label><input type="date" id="join_date" onchange="calculateVacationBalance()"></div>
                         <div class="field"><label>تاريخ المباشرة (بعد الإجازة)</label><input type="date" id="rejoin_date"></div>
-                        <div class="field"><label>الإدارة</label><select id="dept"><option>الموارد البشرية</option><option>المالية</option><option>التشغيل</option><option>التسويق</option></select></div>                        <div class=\"field\"><label>المدير المباشر</label><input type=\"text\" id=\"direct_manager\"></div>                    </div>
+                        <div class="field"><label>الإدارة</label><select id="dept"><option>الموارد البشرية</option><option>المالية</option><option>التشغيل</option><option>التسويق</option></select></div>
+                        <div class="field"><label>المدير المباشر</label><select id="direct_manager"><option value="">-- اختر مدير --</option></select></div>                    </div>
                 </div>
             </div>
 
@@ -346,10 +346,8 @@
                     <span>➕</span>
                 </div>
                 <div class="section-content">
-                    <div class="grid">
-                        <div class="field"><label>آخر تقييم (%)</label><input type="number" id="last_evaluation"></div>
-                        <div class="field full-row"><label>ملاحظات</label><textarea rows="2" id="notes"></textarea></div>
-                    </div>
+                    <div id="evaluations-container" style="margin-bottom: 15px;"></div>
+                    <button type="button" class="btn" style="background:#3b82f6; color:white; margin-bottom: 15px;" onclick="addEvaluation()">➕ إضافة فترة تقييم</button>
                 </div>
             </div>
 
@@ -384,60 +382,30 @@
         <div class="hrms-dashboard">
             <!-- الشبكة العلوية -->
             <div class="stats-grid-top">
-                <div class="stat-card-top">
-                    <div class="stat-icon">👥</div>
-                    <div class="stat-value-top" id="total-count">0</div>
-                    <div class="stat-label-top">إجمالي الموظفين</div>
+                <div class="stat-card-enhanced">
+                    <div class="stat-icon-enhanced">👥</div>
+                    <div class="stat-value-enhanced" id="total-count">0</div>
+                    <div class="stat-label-enhanced">إجمالي الموظفين</div>
                 </div>
-                <div class="stat-card-top saudi">
-                    <div class="stat-icon">🇸🇦</div>
-                    <div class="stat-value-top" id="saudi-count">0</div>
-                    <div class="stat-label-top">سعوديين</div>
+                <div class="stat-card-enhanced green">
+                    <div class="stat-icon-enhanced">🇸🇦</div>
+                    <div class="stat-value-enhanced" id="saudi-count">0</div>
+                    <div class="stat-label-enhanced">سعوديين</div>
                 </div>
-                <div class="stat-card-top non-saudi">
-                    <div class="stat-icon">🌍</div>
-                    <div class="stat-value-top" id="non-saudi-count">0</div>
-                    <div class="stat-label-top">غير سعوديين</div>
+                <div class="stat-card-enhanced orange">
+                    <div class="stat-icon-enhanced">🌍</div>
+                    <div class="stat-value-enhanced" id="non-saudi-count">0</div>
+                    <div class="stat-label-enhanced">غير سعوديين</div>
                 </div>
-                <div class="stat-card-top female">
-                    <div class="stat-icon">👩</div>
-                    <div class="stat-value-top" id="female-count">0</div>
-                    <div class="stat-label-top">إناث</div>
+                <div class="stat-card-enhanced pink">
+                    <div class="stat-icon-enhanced">👩</div>
+                    <div class="stat-value-enhanced" id="female-count">0</div>
+                    <div class="stat-label-enhanced">إناث</div>
                 </div>
-                <div class="stat-card-top male">
-                    <div class="stat-icon">👨</div>
-                    <div class="stat-value-top" id="male-count">0</div>
-                    <div class="stat-label-top">ذكور</div>
-                </div>
-            </div>
-
-            <!-- البار الجانبي الأيسر -->
-            <div class="sidebar-stats">
-                <h3>📊 ملخص إحصائي</h3>
-                
-                <div class="sidebar-stat-item">
-                    <span class="sidebar-stat-label">👥 الإجمالي</span>
-                    <span class="sidebar-stat-value" id="sb-total">0</span>
-                </div>
-                
-                <div class="sidebar-stat-item">
-                    <span class="sidebar-stat-label">🇸🇦 سعوديين</span>
-                    <span class="sidebar-stat-value" id="sb-saudi">0</span>
-                </div>
-                
-                <div class="sidebar-stat-item">
-                    <span class="sidebar-stat-label">🌍 غير سعوديين</span>
-                    <span class="sidebar-stat-value" id="sb-non-saudi">0</span>
-                </div>
-                
-                <div class="sidebar-stat-item">
-                    <span class="sidebar-stat-label">👩 إناث</span>
-                    <span class="sidebar-stat-value" id="sb-female">0</span>
-                </div>
-                
-                <div class="sidebar-stat-item">
-                    <span class="sidebar-stat-label">👨 ذكور</span>
-                    <span class="sidebar-stat-value" id="sb-male">0</span>
+                <div class="stat-card-enhanced blue">
+                    <div class="stat-icon-enhanced">👨</div>
+                    <div class="stat-value-enhanced" id="male-count">0</div>
+                    <div class="stat-label-enhanced">ذكور</div>
                 </div>
             </div>
         </div>
@@ -467,6 +435,34 @@
         renderList();
         // توليد الرقم الوظيفي التلقائي عند فتح الصفحة للإضافة
         document.getElementById('emp_number').value = generateEmpNumber();
+        updateManagersList();
+    }
+
+    function updateManagersList() {
+        const select = document.getElementById('direct_manager');
+        if(!select) return;
+        
+        const currentValue = select.value;
+        const editId = document.getElementById('edit-id').value;
+        
+        // احفظ الخيار الأول
+        const firstOption = select.querySelector('option:first-child');
+        select.innerHTML = '';
+        if(firstOption) {
+            select.appendChild(firstOption.cloneNode(true));
+        }
+        
+        // أضف جميع الموظفين ما عدا الحالي
+        db.forEach((emp, idx) => {
+            if(editId === '-1' || editId != idx) {
+                const option = document.createElement('option');
+                option.value = emp.emp_name;
+                option.textContent = `${emp.emp_name} (${emp.emp_number})`;
+                select.appendChild(option);
+            }
+        });
+        
+        select.value = currentValue;
     }
 
     function generateEmpNumber() {
@@ -521,6 +517,101 @@
         document.getElementById('emp_number').value = generateEmpNumber();
         document.getElementById('vacation_balance').value = '';
         document.getElementById('edit-id').value = '-1';
+        document.getElementById('evaluations-container').innerHTML = '';
+        document.getElementById('main-title').innerText = "إنشاء ملف موظف جديد";
+        document.getElementById('submit-btn').innerText = "💾 حفظ البيانات";
+        updateManagersList();
+    }
+
+    function addEvaluation() {
+        const container = document.getElementById('evaluations-container');
+        const evalId = Date.now();
+        const evalHtml = `
+            <div class="evaluation-period" id="eval-${evalId}">
+                <div class="evaluation-period-header">
+                    <input type="date" class="field" style="padding:8px; border:1px solid #e2e8f0; border-radius:6px;" placeholder="من التاريخ" data-from="${evalId}">
+                    <input type="date" class="field" style="padding:8px; border:1px solid #e2e8f0; border-radius:6px;" placeholder="إلى التاريخ" data-to="${evalId}">
+                    <select style="padding:8px; border:1px solid #e2e8f0; border-radius:6px;" data-period-type="${evalId}">
+                        <option value="شهري">شهري</option>
+                        <option value="ربع سنوي">ربع سنوي</option>
+                        <option value="سنوي">سنوي</option>
+                    </select>
+                </div>
+                <div class="evaluation-grid">
+                    <div class="field" style="grid-column: 1 / 3;">
+                        <label>التقييم (%)</label>
+                        <input type="number" min="0" max="100" style="padding:8px; border:1px solid #e2e8f0; border-radius:6px;" data-rating="${evalId}" placeholder="0-100">
+                    </div>
+                    <div class="field" style="grid-column: 1 / -1;">
+                        <label>ملاحظات</label>
+                        <textarea rows="3" style="padding:8px; border:1px solid #e2e8f0; border-radius:6px;" data-notes="${evalId}" placeholder="أضف ملاحظاتك هنا"></textarea>
+                    </div>
+                </div>
+                <button type="button" class="remove-eval-btn" onclick="document.getElementById('eval-${evalId}').remove();">✖ حذف التقييم</button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', evalHtml);
+    }
+
+    function collectEvaluations() {
+        const container = document.getElementById('evaluations-container');
+        const evals = [];
+        
+        container.querySelectorAll('.evaluation-period').forEach(period => {
+            const fromInput = period.querySelector('[data-from]');
+            const toInput = period.querySelector('[data-to]');
+            const typeInput = period.querySelector('[data-period-type]');
+            const ratingInput = period.querySelector('[data-rating]');
+            const notesInput = period.querySelector('[data-notes]');
+            
+            if(fromInput.value && toInput.value) {
+                evals.push({
+                    from: fromInput.value,
+                    to: toInput.value,
+                    period_type: typeInput.value,
+                    rating: parseInt(ratingInput.value) || 0,
+                    notes: notesInput.value
+                });
+            }
+        });
+        
+        return evals;
+    }
+
+    function loadEvaluations(evaluations) {
+        const container = document.getElementById('evaluations-container');
+        container.innerHTML = '';
+        
+        if(!evaluations || !Array.isArray(evaluations)) return;
+        
+        evaluations.forEach(evaluation => {
+            const evalId = Math.random().toString(36);
+            const evalHtml = `
+                <div class="evaluation-period" id="eval-${evalId}">
+                    <div class="evaluation-period-header">
+                        <input type="date" class="field" style="padding:8px; border:1px solid #e2e8f0; border-radius:6px;" value="${evaluation.from}" data-from="${evalId}">
+                        <input type="date" class="field" style="padding:8px; border:1px solid #e2e8f0; border-radius:6px;" value="${evaluation.to}" data-to="${evalId}">
+                        <select style="padding:8px; border:1px solid #e2e8f0; border-radius:6px;" data-period-type="${evalId}">
+                            <option value="شهري" ${evaluation.period_type === 'شهري' ? 'selected' : ''}>شهري</option>
+                            <option value="ربع سنوي" ${evaluation.period_type === 'ربع سنوي' ? 'selected' : ''}>ربع سنوي</option>
+                            <option value="سنوي" ${evaluation.period_type === 'سنوي' ? 'selected' : ''}>سنوي</option>
+                        </select>
+                    </div>
+                    <div class="evaluation-grid">
+                        <div class="field" style="grid-column: 1 / 3;">
+                            <label>التقييم (%)</label>
+                            <input type="number" min="0" max="100" style="padding:8px; border:1px solid #e2e8f0; border-radius:6px;" value="${evaluation.rating}" data-rating="${evalId}" placeholder="0-100">
+                        </div>
+                        <div class="field" style="grid-column: 1 / -1;">
+                            <label>ملاحظات</label>
+                            <textarea rows="3" style="padding:8px; border:1px solid #e2e8f0; border-radius:6px;" data-notes="${evalId}" placeholder="أضف ملاحظاتك هنا">${evaluation.notes || ''}</textarea>
+                        </div>
+                    </div>
+                    <button type="button" class="remove-eval-btn" onclick="document.getElementById('eval-${evalId}').remove();">✖ حذف التقييم</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', evalHtml);
+        });
     }
 
     function saveDB() {
@@ -565,6 +656,7 @@
         if(id === 'form-tab') {
             document.getElementById('profile_pic').dataset.base64 = '';
             document.getElementById('profile_pic_preview').style.display = 'none';
+            updateManagersList();
         }
         
         if(id === 'list-tab') renderList();
@@ -592,11 +684,12 @@
     const data = {};
     const inputs = e.target.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
-        if (input.id && input.id !== 'profile_pic') {
+        if (input.id && input.id !== 'profile_pic' && !input.id.includes('attachments')) {
             data[input.id] = input.value;
         }
     });
     data.attachments = document.getElementById('attachments_input').value;
+    data.evaluations = collectEvaluations();
     const profilePicInput = document.getElementById('profile_pic');
     data.profile_pic = profilePicInput.dataset.base64 || '';
 
@@ -751,101 +844,87 @@
         document.getElementById('view-name').innerText = emp.emp_name;
         const area = document.getElementById('full-details-area');
         
+        // حساب الإجازات المتبقية
+        let vacationDisplay = '-';
+        if(emp.last_return_date && emp.join_date) {
+            calculateVacationBalanceForDisplay(emp.join_date, emp.last_return_date, (days) => {
+                vacationDisplay = days;
+            });
+        }
+        
+
+        
         const sections = [
-
-    {
-        t: "البيانات الأساسية",
-        f: {
-            emp_number: "الرقم الوظيفي",
-            emp_name: "اسم الموظف",
-            id_number: "رقم الهوية",
-            pass_number: "رقم الجواز",
-            emp_national: "الجنسية",
-            gender: "الجنس",
-            date_birth: "تاريخ الميلاد",
-            age: "العمر",
-            id_job: "المهنة في الإقامة",
-            company_name: "الكفالة",
-            drive_lic: "رخصة القيادة",
-            religion: "الديانة",
-            social_status: "الحالة الاجتماعية",
-            phone_number: "رقم الجوال",
-            email:"البريد الإلكتروني",
-            address:"العنوان",
-
-        }
-    },
-
-    {
-        t: "بيانات الدراسة",
-        f: {
-            edu_degree: "الدرجة العلمية",
-            university: "الجامعة",
-            college: "الكلية",
-            grad_year: "سنة التخرج",
-            grade: "التقدير",
-            diploma: "دبلومة",
-            master: "ماجستير",
-            phd: "دكتوراه"
-        }
-    },
-
-    {
-        t: "البيانات الوظيفية",
-        f: {
-            company_job: "المسمى الوظيفي",
-            join_date: "تاريخ الالتحاق",
-            rejoin_date: "تاريخ المباشرة",
-            dept: "الإدارة",
-            direct_manager: "المدير المباشر"
-        }
-    },
-
-    {
-        t: "البيانات المالية",
-        f: {
-            base_salary: "الراتب الأساسي",
-            housing_allowance: "بدل السكن",
-            transport_allowance: "بدل النقل",
-            iban: "رقم الآيبان"
-        }
-    },
-
-    {
-        t: "الحضور والإجازات",
-        f: {
-            work_type: "نظام الدوام",
-            last_return_date: "تاريخ آخر عودة من إجازة",
-            vacation_balance: "رصيد الإجازات السنوي"
-        }
-    },
-
-    {
-        t: "العقود",
-        f: {
-            contract_type: "نوع العقد",
-            contract_start: "بداية العقد",
-            contract_end: "نهاية العقد"
-        }
-    },
-
-    {
-        t: "التقييم والأداء",
-        f: {
-            last_evaluation: "آخر تقييم",
-            notes: "ملاحظات"
-        }
-    },
-
-    {
-        t: "التأمينات والمرفقات",
-        f: {
-            gosi_number: "رقم التأمينات",
-            attachments: "المرفقات"
-        }
-    }
-
-];
+            {
+                t: "البيانات الأساسية",
+                f: {
+                    emp_number: "الرقم الوظيفي",
+                    emp_name: "اسم الموظف",
+                    id_number: "رقم الهوية",
+                    pass_number: "رقم الجواز",
+                    emp_national: "الجنسية",
+                    gender: "الجنس",
+                    date_birth: "تاريخ الميلاد",
+                    age: "العمر",
+                    id_job: "المهنة في الإقامة",
+                    company_name: "الكفالة",
+                    drive_lic: "رخصة القيادة",
+                    religion: "الديانة",
+                    social_status: "الحالة الاجتماعية",
+                    phone_number: "رقم الجوال",
+                    email:"البريد الإلكتروني",
+                    address:"العنوان",
+                }
+            },
+            {
+                t: "بيانات الدراسة",
+                f: {
+                    edu_degree: "الدرجة العلمية",
+                    university: "الجامعة",
+                    college: "الكلية",
+                    grad_year: "سنة التخرج",
+                    grade: "التقدير",
+                    diploma: "دبلومة",
+                    master: "ماجستير",
+                    phd: "دكتوراه"
+                }
+            },
+            {
+                t: "البيانات الوظيفية",
+                f: {
+                    company_job: "المسمى الوظيفي",
+                    join_date: "تاريخ الالتحاق",
+                    rejoin_date: "تاريخ المباشرة",
+                    dept: "الإدارة",
+                    direct_manager: "المدير المباشر"
+                }
+            },
+            {
+                t: "البيانات المالية",
+                f: {
+                    base_salary: "الراتب الأساسي",
+                    housing_allowance: "بدل السكن",
+                    transport_allowance: "بدل النقل",
+                    iban: "رقم الآيبان"
+                }
+            },
+            {
+                t: "الحضور والإجازات",
+                f: {
+                    work_type: "نظام الدوام",
+                    last_return_date: "تاريخ آخر عودة من إجازة",
+                    vacation_balance: "رصيد الإجازات السنوي"
+                }
+            },
+            {
+                t: "العقود",
+                f: {
+                    contract_type: "نوع العقد",
+                    contract_start: "بداية العقد",
+                    contract_end: "نهاية العقد"
+                }
+            }
+        ];
 
         const profilePicSection = `
             <div class="profile-pic-container">
@@ -853,7 +932,7 @@
             </div>
         `;
         
-        area.innerHTML = profilePicSection + sections.map(s => `
+        const mainContent = profilePicSection + sections.map(s => `
             <div class="view-section">
                 <h4>${s.t}</h4>
                 <div class="data-grid">
@@ -866,11 +945,38 @@
                 </div>
             </div>
         `).join('');
+        
+        // إضافة التقييمات إن وجدت
+        let evaluationsHtml = '';
+        if(emp.evaluations && emp.evaluations.length > 0) {
+            evaluationsHtml = `
+                <div class="view-section">
+                    <h4>التقييمات</h4>
+                    ${emp.evaluations.map(evaluation => `
+                        <div style="background: #f0f9ff; padding: 15px; border-right: 3px solid #0284c7; margin-bottom: 10px; border-radius: 8px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                                <div>
+                                    <strong>الفترة:</strong> ${evaluation.from} إلى ${evaluation.to}
+                                </div>
+                                <div>
+                                    <strong>النوع:</strong> ${evaluation.period_type}
+                                </div>
+                                <div>
+                                    <strong>التقييم:</strong> <span style="background: #dbeafe; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #0284c7;">${evaluation.rating}%</span>
+                                </div>
+                            </div>
+                            ${evaluation.notes ? `<div><strong>الملاحظات:</strong> ${evaluation.notes}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        area.innerHTML = `<div class="profile-container">${mainContent}${evaluationsHtml}</div>`;
 
         document.getElementById('edit-action').onclick = () => {
             const form = document.getElementById('hrForm');
             Object.keys(emp).forEach(k => {
-                // Handle old typo for backward compatibility
                 if (k === "adress" && form.elements["address"]) {
                     form.elements["address"].value = emp[k];
                 } else if (k === "profile_pic") {
@@ -880,6 +986,8 @@
                         preview.src = emp[k];
                         preview.style.display = 'block';
                     }
+                } else if (k === "evaluations") {
+                    loadEvaluations(emp[k]);
                 } else if(form.elements[k]) {
                     form.elements[k].value = emp[k];
                 }
@@ -894,6 +1002,33 @@
         };
         
         document.getElementById('profile-overlay').style.display = "block";
+    }
+
+    function calculateVacationBalanceForDisplay(joinDate, lastReturnDate, callback) {
+        if(!lastReturnDate) {
+            callback('-');
+            return;
+        }
+        
+        const returnDate = new Date(lastReturnDate);
+        const today = new Date();
+        const diffTime = today - returnDate;
+        const daysSinceReturn = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        let annualVacation = 21;
+        if(joinDate) {
+            const startDate = new Date(joinDate);
+            const yearsOfService = Math.floor((today - startDate) / (365.25 * 24 * 60 * 60 * 1000));
+            if(yearsOfService >= 10) {
+                annualVacation = 30;
+            } else if(yearsOfService >= 5) {
+                annualVacation = 21 + (yearsOfService - 4);
+            }
+        }
+        
+        const accrualPerDay = annualVacation / 365;
+        const earnedDays = Math.floor(daysSinceReturn * accrualPerDay);
+        callback(Math.max(0, earnedDays));
     }
 
     function closeProfile() {

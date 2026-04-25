@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام سادن | Workflow التوظيف المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #0284c7; --navy: #1e293b; --bg: #f8fafc; 
+            --text: #334155; --border: #e2e8f0;
+            --admin-color: #0369a1; --tech-color: #8b5cf6; 
+            --manager-color: #10b981; --finance-color: #f59e0b;
+        }
+
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding: 20px; }
+        .container { max-width: 1100px; margin: auto; }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid var(--primary); padding-bottom: 10px; }
+        
+        .workflow-section { background: white; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 25px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .section-header { padding: 15px 25px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        
+        .bg-admin { background: var(--admin-color); }
+        .bg-tech { background: var(--tech-color); }
+        .bg-manager { background: var(--manager-color); }
+        .bg-finance { background: var(--finance-color); }
+
+        .section-content { padding: 25px; }
+        .sub-title { font-weight: 700; color: var(--navy); margin: 20px 0 10px 0; border-right: 4px solid var(--primary); padding-right: 10px; background: #f0f9ff; padding: 8px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .field { display: flex; flex-direction: column; }
+        .field label { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #64748b; }
+        .field input, .field select, .field textarea { padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Tajawal'; font-size: 14px; transition: 0.3s; }
+        .field input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1); }
+        
+        #edu_details_fields { background: #f1f5f9; padding: 20px; border-radius: 10px; border: 1px dashed var(--admin-color); margin-top: 10px; }
+
+        .routing-box { margin-top: 20px; padding: 15px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; display: flex; align-items: center; gap: 15px; }
+        .routing-box label { font-weight: bold; color: #9a3412; }
+
+        .btn-save { background: var(--navy); color: white; padding: 18px; border: none; border-radius: 10px; cursor: pointer; font-family: 'Tajawal'; font-weight: bold; font-size: 16px; width: 100%; transition: 0.3s; margin-top: 20px; }
+        .btn-save:hover { background: #000; transform: translateY(-2px); }
+
+        #result-card { display: none; background: white; padding: 30px; border-radius: 15px; border: 2px solid var(--primary); margin-top: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .view-group { margin-bottom: 15px; padding: 15px; border-radius: 8px; border-right: 5px solid #ccc; background: #fafafa; }
+        
+        @media print { .btn-save, header, form, .routing-box, .section-header { display: none; } #result-card { display: block; border: none; box-shadow: none; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📋 لجنة توظيف مجموعة سادن </h1>
+        <p>نظام موافقات طلبات التوظيف</p>
+    </header>
+
+    <form id="hiringForm" onsubmit="processForm(event)">
+        
+        <div class="workflow-section">
+            <div class="section-header bg-admin">
+                <h3>1. الشؤون الإدارية (تأسيس الطلب)</h3>
+                <span>الخطوة الأولى</span>
+            </div>
+            <div class="section-content">
+                <div class="sub-title">👤 البيانات الشخصية والتعريفية</div>
+                <div class="grid">
+                    <div class="field"><label>الاسم بالكامل</label><input type="text" id="emp_name" required></div>
+                    <div class="field"><label>رقم الهوية / الإقامة / الجواز</label><input type="text" id="id_number"></div>
+                    <div class="field"><label>تاريخ انتهاء الإقامة</label><input type="date" id="id_expiry"></div>
+                    <div class="field"><label>المهنة في الإقامة</label><input type="text" id="id_job"></div>
+                    <div class="field"><label>الجنسية</label><input type="text" id="nationality"></div>
+                    <div class="field"><label>رقم الجوال</label><input type="tel" id="mobile"></div>
+                    <div class="field"><label>البريد الإلكتروني</label><input type="email" id="email"></div>
+                </div>
+
+                <div class="sub-title">🎓 المؤهلات وبيانات التوظيف</div>
+                <div class="grid">
+                    <div class="field">
+                        <label>المؤهل الدراسي</label>
+                        <select id="edu_degree" onchange="toggleEduDetails()">
+                            <option value="none">بدون مؤهل</option>
+                            <option value="high_school">ثانوي</option>
+                            <option value="diploma">دبلوم</option>
+                            <option value="bachelor">بكالوريوس</option>
+                            <option value="license">ليسانس</option>
+                        </select>
+                    </div>
+                    <div id="edu_details_fields" class="grid" style="display: none; grid-column: 1 / -1;">
+                        <div class="field"><label>التخصص</label><input type="text" id="edu_major"></div>
+                        <div class="field"><label>الجامعة</label><input type="text" id="edu_university"></div>
+                    </div>
+                    <div class="field"><label>الوظيفة المرشح لها</label><input type="text" id="hiring_job"></div>
+                    <div class="field"><label>القسم / الفرع</label><input type="text" id="hiring_dept"></div>
+                </div>
+
+                <div class="field" style="margin-top:15px;">
+                    <label>📝 ملاحظات الشؤون الإدارية</label>
+                    <textarea id="admin_notes" rows="2" placeholder="أدخل أي ملاحظات إدارية هنا..."></textarea>
+                </div>
+
+                <div class="routing-box">
+                    <label>🔄 توجيه الطلب إلى:</label>
+                    <select id="route_step1"><option>مسؤول اللجنة الفنية</option></select>
+                </div>
+            </div>
+        </div>
+
+        <div class="workflow-section">
+            <div class="section-header bg-tech">
+                <h3>2. مسئول اللجنة الفنية (التقييم الفني)</h3>
+                <span>الخطوة الثانية</span>
+            </div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>التقييم الفني (من 10)</label><input type="number" id="tech_rating"></div>
+                    <div class="field"><label>القرار الفني</label><select id="tech_decision"><option>يوصى بالتعيين</option><option>لا يوصى به</option></select></div>
+                </div>
+                <div class="field" style="margin-top:15px;">
+                    <label>📝 ملاحظات اللجنة الفنية</label>
+                    <textarea id="tech_notes" rows="2" placeholder="أدخل تفاصيل التقييم الفني..."></textarea>
+                </div>
+                <div class="routing-box">
+                    <label>🔄 توجيه الطلب إلى:</label>
+                    <select id="route_step2"><option>المدير المباشر</option></select>
+                </div>
+            </div>
+        </div>
+
+        <div class="workflow-section">
+            <div class="section-header bg-manager">
+                <h3>3. اعتماد المدير المباشر (القسم / الفرع)</h3>
+                <span>الخطوة الثالثة</span>
+            </div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>حالة الاعتماد</label><select id="manager_approval"><option>تم اعتماد التوظيف</option><option>مرفوض</option></select></div>
+                </div>
+                <div class="field" style="margin-top:15px;">
+                    <label>📝 ملاحظات وتوصيات المدير المباشر</label>
+                    <textarea id="manager_notes" rows="2" placeholder="أدخل أي توجيهات إضافية هنا..."></textarea>
+                </div>
+                <div class="routing-box">
+                    <label>🔄 توجيه الطلب إلى:</label>
+                    <select id="route_step3"><option>إدارة حماية الأجور</option></select>
+                </div>
+            </div>
+        </div>
+
+        <div class="workflow-section">
+            <div class="section-header bg-finance">
+                <h3>4. إدارة حماية الأجور (الاعتماد المالي)</h3>
+                <span>الخطوة الرابعة</span>
+            </div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>الراتب الأساسي</label><input type="number" id="sal_base" oninput="sumSalary()"></div>
+                    <div class="field"><label>بدل سكن</label><input type="number" id="sal_house" oninput="sumSalary()"></div>
+                    <div class="field"><label>بدل انتقال</label><input type="number" id="sal_trans" oninput="sumSalary()"></div>
+                    <div class="field"><label>إعاشة ثابتة / موقع</label><input type="number" id="sal_subsistence" oninput="sumSalary()"></div>
+                    <div class="field"><label>بدل اتصال</label><input type="number" id="sal_comm" oninput="sumSalary()"></div>
+                    <div class="field"><label>بدلات أخرى</label><input type="number" id="sal_other" oninput="sumSalary()"></div>
+                </div>
+                <div class="field" style="margin-top:15px;">
+                    <label>📝 ملاحظات حماية الأجور</label>
+                    <textarea id="finance_notes" rows="2" placeholder="ملاحظات حول المزايا المالية..."></textarea>
+                </div>
+                <div class="field" style="margin-top:15px;">
+                    <label>إجمالي الراتب المعتمد</label>
+                    <input type="text" id="sal_total" readonly style="background:#fff9db; font-weight:bold; color:#b45309; text-align:center; font-size:18px;" value="0 ريال">
+                </div>
+                <div class="routing-box">
+                    <label>🔄 توجيه الطلب النهائي إلى:</label>
+                    <select id="route_final"><option>شؤون الموظفين (للطباعة والحفظ)</option></select>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-save">🚀 حفظ وإرسال الطلب للاعتماد النهائي</button>
+    </form>
+
+    <div id="result-card">
+        <h2 style="border-bottom: 2px solid var(--navy); padding-bottom: 10px;">📄 سجل موافقات طلب التوظيف المعتمد</h2>
+        <div id="display-area"></div>
+        <div style="margin-top: 30px; display: flex; gap: 10px;">
+            <button class="btn-save" style="background:#64748b; width:auto;" onclick="window.print()">🖨️ طباعة النموذج المكتمل</button>
+            <button class="btn-save" style="background:var(--primary); width:auto;" onclick="location.reload()">➕ إضافة طلب جديد</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleEduDetails() {
+        const degree = document.getElementById('edu_degree').value;
+        document.getElementById('edu_details_fields').style.display = (degree === 'none') ? 'none' : 'grid';
+    }
+
+    function sumSalary() {
+        const ids = ['sal_base', 'sal_house', 'sal_trans', 'sal_subsistence', 'sal_comm', 'sal_other'];
+        let total = 0;
+        ids.forEach(id => { total += parseFloat(document.getElementById(id).value) || 0; });
+        document.getElementById('sal_total').value = total.toLocaleString() + " ريال";
+    }
+
+    function processForm(e) {
+        e.preventDefault();
+        const data = {};
+        const inputs = e.target.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => { if (input.id) data[input.id] = input.value || "---"; });
+
+        const area = document.getElementById('display-area');
+        area.innerHTML = `
+            <div class="view-group" style="border-right-color: var(--admin-color)">
+                <strong>1. الشؤون الإدارية:</strong> ${data.emp_name} | الهوية: ${data.id_number} | المهنة: ${data.id_job}
+                <br><em>ملاحظات: ${data.admin_notes}</em>
+            </div>
+            <div class="view-group" style="border-right-color: var(--tech-color)">
+                <strong>2. اللجنة الفنية:</strong> القرار: ${data.tech_decision} | التقييم: ${data.tech_rating}/10
+                <br><em>ملاحظات: ${data.tech_notes}</em>
+            </div>
+            <div class="view-group" style="border-right-color: var(--manager-color)">
+                <strong>3. المدير المباشر:</strong> الحالة: ${data.manager_approval}
+                <br><em>توجيهات: ${data.manager_notes}</em>
+            </div>
+            <div class="view-group" style="border-right-color: var(--finance-color); background: #fffbeb;">
+                <strong>4. حماية الأجور:</strong> الإجمالي المعتمد: <span style="font-size:18px; color:var(--finance-color); font-weight:bold;">${data.sal_total}</span>
+                <br><em>ملاحظات مالية: ${data.finance_notes}</em>
+            </div>
+        `;
+        
+        document.getElementById('result-card').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        alert("تم إتمام دورة الموافقات بنجاح يا بشمهندس.");
+    }
+</script>
+
+</body>
+</html>
