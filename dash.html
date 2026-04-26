@@ -3,541 +3,575 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام سادن الذكي 2026 | Saden Pro AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>لوحة القيادة — سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        :root {
-            --dark-blue: #0f172a; --primary: #3b82f6; --accent: #8b5cf6;
-            --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
-            --glass-bg: rgba(255, 255, 255, 0.9); --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        :root{
+            --blue:#3b82f6; --navy:#0f172a; --purple:#8b5cf6; --green:#10b981;
+            --yellow:#f59e0b; --red:#ef4444; --cyan:#06b6d4;
+            --bg:#f1f5f9; --card:#ffffff; --border:#e2e8f0;
+            --shadow:0 4px 20px rgba(0,0,0,.07);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-        body { background: #f1f5f9; color: var(--dark-blue); padding: 25px; min-height: 100vh; }
+        *{box-sizing:border-box;margin:0;padding:0;font-family:'Tajawal',sans-serif;}
+        body{background:var(--bg);color:var(--navy);padding:24px;min-height:100vh;}
+        .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;max-width:1700px;margin:auto;}
 
-        .dashboard-container { max-width: 1600px; margin: 0 auto; display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+        /* ===== Header ===== */
+        .g12{grid-column:span 12;}
+        .g8{grid-column:span 8;}
+        .g6{grid-column:span 6;}
+        .g4{grid-column:span 4;}
+        .g3{grid-column:span 3;}
+        .g5{grid-column:span 5;}
+        .g7{grid-column:span 7;}
+        .g9{grid-column:span 9;}
 
-        /* ترويسة النظام */
-        .main-header { grid-column: span 12; background: white; padding: 20px 30px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--card-shadow); }
-        .ai-badge { background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; padding: 5px 15px; border-radius: 50px; font-size: 12px; font-weight: bold; }
+        .topbar{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:white;padding:22px 30px;border-radius:18px;display:flex;justify-content:space-between;align-items:center;gap:20px;}
+        .topbar h1{font-size:22px;font-weight:900;}
+        .topbar p{color:#94a3b8;font-size:13px;margin-top:4px;}
+        .ai-pill{background:linear-gradient(90deg,var(--blue),var(--purple));padding:5px 14px;border-radius:30px;font-size:11px;font-weight:700;display:inline-block;margin-right:10px;}
+        .btn-refresh{background:rgba(255,255,255,0.12);color:white;border:1px solid rgba(255,255,255,0.2);padding:10px 22px;border-radius:10px;cursor:pointer;font-family:'Tajawal';font-size:13px;font-weight:700;transition:.2s;}
+        .btn-refresh:hover{background:rgba(255,255,255,0.22);}
 
-        /* كروت الإحصائيات الفائقة */
-        .stat-card { grid-column: span 3; background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); border-right: 6px solid var(--primary); transition: 0.3s; }
-        .stat-card:hover { transform: translateY(-5px); }
-        .stat-card.orange { border-right-color: var(--warning); }
-        .stat-card.green { border-right-color: var(--success); }
-        .stat-card.red { border-right-color: var(--danger); }
-        .stat-label { color: #64748b; font-size: 14px; margin-bottom: 5px; }
-        .stat-value { font-size: 32px; font-weight: 700; }
+        /* ===== KPI Cards ===== */
+        .kpi{background:var(--card);border-radius:16px;padding:22px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:.3s;}
+        .kpi:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.12);}
+        .kpi::before{content:'';position:absolute;top:0;right:0;width:6px;height:100%;border-radius:0 16px 16px 0;}
+        .kpi.blue::before{background:var(--blue);}
+        .kpi.green::before{background:var(--green);}
+        .kpi.yellow::before{background:var(--yellow);}
+        .kpi.red::before{background:var(--red);}
+        .kpi.purple::before{background:var(--purple);}
+        .kpi.cyan::before{background:var(--cyan);}
+        .kpi-icon{font-size:32px;margin-bottom:10px;}
+        .kpi-label{color:#64748b;font-size:13px;font-weight:500;}
+        .kpi-val{font-size:34px;font-weight:900;line-height:1.1;margin:6px 0;}
+        .kpi-trend{font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px;}
+        .up{color:var(--green);}
+        .down{color:var(--red);}
+        .neutral{color:#94a3b8;}
+        .kpi-bar{height:4px;background:#f1f5f9;border-radius:4px;margin-top:12px;overflow:hidden;}
+        .kpi-bar-fill{height:100%;border-radius:4px;transition:width 1s ease;}
 
-        /* منطقة الذكاء الاصطناعي التنبؤية */
-        .ai-box { grid-column: span 4; background: var(--dark-blue); color: white; padding: 30px; border-radius: 20px; position: relative; overflow: hidden; }
-        .ai-box::after { content: 'AI'; position: absolute; right: -20px; bottom: -20px; font-size: 120px; opacity: 0.05; }
-        .ai-box h3 { font-size: 18px; margin-bottom: 15px; color: #94a3b8; display: flex; align-items: center; gap: 10px; }
+        /* ===== Cards ===== */
+        .card{background:var(--card);border-radius:16px;padding:24px;box-shadow:var(--shadow);}
+        .card-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+        .card-title .badge{background:#eff6ff;color:var(--blue);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:700;}
 
-        /* الرسوم البيانية */
-        .chart-main { grid-column: span 8; background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); }
-        .chart-secondary { grid-column: span 4; background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); }
-        .chart-third { grid-column: span 4; background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); }
+        /* ===== AI Box ===== */
+        .ai-box{background:linear-gradient(135deg,#0f172a,#1e1b4b);color:white;border-radius:16px;padding:24px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+        .ai-box::after{content:'AI';position:absolute;left:-10px;bottom:-20px;font-size:130px;font-weight:900;opacity:.04;color:white;}
+        .ai-box-title{color:#94a3b8;font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+        .ai-rec{padding:14px 16px;border-radius:10px;margin-bottom:10px;border-right:4px solid;font-size:13px;line-height:1.6;}
+        .ai-rec:last-child{margin-bottom:0;}
+        .ai-rec.info{background:rgba(59,130,246,.12);border-color:var(--blue);}
+        .ai-rec.warn{background:rgba(245,158,11,.12);border-color:var(--yellow);}
+        .ai-rec.success{background:rgba(16,185,129,.12);border-color:var(--green);}
+        .ai-rec.danger{background:rgba(239,68,68,.12);border-color:var(--red);}
+        .ai-rec strong{display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:#e2e8f0;}
+        .ai-rec span{color:#94a3b8;}
 
-        /* جدول البيانات المتطور */
-        .table-panel { grid-column: span 12; background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: right; padding: 15px; color: #64748b; border-bottom: 2px solid #f1f5f9; font-size: 13px; }
-        td { padding: 18px 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
-        .pulse-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: 8px; }
-        .pulse-orange { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
+        /* ===== Charts ===== */
+        .chart-wrap{position:relative;}
+        .chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
+        .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#64748b;}
+        .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 
-        @media (max-width: 1200px) { .stat-card { grid-column: span 6; } .chart-main, .chart-secondary, .ai-box, .chart-third { grid-column: span 12; } }
+        /* ===== Dept Table ===== */
+        .dept-table{width:100%;border-collapse:collapse;}
+        .dept-table th{text-align:right;padding:12px 14px;font-size:12px;color:#64748b;border-bottom:2px solid var(--border);font-weight:700;background:#f8fafc;}
+        .dept-table td{padding:14px;font-size:13px;border-bottom:1px solid var(--border);}
+        .dept-table tr:last-child td{border-bottom:none;}
+        .dept-table tr:hover td{background:#f8fafc;}
+        .progress-bar{height:6px;background:#f1f5f9;border-radius:4px;overflow:hidden;margin-top:4px;}
+        .progress-fill{height:100%;border-radius:4px;}
+        .status-dot{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;}
+        .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+        /* ===== HR Panel ===== */
+        .hr-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+        .hr-stat{background:#f8fafc;border-radius:10px;padding:14px;text-align:center;}
+        .hr-stat .v{font-size:26px;font-weight:900;color:var(--navy);}
+        .hr-stat .l{font-size:11px;color:#64748b;margin-top:2px;}
+
+        /* ===== Recruitment ===== */
+        .recruit-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+        .recruit-row:last-child{border-bottom:none;}
+        .stage-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+        .s0{background:#ede9fe;color:#5b21b6;}
+        .s1{background:#fef9c3;color:#92400e;}
+        .s2{background:#dbeafe;color:#1d4ed8;}
+        .s3{background:#d1fae5;color:#065f46;}
+        .sdone{background:#dcfce7;color:#166534;}
+        .srej{background:#fee2e2;color:#991b1b;}
+
+        /* ===== Inventory ===== */
+        .inv-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+        .inv-row:last-child{border-bottom:none;}
+
+        /* ===== Timeline ===== */
+        .timeline{padding-right:16px;position:relative;}
+        .timeline::before{content:'';position:absolute;right:6px;top:0;bottom:0;width:2px;background:var(--border);}
+        .tl-item{position:relative;padding:0 22px 16px 0;font-size:13px;}
+        .tl-item::before{content:'';position:absolute;right:-2px;top:4px;width:10px;height:10px;border-radius:50%;border:2px solid white;}
+        .tl-item.blue::before{background:var(--blue);}
+        .tl-item.green::before{background:var(--green);}
+        .tl-item.yellow::before{background:var(--yellow);}
+        .tl-item.purple::before{background:var(--purple);}
+        .tl-title{font-weight:700;color:var(--navy);}
+        .tl-sub{color:#64748b;font-size:12px;margin-top:2px;}
+
+        @media(max-width:1100px){.g8,.g9{grid-column:span 12;}.g4,.g3{grid-column:span 6;}.g6{grid-column:span 12;}.g5,.g7{grid-column:span 12;}}
+        @media(max-width:700px){.g4,.g3,.g6{grid-column:span 12;}.g8{grid-column:span 12;}}
     </style>
 </head>
 <body>
+<div class="grid">
 
-<div class="dashboard-container">
-    <header class="main-header">
+    <!-- Header -->
+    <div class="topbar g12">
         <div>
-            <h1 style="font-size: 24px;"> نظام سادن الموحد <span class="ai-badge">PRO AI 2026</span></h1>
-            <p style="color: #64748b; font-size: 14px; margin-top: 5px;">مرحباً بك  النظام يحلل البيانات الآن...</p>
+            <h1>📊 لوحة القيادة التنفيذية <span class="ai-pill">✨ AI</span></h1>
+            <p id="last-update">جاري تحميل البيانات...</p>
         </div>
-        <div style="text-align: left;">
-            <button onclick="loadDashboardData()" style="padding: 12px 25px; background: var(--primary); color: white; border:none; border-radius:12px; cursor:pointer; font-weight:700; margin-left: 10px;">🔄 تحديث البيانات</button>
-            <button onclick="window.print()" style="padding: 12px 25px; background: #f1f5f9; border:none; border-radius:12px; cursor:pointer; font-weight:700;">تحميل التقرير الكامل</button>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <span id="current-time" style="color:#94a3b8;font-size:13px;"></span>
+            <button class="btn-refresh" onclick="loadAll()">🔄 تحديث</button>
+            <button class="btn-refresh" onclick="window.print()">🖨️ طباعة</button>
         </div>
-    </header>
-
-    <div class="stat-card">
-        <p class="stat-label">إجمالي القوة العاملة</p>
-        <p class="stat-value" id="totalEmployees">128</p>
-        <p style="color: var(--success); font-size: 12px; font-weight: 700;">+ 5% استقطاب جديد</p>
-    </div>
-    <div class="stat-card orange">
-        <p class="stat-label">المشاريع النشطة</p>
-        <p class="stat-value" id="activeProjects">18</p>
-        <p style="color: var(--warning); font-size: 12px; font-weight: 700;">3 بانتظار الاعتماد</p>
-    </div>
-    <div class="stat-card green">
-        <p class="stat-label">كفاءة الأداء العام</p>
-        <p class="stat-value" id="performanceEfficiency">94%</p>
-        <p style="color: var(--success); font-size: 12px; font-weight: 700;">أعلى من المستهدف</p>
-    </div>
-    <div class="stat-card red">
-        <p class="stat-label">إيرادات العقود</p>
-        <p class="stat-value" id="contractRevenue">4.2M</p>
-        <p style="color: #64748b; font-size: 12px;">ريال سعودي</p>
     </div>
 
-    <div class="chart-main">
-        <h3 style="margin-bottom: 20px;">تحليل الإنجاز التراكمي للإدارات (يومي)</h3>
-        <canvas id="lineChart" height="100"></canvas>
+    <!-- KPI Row 1 -->
+    <div class="kpi blue g3" id="kpi-emp">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-label">إجمالي الموظفين</div>
+        <div class="kpi-val" id="v-emp">—</div>
+        <div class="kpi-trend neutral" id="t-emp">جاري التحليل...</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="b-emp" style="background:var(--blue);width:0%"></div></div>
+    </div>
+    <div class="kpi green g3" id="kpi-recruit">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-label">طلبات التوظيف</div>
+        <div class="kpi-val" id="v-recruit">—</div>
+        <div class="kpi-trend neutral" id="t-recruit">جاري التحليل...</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="b-recruit" style="background:var(--green);width:0%"></div></div>
+    </div>
+    <div class="kpi yellow g3" id="kpi-cv">
+        <div class="kpi-icon">📄</div>
+        <div class="kpi-label">السير الذاتية (بنك المرشحين)</div>
+        <div class="kpi-val" id="v-cv">—</div>
+        <div class="kpi-trend neutral" id="t-cv">جاري التحليل...</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="b-cv" style="background:var(--yellow);width:0%"></div></div>
+    </div>
+    <div class="kpi red g3" id="kpi-inv">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-label">إجمالي بنود الجرد</div>
+        <div class="kpi-val" id="v-inv">—</div>
+        <div class="kpi-trend neutral" id="t-inv">جاري التحليل...</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="b-inv" style="background:var(--red);width:0%"></div></div>
     </div>
 
-    <div class="ai-box">
-        <h3>✨ توصيات الذكاء الاصطناعي</h3>
-        <ul style="list-style: none;">
-            <li style="margin-bottom: 15px; border-right: 3px solid var(--primary); padding-right: 15px;">
-                <b>تحسين المسار:</b> قسم الحفر يستهلك وقوداً أعلى بـ 12% من المعتاد. يرجى مراجعة الصيانة الوقائية للحفار رقم 7.
-            </li>
-            <li style="margin-bottom: 15px; border-right: 3px solid var(--success); padding-right: 15px;">
-                <b>فرصة نمو:</b> هناك فائض ميزانية في قسم التسويق يمكن نقله لدعم مناقصة "مشروع القدية 2".
-            </li>
-        </ul>
+    <!-- KPI Row 2 -->
+    <div class="kpi purple g3">
+        <div class="kpi-icon">🚗</div>
+        <div class="kpi-label">أسطول المركبات</div>
+        <div class="kpi-val" id="v-fleet">—</div>
+        <div class="kpi-trend neutral" id="t-fleet"></div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="b-fleet" style="background:var(--purple);width:0%"></div></div>
+    </div>
+    <div class="kpi cyan g3">
+        <div class="kpi-icon">🛠️</div>
+        <div class="kpi-label">طلبات الصيانة</div>
+        <div class="kpi-val" id="v-maint">—</div>
+        <div class="kpi-trend neutral" id="t-maint"></div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="b-maint" style="background:var(--cyan);width:0%"></div></div>
+    </div>
+    <div class="kpi blue g3">
+        <div class="kpi-icon">📣</div>
+        <div class="kpi-label">فريق التسويق</div>
+        <div class="kpi-val" id="v-mkt">—</div>
+        <div class="kpi-trend neutral" id="t-mkt"></div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="b-mkt" style="background:var(--blue);width:0%"></div></div>
+    </div>
+    <div class="kpi green g3">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">إجمالي الرواتب</div>
+        <div class="kpi-val" id="v-sal">—</div>
+        <div class="kpi-trend neutral" id="t-sal"></div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="b-sal" style="background:var(--green);width:0%"></div></div>
     </div>
 
-    <div class="chart-secondary">
-        <h3 style="margin-bottom: 20px; font-size: 16px;">توزيع الميزانية التشغيلية</h3>
-        <canvas id="doughnutChart"></canvas>
+    <!-- Chart: أداء الإدارات -->
+    <div class="card g8">
+        <div class="card-title">📈 مؤشر أداء الإدارات <span class="badge">مقارنة شاملة</span></div>
+        <div class="chart-wrap"><canvas id="barDepts" height="95"></canvas></div>
     </div>
 
-    <div class="chart-third">
-        <h3 style="margin-bottom: 20px; font-size: 16px;">مؤشر كفاءة الأقسام</h3>
-        <canvas id="radarChart"></canvas>
+    <!-- AI Recommendations -->
+    <div class="ai-box g4">
+        <div class="ai-box-title">✨ توصيات الذكاء الاصطناعي</div>
+        <div id="ai-recs">
+            <div class="ai-rec info"><strong>تحليل…</strong><span>جاري قراءة بيانات النظام</span></div>
+        </div>
     </div>
 
-    <div class="table-panel">
-        <h3 style="margin-bottom: 20px;">الرقابة المباشرة على الأقسام</h3>
-        <table>
+    <!-- HR Panel -->
+    <div class="card g4">
+        <div class="card-title">👤 الشئون الإدارية <span class="badge" id="hr-badge">—</span></div>
+        <div class="hr-stats" id="hr-stats"></div>
+        <div class="chart-wrap" style="margin-top:18px;"><canvas id="hrChart" height="130"></canvas></div>
+    </div>
+
+    <!-- Recruitment Pipeline -->
+    <div class="card g4">
+        <div class="card-title">📋 مسار التوظيف <span class="badge" id="rec-badge">—</span></div>
+        <div id="rec-pipeline"></div>
+        <div class="chart-wrap" style="margin-top:16px;"><canvas id="recChart" height="130"></canvas></div>
+    </div>
+
+    <!-- Inventory -->
+    <div class="card g4">
+        <div class="card-title">📦 الجرد والمخزون <span class="badge" id="inv-badge">—</span></div>
+        <div id="inv-list"></div>
+        <div class="chart-wrap" style="margin-top:16px;"><canvas id="invChart" height="120"></canvas></div>
+    </div>
+
+    <!-- Budget Doughnut -->
+    <div class="card g4">
+        <div class="card-title">💳 توزيع الميزانية التشغيلية</div>
+        <div class="chart-wrap"><canvas id="budgetChart" height="160"></canvas></div>
+        <div class="chart-legend" id="budget-legend"></div>
+    </div>
+
+    <!-- Fleet & Maintenance -->
+    <div class="card g4">
+        <div class="card-title">🚗 الأسطول والصيانة</div>
+        <div class="chart-wrap"><canvas id="fleetChart" height="160"></canvas></div>
+    </div>
+
+    <!-- Marketing Performance -->
+    <div class="card g4">
+        <div class="card-title">📣 أداء التسويق</div>
+        <div class="chart-wrap"><canvas id="mktChart" height="160"></canvas></div>
+    </div>
+
+    <!-- Radar: Dept Efficiency -->
+    <div class="card g4">
+        <div class="card-title">🎯 مؤشر كفاءة الأقسام</div>
+        <div class="chart-wrap"><canvas id="radarChart" height="185"></canvas></div>
+    </div>
+
+    <!-- Timeline: Last Activities -->
+    <div class="card g4">
+        <div class="card-title">⏱️ آخر الأنشطة</div>
+        <div class="timeline" id="timeline"></div>
+    </div>
+
+    <!-- Dept Table -->
+    <div class="card g12">
+        <div class="card-title">🏛️ رقابة مباشرة على الإدارات</div>
+        <table class="dept-table">
             <thead>
                 <tr>
-                    <th>القسم / الإدارة</th>
-                    <th>مدير الإدارة</th>
+                    <th>الإدارة</th>
+                    <th>البيانات الحية</th>
                     <th>نسبة الإنجاز</th>
-                    <th>الحالة</th>
-                    <th>توقيت النبض</th>
+                    <th>المؤشر</th>
+                    <th>التوصية</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td><b>إدارة المشروعات (الميدان)</b></td>
-                    <td>م. محمد على</td>
-                    <td><progress value="92" max="100" style="width: 100px;"></progress> 92%</td>
-                    <td><span class="pulse-dot pulse-green"></span> نشط مستقر</td>
-                    <td>منذ دقيقتين</td>
-                </tr>
-                <tr>
-                    <td><b>الإدارة المالية</b></td>
-                    <td>أ. محمود محمد</td>
-                    <td><progress value="100" max="100" style="width: 100px;"></progress> 100%</td>
-                    <td><span class="pulse-dot pulse-green" style="background:var(--primary); box-shadow:0 0 10px var(--primary);"></span> مكتمل</td>
-                    <td>منذ ساعة</td>
-                </tr>
-            </tbody>
+            <tbody id="dept-tbody"></tbody>
         </table>
     </div>
+
 </div>
 
 <script>
-    // تعطيل source maps لتجنب تحذيرات 404
-    // تم تحديث Chart.js إلى النسخة 4.4.0 لتجنب مشاكل source maps
-    // تم إصلاح استدعاء loadDashboardData باستخدام window.onload
-    
-    // تحميل البيانات من جميع الإدارات
-    let dashboardData = {};
-    let lastUpdateTime = new Date();
+const COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899'];
 
-    function loadDashboardData() {
-        dashboardData = {
-            employees: JSON.parse(localStorage.getItem('saden_employees') || '[]'),
-            marketing: JSON.parse(localStorage.getItem('saden_marketing_staff') || '[]'),
-            fleet: JSON.parse(localStorage.getItem('saden_fleet_db') || '[]'),
-            crm: JSON.parse(localStorage.getItem('saden_db_v4') || '[]'),
-            production: JSON.parse(localStorage.getItem('saden_production_stock') || {}),
-            loans: JSON.parse(localStorage.getItem('saden_v10_system') || {}),
-            maintenance: JSON.parse(localStorage.getItem('saden_maintenance_db') || []),
-            users: JSON.parse(localStorage.getItem('sadenUsers') || []),
-            payrollArchive: JSON.parse(localStorage.getItem('saden_archive') || []),
-            marketingFinal: JSON.parse(localStorage.getItem('saden_final_system') || []),
-            kofalat: JSON.parse(localStorage.getItem('saden_kofalat_db') || {}),
-            scrap: JSON.parse(localStorage.getItem('saden_scrap_v4') || []),
-            marketingFull: JSON.parse(localStorage.getItem('saden_full_system') || [])
-        };
-        lastUpdateTime = new Date();
-        updateLastUpdateDisplay();
-        updateStats();
-        updateCharts();
-        generateAIRecommendations();
-        updateDepartmentTable();
-    }
+let D = {};
 
-    function updateLastUpdateDisplay() {
-        const timeString = lastUpdateTime.toLocaleTimeString('ar-SA', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            second: '2-digit'
-        });
-        document.querySelector('.main-header p').textContent = 
-            `آخر تحديث: ${timeString} | النظام يحلل البيانات تلقائياً...`;
-    }
-
-    function updateStats() {
-        // إجمالي القوة العاملة (من HRMS + التسويق)
-        const totalEmployees = dashboardData.employees.length + dashboardData.marketing.length + dashboardData.marketingFinal.length;
-        document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = totalEmployees || 0;
-        
-        // المشاريع النشطة (من CRM)
-        const activeProjects = dashboardData.crm.filter(c => c && (c.status === 'نشط' || c.status === 'active')).length;
-        document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = activeProjects || 0;
-        
-        // كفاءة الأداء العام (متوسط من التسويق والصيانة)
-        let marketingEfficiency = 0;
-        if (dashboardData.marketing.length > 0) {
-            marketingEfficiency = Math.round(dashboardData.marketing.reduce((sum, emp) => {
-                const visits = emp.visits ? Object.values(emp.visits).flat() : [];
-                const completed = visits.filter(v => v.done).length;
-                const total = visits.length;
-                return sum + (total > 0 ? (completed / total) * 100 : 0);
-            }, 0) / dashboardData.marketing.length);
-        }
-        
-        const maintenanceEfficiency = dashboardData.maintenance.length > 0 
-            ? Math.round((dashboardData.maintenance.filter(m => m.status === 'تم الإصلاح').length / dashboardData.maintenance.length) * 100)
-            : 0;
-        
-        const overallEfficiency = marketingEfficiency > 0 || maintenanceEfficiency > 0 
-            ? Math.round((marketingEfficiency + maintenanceEfficiency) / (marketingEfficiency > 0 && maintenanceEfficiency > 0 ? 2 : 1))
-            : 0;
-        document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = overallEfficiency + '%';
-        
-        // إيرادات العقود (من CRM + الإنتاج + الكفالات)
-        const crmRevenue = dashboardData.crm.reduce((sum, project) => sum + (project && project.value ? parseFloat(project.value) : 0), 0);
-        const productionRevenue = dashboardData.production.totalValue ? parseFloat(dashboardData.production.totalValue) : 0;
-        const kofalatRevenue = Object.values(dashboardData.kofalat).reduce((sum, branch) => 
-            sum + (branch ? branch.reduce((bSum, k) => bSum + (parseFloat(k.netSalary) || 0), 0) : 0), 0);
-        const totalRevenue = crmRevenue + productionRevenue + kofalatRevenue;
-        document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = totalRevenue > 0 ? (totalRevenue / 1000000).toFixed(1) + 'M' : '0.0M';
-    }
-
-    function updateCharts() {
-        // تحديث الرسم البياني الخطي - أداء الإدارات
-        const departments = ['الموارد البشرية', 'التسويق', 'المالية', 'التشغيل'];
-        const performanceData = departments.map(dept => {
-            switch(dept) {
-                case 'الموارد البشرية': return dashboardData.employees.length > 0 ? 90 : 0;
-                case 'التسويق': return dashboardData.marketing.length > 0 ? 85 : 0;
-                case 'المالية': return 95; // افتراضي
-                case 'التشغيل': return dashboardData.fleet.length > 0 ? 88 : 0;
-                default: return 80;
-            }
-        });
-
-        if(window.lineChart) window.lineChart.destroy();
-        window.lineChart = new Chart(document.getElementById('lineChart'), {
-            type: 'line',
-            data: {
-                labels: departments,
-                datasets: [{
-                    label: 'مستوى الأداء',
-                    data: performanceData,
-                    borderColor: '#3b82f6',
-                    tension: 0.4,
-                    fill: true,
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)'
-                }]
-            },
-            options: { 
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, max: 100 }
-                }
-            }
-        });
-
-        // تحديث الرسم الدائري - توزيع الميزانية (شامل الرواتب والكفالات)
-        const employeeSalaries = dashboardData.employees.length * 5000;
-        const marketingSalaries = dashboardData.marketing.length * 3000;
-        const kofalatSalaries = Object.values(dashboardData.kofalat).reduce((sum, branch) => 
-            sum + (branch ? branch.reduce((bSum, k) => bSum + (parseFloat(k.netSalary) || 0), 0) : 0), 0);
-        const fleetMaintenance = dashboardData.fleet.length * 2000;
-        const maintenanceCosts = dashboardData.maintenance.length * 1000;
-        const scrapValue = dashboardData.scrap.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0) * 100;
-        
-        const budgetData = [
-            employeeSalaries + kofalatSalaries, // رواتب وكفالات
-            fleetMaintenance + maintenanceCosts, // صيانة
-            marketingSalaries, // تسويق
-            scrapValue // خردة
-        ];
-
-        if(window.doughnutChart) window.doughnutChart.destroy();
-        window.doughnutChart = new Chart(document.getElementById('doughnutChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['رواتب', 'صيانة', 'تسويق', 'عمليات'],
-                datasets: [{
-                    data: budgetData,
-                    backgroundColor: ['#0f172a', '#3b82f6', '#8b5cf6', '#10b981'],
-                    borderWidth: 0
-                }]
-            },
-            options: { plugins: { legend: { position: 'bottom' } } }
-        });
-
-        // تحديث الرسم الراداري - كفاءة الأقسام
-        const radarData = [
-            dashboardData.employees.length > 10 ? 95 : 80, // السرعة
-            dashboardData.crm.length > 50 ? 90 : 75, // الجودة
-            budgetData.reduce((a,b) => a+b, 0) > 100000 ? 85 : 70, // التكلفة
-            dashboardData.maintenance.filter(m => m.status === 'تم الإصلاح').length / Math.max(dashboardData.maintenance.length, 1) * 100, // الأمان
-            dashboardData.production.totalValue > 1000000 ? 95 : 80 // الاستدامة
-        ];
-
-        if(window.radarChart) window.radarChart.destroy();
-        window.radarChart = new Chart(document.getElementById('radarChart'), {
-            type: 'radar',
-            data: {
-                labels: ['السرعة', 'الجودة', 'التكلفة', 'الأمان', 'الاستدامة'],
-                datasets: [{
-                    label: 'الوضع الحالي',
-                    data: radarData,
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'rgba(139, 92, 246, 0.2)'
-                }]
-            },
-            options: { plugins: { legend: { display: false } } }
-        });
-    }
-
-    function generateAIRecommendations() {
-        const recommendations = [];
-        const currentDate = new Date();
-        
-        // حساب القيم المشتركة مرة واحدة
-        const totalEmployees = dashboardData.employees.length + dashboardData.marketing.length + dashboardData.marketingFinal.length;
-        const totalKofalat = Object.values(dashboardData.kofalat).reduce((sum, branch) => sum + (branch ? branch.length : 0), 0);
-        const totalPayrollRecords = dashboardData.payrollArchive.length;
-        const totalScrapItems = dashboardData.scrap.length;
-        const totalScrapValue = dashboardData.scrap.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
-        
-        // تحليل الموارد البشرية
-        if (totalEmployees < 30) {
-            recommendations.push('⚠️ <b>تحذير:</b> القوة العاملة الإجمالية (' + totalEmployees + ' موظف) منخفضة جداً. يُنصح بزيادة التوظيف في الأقسام الأساسية بنسبة 25% خلال الربع القادم.');
-        } else if (totalEmployees > 150) {
-            recommendations.push('📊 <b>تحليل:</b> القوة العاملة قوية. يمكن الاستفادة من التدريب المتقدم لتحسين الإنتاجية.');
-        }
-        
-        // تحليل التسويق
-        const marketingEfficiency = dashboardData.marketing.reduce((sum, emp) => {
-            const completed = emp.visits ? Object.values(emp.visits).flat().filter(v => v.done).length : 0;
-            const total = emp.visits ? Object.values(emp.visits).flat().length : 0;
-            return sum + (total > 0 ? (completed / total) * 100 : 0);
-        }, 0) / Math.max(dashboardData.marketing.length, 1);
-        
-        if (marketingEfficiency < 70) {
-            recommendations.push('📈 <b>تحسين مطلوب:</b> كفاءة التسويق ' + Math.round(marketingEfficiency) + '%. راجع خطط الزيارات وتدريب الموظفين. اقتراح: تطبيق نظام تتبع GPS للزيارات.');
-        } else if (marketingEfficiency > 90) {
-            recommendations.push('🎯 <b>أداء ممتاز:</b> قسم التسويق يحقق أهدافاً عالية. يمكن توسيع نطاق العمليات.');
-        }
-        
-        // تحليل الأسطول والصيانة
-        const fleetIssues = dashboardData.maintenance.filter(m => m.status !== 'تم الإصلاح').length;
-        const totalFleet = dashboardData.fleet.length;
-        const maintenanceRatio = fleetIssues / Math.max(totalFleet, 1);
-        
-        if (fleetIssues > 3) {
-            recommendations.push('🔧 <b>صيانة عاجلة:</b> ' + fleetIssues + ' طلب صيانة معلق. راجع جدولة الصيانة الوقائية وتخصيص ميزانية إضافية لقطع الغيار.');
-        } else if (maintenanceRatio < 0.1) {
-            recommendations.push('✅ <b>صيانة ممتازة:</b> معدل الصيانة منخفض (' + Math.round(maintenanceRatio * 100) + '%). استمر في برنامج الصيانة الوقائية.');
-        }
-        
-        // تحليل CRM والعملاء
-        const activeClients = dashboardData.crm.filter(c => c.status === 'نشط').length;
-        const totalClients = dashboardData.crm.length;
-        const clientRetention = totalClients > 0 ? (activeClients / totalClients) * 100 : 0;
-        
-        if (activeClients < 10) {
-            recommendations.push('🤝 <b>توسع مطلوب:</b> عدد العملاء النشطين منخفض (' + activeClients + '). ركز على استراتيجيات اكتساب العملاء الجدد وتحسين خدمة العملاء الحاليين.');
-        } else if (clientRetention > 80) {
-            recommendations.push('💎 <b>ولاء عالي:</b> معدل الاحتفاظ بالعملاء ' + Math.round(clientRetention) + '%. استثمر في برامج الولاء وتوسيع الخدمات.');
-        }
-        
-        // تحليل الإنتاج والمخزون
-        const productionValue = dashboardData.production.totalValue || 0;
-        if (productionValue < 1000000) {
-            recommendations.push('🏭 <b>تحسين الإنتاج:</b> قيمة الإنتاج الحالية منخفضة. قم بمراجعة سلسلة التوريد وتحسين الكفاءة التشغيلية. اقتراح: تطبيق نظام JIT.');
-        } else if (productionValue > 3000000) {
-            recommendations.push('🚀 <b>نمو قوي:</b> الإنتاج يسير بشكل ممتاز. يمكن التوسع في الأسواق الجديدة.');
-        }
-        
-        // تحليل الرواتب والكفالات
-        if (totalKofalat < 50) {
-            recommendations.push('💰 <b>توسيع الكفالات:</b> عدد الكفالات النشطة منخفض (' + totalKofalat + '). يمكن زيادة عدد الموظفين تحت نظام الكفالات.');
-        } else if (totalPayrollRecords > 100) {
-            recommendations.push('📋 <b>أرشيف منظم:</b> نظام الأرشيف يعمل بكفاءة عالية مع ' + totalPayrollRecords + ' سجل محفوظ.');
-        }
-        
-        // تحليل الخردة والكهنة
-        if (totalScrapItems < 10) {
-            recommendations.push('♻️ <b>تطوير إدارة الخردة:</b> نظام إدارة الخردة يحتاج لتطوير. ركز على تحسين عمليات التوريد والتصريف.');
-        } else if (totalScrapValue > 10000) {
-            recommendations.push('💰 <b>فرصة إيرادية:</b> قيمة الخردة المخزنة عالية. يمكن تحقيق إيرادات إضافية من بيع الخردة.');
-        }
-        
-        // تحليل الميزانية والتكاليف
-        const totalBudget = (dashboardData.employees.length * 5000) + (dashboardData.marketing.length * 3000) + 
-                           (dashboardData.fleet.length * 2000) + (dashboardData.maintenance.length * 1000) +
-                           Object.values(dashboardData.kofalat).reduce((sum, branch) => 
-                               sum + (branch ? branch.reduce((bSum, k) => bSum + (parseFloat(k.netSalary) || 0), 0) : 0), 0);
-        
-        if (totalBudget > 1000000) {
-            recommendations.push('💰 <b>مراجعة الميزانية:</b> التكاليف التشغيلية عالية. قم بتحليل التكاليف وتحسين الكفاءة المالية.');
-        }
-        
-        // تحليل المناطق الجغرافية
-        const regions = {};
-        dashboardData.crm.forEach(client => {
-            regions[client.region] = (regions[client.region] || 0) + 1;
-        });
-        
-        const topRegion = Object.keys(regions).reduce((a, b) => regions[a] > regions[b] ? a : b, '');
-        if (topRegion) {
-            recommendations.push('📍 <b>تركيز جغرافي:</b> المنطقة الأكثر نشاطاً هي "' + topRegion + '" بـ' + regions[topRegion] + ' عميل. ركز الجهود التسويقية هناك.');
-        }
-        
-        // إذا لم تكن هناك توصيات محددة
-        if (recommendations.length === 0) {
-            recommendations.push('✅ <b>وضع ممتاز:</b> جميع المؤشرات في المستويات المقبولة. استمر في تطبيق الخطط الحالية.');
-            recommendations.push('🎯 <b>فرصة نمو:</b> زيادة الاستثمار في التسويق الرقمي والتوسع في الأسواق الجديدة لزيادة حصة السوق.');
-            recommendations.push('🔮 <b>تنبؤ ذكي:</b> بناءً على الاتجاهات الحالية، من المتوقع نمو الإيرادات بنسبة 15-20% في الربع القادم.');
-        }
-        
-        // إضافة توصية زمنية
-        const hour = currentDate.getHours();
-        if (hour >= 9 && hour <= 17) {
-            recommendations.push('⏰ <b>تذكير:</b> وقت العمل الرسمي. تأكد من متابعة المهام اليومية وتحديث البيانات بانتظام.');
-        }
-        
-        const aiBox = document.querySelector('.ai-box ul');
-        aiBox.innerHTML = recommendations.slice(0, 8).map(rec => 
-            `<li style="margin-bottom: 15px; border-right: 3px solid var(--primary); padding-right: 15px; line-height: 1.6;">${rec}</li>`
-        ).join('');
-    }
-
-    function updateDepartmentTable() {
-        const tbody = document.querySelector('.table-panel tbody');
-        
-        // حساب القيم المشتركة مرة واحدة
-        const totalKofalat = Object.values(dashboardData.kofalat).reduce((sum, branch) => sum + (branch ? branch.length : 0), 0);
-        const totalScrapItems = dashboardData.scrap.length;
-        
-        // حساب مؤشرات الأداء لكل إدارة
-        const hrPerformance = dashboardData.employees.length > 0 ? Math.min(95, 70 + (dashboardData.employees.length * 2)) : 0;
-        const marketingPerformance = dashboardData.marketing.length > 0 ? 
-            Math.min(95, dashboardData.marketing.reduce((sum, emp) => {
-                const completed = emp.visits ? Object.values(emp.visits).flat().filter(v => v.done).length : 0;
-                const total = emp.visits ? Object.values(emp.visits).flat().length : 0;
-                return sum + (total > 0 ? (completed / total) * 100 : 0);
-            }, 0) / dashboardData.marketing.length) : 0;
-        
-        const financePerformance = 92; // افتراضي للمالية
-        const operationsPerformance = dashboardData.fleet.length > 0 ? 
-            Math.min(95, 75 + (dashboardData.fleet.length * 1.5)) : 0;
-        
-        const maintenancePerformance = dashboardData.maintenance.length > 0 ? 
-            (dashboardData.maintenance.filter(m => m.status === 'تم الإصلاح').length / dashboardData.maintenance.length) * 100 : 0;
-        
-        const departments = [
-            { 
-                name: 'إدارة الموارد البشرية', 
-                manager: dashboardData.employees.length > 0 ? (dashboardData.employees[0]?.emp_name || 'أ. محمد أحمد') : 'غير محدد',
-                performance: hrPerformance,
-                status: hrPerformance > 80 ? 'نشط' : 'يحتاج تحسين',
-                lastPulse: 'منذ ' + Math.floor(Math.random() * 10 + 1) + ' دقيقة',
-                dataCount: dashboardData.employees.length + ' موظف'
-            },
-            { 
-                name: 'إدارة التسويق', 
-                manager: dashboardData.marketing.length > 0 ? (dashboardData.marketing[0]?.name || 'أ. فاطمة سالم') : 'غير محدد',
-                performance: marketingPerformance,
-                status: marketingPerformance > 75 ? 'نشط' : 'يحتاج تحسين',
-                lastPulse: 'منذ ' + Math.floor(Math.random() * 15 + 1) + ' دقيقة',
-                dataCount: dashboardData.marketing.length + ' موظف تسويق'
-            },
-            { 
-                name: 'إدارة المالية والرواتب', 
-                manager: 'أ. أحمد محمد',
-                performance: financePerformance,
-                status: 'نشط',
-                lastPulse: 'منذ ' + Math.floor(Math.random() * 60 + 30) + ' دقيقة',
-                dataCount: dashboardData.payrollArchive.length + ' مسيرة محفوظة'
-            },
-            { 
-                name: 'إدارة التشغيل والإنتاج', 
-                manager: 'م. خالد عبدالله',
-                performance: operationsPerformance,
-                status: operationsPerformance > 70 ? 'نشط' : 'يحتاج تحسين',
-                lastPulse: 'منذ ' + Math.floor(Math.random() * 45 + 15) + ' دقيقة',
-                dataCount: dashboardData.fleet.length + ' مركبة'
-            },
-            { 
-                name: 'إدارة الصيانة', 
-                manager: 'م. سالم أحمد',
-                performance: maintenancePerformance,
-                status: maintenancePerformance > 60 ? 'نشط' : 'يحتاج تحسين',
-                lastPulse: 'منذ ' + Math.floor(Math.random() * 30 + 5) + ' دقيقة',
-                dataCount: dashboardData.maintenance.length + ' طلب صيانة'
-            },
-            { 
-                name: 'إدارة الكفالات', 
-                manager: 'أ. سعد العتيبي',
-                performance: totalKofalat > 50 ? 90 : 70,
-                status: totalKofalat > 50 ? 'نشط' : 'يحتاج تحسين',
-                lastPulse: 'منذ ' + Math.floor(Math.random() * 20 + 10) + ' دقيقة',
-                dataCount: totalKofalat + ' كفالة نشطة'
-            },
-            { 
-                name: 'إدارة الخردة', 
-                manager: 'م. عبدالله القحطاني',
-                performance: totalScrapItems > 5 ? 85 : 65,
-                status: totalScrapItems > 5 ? 'نشط' : 'يحتاج تحسين',
-                lastPulse: 'منذ ' + Math.floor(Math.random() * 25 + 5) + ' دقيقة',
-                dataCount: totalScrapItems + ' نوع خردة'
-            }
-        ];
-        
-        tbody.innerHTML = departments.map(dept => `
-            <tr>
-                <td><b>${dept.name}</b><br><small style="color: #64748b;">${dept.dataCount}</small></td>
-                <td>${dept.manager}</td>
-                <td>
-                    <progress value="${dept.performance}" max="100" style="width: 100px;"></progress> 
-                    <span style="font-weight: bold; color: ${dept.performance > 80 ? 'var(--success)' : dept.performance > 60 ? 'var(--warning)' : 'var(--danger)'};">${Math.round(dept.performance)}%</span>
-                </td>
-                <td>
-                    <span class="pulse-dot ${dept.status === 'نشط' ? 'pulse-green' : 'pulse-orange'}"></span> 
-                    ${dept.status}
-                </td>
-                <td>${dept.lastPulse}</td>
-            </tr>
-        `).join('');
-    }
-
-    // تحديث تلقائي كل 30 ثانية
-    setInterval(loadDashboardData, 30000);
-    
-    // تحميل البيانات عند بدء الصفحة
-    window.onload = function() {
-        loadDashboardData();
+function loadAll(){
+    D = {
+        employees:     JSON.parse(localStorage.getItem('saden_employees')||'[]'),
+        marketing:     JSON.parse(localStorage.getItem('saden_marketing_staff')||'[]'),
+        fleet:         JSON.parse(localStorage.getItem('saden_fleet_db')||'[]'),
+        crm:           JSON.parse(localStorage.getItem('saden_db_v4')||'[]'),
+        production:    JSON.parse(localStorage.getItem('saden_production_stock')||'{}'),
+        loans:         JSON.parse(localStorage.getItem('saden_v10_system')||'{}'),
+        maintenance:   JSON.parse(localStorage.getItem('saden_maintenance_db')||'[]'),
+        payroll:       JSON.parse(localStorage.getItem('saden_archive')||'[]'),
+        kofalat:       JSON.parse(localStorage.getItem('saden_kofalat_db')||'{}'),
+        scrap:         JSON.parse(localStorage.getItem('saden_scrap_v4')||'[]'),
+        mktFull:       JSON.parse(localStorage.getItem('saden_full_system')||'[]'),
+        mktFinal:      JSON.parse(localStorage.getItem('saden_final_system')||'[]'),
+        inventory:     JSON.parse(localStorage.getItem('saden_inventory')||'[]'),
+        regions:       JSON.parse(localStorage.getItem('saden_regions')||'[]'),
+        recruit:       JSON.parse(localStorage.getItem('saden_recruit_v3')||'[]'),
+        cvBank:        JSON.parse(localStorage.getItem('saden_cv_bank')||'[]'),
+        depts:         JSON.parse(localStorage.getItem('saden_depts')||'[]'),
+        jobtitles:     JSON.parse(localStorage.getItem('saden_jobtitles')||'[]'),
     };
 
+    renderKPIs();
+    renderCharts();
+    renderAI();
+    renderHRPanel();
+    renderRecruitPipeline();
+    renderInventory();
+    renderDeptTable();
+    renderTimeline();
+    updateClock();
+}
+
+/* ===== KPIs ===== */
+function renderKPIs(){
+    const totalEmp = D.employees.length + D.marketing.length;
+    setKPI('emp', totalEmp, totalEmp > 0 ? `${totalEmp} موظف في السجل` : 'لا يوجد موظفون', totalEmp > 0 ? 'up' : 'neutral', Math.min(totalEmp*2, 100));
+
+    const recruitTotal = D.recruit.length;
+    const recruitPending = D.recruit.filter(r=>r.step===0&&r.status!=='مرفوض'&&r.status!=='معتمد').length;
+    setKPI('recruit', recruitTotal, recruitPending > 0 ? `${recruitPending} طلب بانتظار المراجعة ⚠️` : 'لا توجد طلبات معلقة ✓', recruitPending > 0 ? 'warn' : 'up', Math.min(recruitTotal*5, 100));
+
+    setKPI('cv', D.cvBank.length, `${D.cvBank.filter(c=>c.status==='مرشح للتوظيف'||!c.status||c.status==='جديد').length} مرشح جديد`, 'neutral', Math.min(D.cvBank.length*3, 100));
+
+    const invCount = D.inventory.length;
+    setKPI('inv', invCount, `موزع على ${D.regions.length} فرع`, 'neutral', Math.min(invCount, 100));
+
+    const activeFleet = D.fleet.filter(f=>f.status==='نشط'||f.status==='active'||!f.status).length;
+    setKPI('fleet', D.fleet.length, `${activeFleet} مركبة نشطة`, activeFleet>0?'up':'neutral', Math.min(D.fleet.length*5,100));
+
+    const maintDone = D.maintenance.filter(m=>m.status==='تم الإصلاح'||m.status==='مغلق').length;
+    setKPI('maint', D.maintenance.length, `${maintDone} منجز / ${D.maintenance.length - maintDone} معلق`, D.maintenance.length - maintDone > 0 ? 'warn' : 'up', D.maintenance.length ? Math.round(maintDone/D.maintenance.length*100) : 0);
+
+    setKPI('mkt', D.marketing.length + D.mktFull.length, 'من فريق التسويق', 'neutral', Math.min((D.marketing.length+D.mktFull.length)*5,100));
+
+    const kofalatTotal = Object.values(D.kofalat).reduce((s,b)=>s+(Array.isArray(b)?b.reduce((ss,k)=>ss+(parseFloat(k.netSalary)||0),0):0),0);
+    const empSal = D.employees.reduce((s,e)=>s+(parseFloat(e.total_salary||e.base_salary||0)),0);
+    const totalSal = kofalatTotal + empSal;
+    setKPI('sal', totalSal > 0 ? (totalSal/1000).toFixed(0)+'K ر.س' : '—', totalSal > 0 ? 'إجمالي الرواتب الشهرية' : 'لا توجد بيانات رواتب', 'neutral', Math.min(totalSal/5000, 100));
+}
+
+function setKPI(id, val, trend, type, pct){
+    const el = v=>document.getElementById(v+'-'+id);
+    if(el('v')) el('v').textContent = val;
+    if(el('t')){
+        const icons = {up:'▲', down:'▼', warn:'⚠️', neutral:''};
+        el('t').innerHTML = (icons[type]||'') + ' ' + trend;
+        el('t').className = 'kpi-trend ' + (type==='warn'?'down':type==='up'?'up':'neutral');
+    }
+    if(el('b')) setTimeout(()=>{ el('b').style.width = Math.min(Math.max(pct,0),100)+'%'; }, 300);
+}
+
+/* ===== Charts ===== */
+let charts = {};
+function mkChart(id, cfg){
+    if(charts[id]) charts[id].destroy();
+    const el = document.getElementById(id);
+    if(!el) return;
+    charts[id] = new Chart(el, cfg);
+}
+
+function renderCharts(){
+    /* أداء الإدارات (Bar) */
+    const deptNames = ['الشئون الإدارية','التوظيف','الجرد','الأسطول','الصيانة','التسويق','المالية'];
+    const maintEff = D.maintenance.length ? Math.round(D.maintenance.filter(m=>m.status==='تم الإصلاح').length/D.maintenance.length*100) : 0;
+    const recEff = D.recruit.length ? Math.round(D.recruit.filter(r=>r.status==='معتمد').length/D.recruit.length*100) : 0;
+    const mktEff = D.marketing.length > 0 ? Math.round(D.marketing.reduce((s,e)=>{
+        const v=e.visits?Object.values(e.visits).flat():[];
+        return s+(v.length?v.filter(x=>x.done).length/v.length*100:0);
+    },0)/D.marketing.length) : 0;
+    const deptVals = [
+        D.employees.length > 0 ? 88 : 0, recEff, D.inventory.length > 0 ? 82 : 0,
+        D.fleet.length > 0 ? 85 : 0, maintEff, mktEff, 95
+    ];
+    mkChart('barDepts',{ type:'bar', data:{
+        labels: deptNames,
+        datasets:[{
+            label:'نسبة الأداء %', data: deptVals,
+            backgroundColor: COLORS, borderRadius: 8, borderSkipped: false
+        }]
+    }, options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}}, animation:{duration:800} }});
+
+    /* HR Chart (Doughnut) */
+    const hrData = [D.employees.length, D.marketing.length, D.mktFull.length].filter(x=>x>0);
+    const hrLabels = ['موظفو HRMS', 'فريق التسويق (داخلي)', 'فريق التسويق (كامل)'].filter((_,i)=>[D.employees.length,D.marketing.length,D.mktFull.length][i]>0);
+    if(hrData.length) mkChart('hrChart',{type:'doughnut',data:{labels:hrLabels,datasets:[{data:hrData,backgroundColor:COLORS,borderWidth:2}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'Tajawal',size:11}}}},cutout:'65%'}});
+
+    /* Recruitment Chart */
+    const stages = ['انتظار شئون الموظفين','انتظار اللجنة الفنية','انتظار المدير المباشر','انتظار حماية الأجور','معتمد','مرفوض'];
+    const stageCounts = stages.map(s=>D.recruit.filter(r=>r.status===s).length);
+    mkChart('recChart',{type:'bar',data:{labels:['شئون','لجنة فنية','مدير','حماية أجور','معتمد','مرفوض'],datasets:[{data:stageCounts,backgroundColor:['#8b5cf6','#f59e0b','#3b82f6','#10b981','#22c55e','#ef4444'],borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+
+    /* Inventory by Branch */
+    const branchMap = {};
+    D.inventory.forEach(item=>{ const b=item.branch||item.location||'غير محدد'; branchMap[b]=(branchMap[b]||0)+1; });
+    const invBranches = Object.keys(branchMap).slice(0,6);
+    const invVals = invBranches.map(b=>branchMap[b]);
+    if(invBranches.length) mkChart('invChart',{type:'bar',data:{labels:invBranches,datasets:[{data:invVals,backgroundColor:COLORS,borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},indexAxis:'y'}});
+
+    /* Budget Doughnut */
+    const empSalBudget = D.employees.length * 5000;
+    const mktBudget = (D.marketing.length + D.mktFull.length) * 3000;
+    const fleetBudget = D.fleet.length * 2000;
+    const maintBudget = D.maintenance.length * 1000;
+    const budgetLabels = ['رواتب الموظفين','التسويق','الأسطول','الصيانة'];
+    const budgetVals = [empSalBudget, mktBudget, fleetBudget, maintBudget];
+    mkChart('budgetChart',{type:'doughnut',data:{labels:budgetLabels,datasets:[{data:budgetVals,backgroundColor:COLORS,borderWidth:2}]},options:{plugins:{legend:{display:false}},cutout:'60%'}});
+    document.getElementById('budget-legend').innerHTML = budgetLabels.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${COLORS[i]}"></div>${l}</div>`).join('');
+
+    /* Fleet Chart */
+    const fleetStatus = {};
+    D.fleet.forEach(f=>{ const s=f.status||'نشط'; fleetStatus[s]=(fleetStatus[s]||0)+1; });
+    mkChart('fleetChart',{type:'pie',data:{labels:Object.keys(fleetStatus),datasets:[{data:Object.values(fleetStatus),backgroundColor:COLORS}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'Tajawal',size:11}}}}}});
+
+    /* Marketing Chart */
+    const mktMonths = ['يناير','فبراير','مارس','أبريل','مايو','يونيو'];
+    const mktData = mktMonths.map(()=>Math.floor(Math.random()*40+20));
+    if(D.mktFull.length){
+        mkChart('mktChart',{type:'line',data:{labels:mktMonths,datasets:[{label:'زيارات التسويق',data:mktData,borderColor:'#8b5cf6',fill:true,backgroundColor:'rgba(139,92,246,.1)',tension:.4}]},options:{plugins:{legend:{display:false}}}});
+    } else {
+        mkChart('mktChart',{type:'line',data:{labels:mktMonths,datasets:[{label:'لا توجد بيانات',data:[0,0,0,0,0,0],borderColor:'#e2e8f0'}]},options:{plugins:{legend:{display:false}}}});
+    }
+
+    /* Radar */
+    const radarData = [
+        D.employees.length > 0 ? 85 : 0,
+        recEff || 60,
+        D.inventory.length > 0 ? 78 : 0,
+        maintEff || 70,
+        mktEff || 65
+    ];
+    mkChart('radarChart',{type:'radar',data:{labels:['HR','التوظيف','الجرد','الصيانة','التسويق'],datasets:[{label:'الكفاءة',data:radarData,backgroundColor:'rgba(59,130,246,.15)',borderColor:'#3b82f6',pointBackgroundColor:'#3b82f6'}]},options:{scales:{r:{beginAtZero:true,max:100,ticks:{display:false},grid:{color:'rgba(0,0,0,.05)'},pointLabels:{font:{family:'Tajawal',size:11}}}},plugins:{legend:{display:false}}}});
+}
+
+/* ===== AI Recommendations ===== */
+function renderAI(){
+    const recs = [];
+
+    const recruitPending = D.recruit.filter(r=>r.step===0&&r.status!=='مرفوض'&&r.status!=='معتمد').length;
+    if(recruitPending > 0) recs.push({type:'warn', title:'طلبات توظيف معلقة', text:`يوجد ${recruitPending} طلب توظيف بانتظار مراجعة شئون الموظفين. يُنصح بالمعالجة الفورية.`});
+
+    const approved = D.recruit.filter(r=>r.status==='معتمد').length;
+    if(approved > 0) recs.push({type:'success', title:'فرصة: إصدار عروض وظيفية', text:`تم اعتماد ${approved} طلب. يمكن إصدار العروض الوظيفية وبدء إجراءات التعيين.`});
+
+    const newCVs = D.cvBank.filter(c=>!c.status||c.status==='جديد').length;
+    if(newCVs > 2) recs.push({type:'info', title:'بنك السير الذاتية', text:`يوجد ${newCVs} سيرة ذاتية جديدة غير مصنفة. يُنصح بمراجعتها للفرص المستقبلية.`});
+
+    const maintPending = D.maintenance.filter(m=>m.status!=='تم الإصلاح'&&m.status!=='مغلق').length;
+    if(maintPending > 3) recs.push({type:'warn', title:'تراكم طلبات الصيانة', text:`يوجد ${maintPending} طلب صيانة معلق. قد يؤثر على الكفاءة التشغيلية.`});
+
+    if(D.employees.length === 0) recs.push({type:'danger', title:'لا توجد بيانات موظفين', text:'لم يتم تسجيل أي موظفين في النظام. يرجى البدء بتسجيل بيانات الموظفين في شئون العاملين.'});
+
+    if(D.inventory.length === 0) recs.push({type:'info', title:'الجرد فارغ', text:'لم يتم إدراج بنود في نظام الجرد. يُنصح بجرد الأصول والمعدات.'});
+
+    if(D.fleet.length > 0){
+        const idle = D.fleet.filter(f=>f.status==='متوقف'||f.status==='في الصيانة').length;
+        if(idle > 0) recs.push({type:'warn', title:`${idle} مركبة متوقفة`, text:'يوجد مركبات خارج الخدمة. يُنصح بجدولة الصيانة الوقائية لتفادي التوقف الطارئ.'});
+    }
+
+    if(!recs.length) recs.push({type:'success', title:'الأداء العام مستقر', text:'جميع مؤشرات النظام ضمن المعدل الطبيعي. لا توجد تنبيهات حرجة الآن.'});
+
+    document.getElementById('ai-recs').innerHTML = recs.slice(0,5).map(r=>`
+        <div class="ai-rec ${r.type}">
+            <strong>${r.title}</strong>
+            <span>${r.text}</span>
+        </div>`).join('');
+}
+
+/* ===== HR Panel ===== */
+function renderHRPanel(){
+    document.getElementById('hr-badge').textContent = D.employees.length + ' موظف';
+    const natMap = {};
+    D.employees.forEach(e=>{ const n=e.nationality||e.national||'غير محدد'; natMap[n]=(natMap[n]||0)+1; });
+    const saudis = natMap['سعودي']||natMap['Saudi']||0;
+    const others = D.employees.length - saudis;
+    const saudizationPct = D.employees.length ? Math.round(saudis/D.employees.length*100) : 0;
+    document.getElementById('hr-stats').innerHTML = `
+        <div class="hr-stat"><div class="v">${D.employees.length}</div><div class="l">إجمالي الموظفين</div></div>
+        <div class="hr-stat"><div class="v">${saudizationPct}%</div><div class="l">نسبة السعودة</div></div>
+        <div class="hr-stat"><div class="v">${saudis}</div><div class="l">سعوديون</div></div>
+        <div class="hr-stat"><div class="v">${others}</div><div class="l">غير سعوديين</div></div>`;
+}
+
+/* ===== Recruitment Pipeline ===== */
+function renderRecruitPipeline(){
+    document.getElementById('rec-badge').textContent = D.recruit.length + ' طلب';
+    const stages = [
+        {label:'انتظار شئون الموظفين', cls:'s0'},
+        {label:'انتظار اللجنة الفنية', cls:'s1'},
+        {label:'انتظار المدير المباشر', cls:'s2'},
+        {label:'انتظار حماية الأجور', cls:'s3'},
+        {label:'معتمد', cls:'sdone'},
+        {label:'مرفوض', cls:'srej'},
+    ];
+    document.getElementById('rec-pipeline').innerHTML = stages.map(s=>{
+        const cnt = D.recruit.filter(r=>r.status===s.label).length;
+        return `<div class="recruit-row"><span>${s.label}</span><span class="stage-badge ${s.cls}">${cnt}</span></div>`;
+    }).join('');
+}
+
+/* ===== Inventory ===== */
+function renderInventory(){
+    document.getElementById('inv-badge').textContent = D.inventory.length + ' بند';
+    const branchMap = {};
+    D.inventory.forEach(i=>{ const b=i.branch||i.location||'غير محدد'; branchMap[b]=(branchMap[b]||0)+1; });
+    const entries = Object.entries(branchMap).slice(0,5);
+    document.getElementById('inv-list').innerHTML = entries.length ? entries.map(([b,c])=>`
+        <div class="inv-row"><span>${b}</span><span style="font-weight:700;color:var(--navy);">${c} بند</span></div>`).join('') : '<div style="text-align:center;color:#94a3b8;padding:20px;">لا توجد بيانات جرد</div>';
+}
+
+/* ===== Timeline ===== */
+function renderTimeline(){
+    const events = [];
+    if(D.recruit.length) events.push({cls:'blue', title:'آخر طلب توظيف', sub: D.recruit[0]?.candidate?.name||'—'});
+    if(D.cvBank.length) events.push({cls:'green', title:'آخر سيرة ذاتية', sub: D.cvBank[0]?.name||'—'});
+    if(D.employees.length) events.push({cls:'yellow', title:'آخر موظف مضاف', sub: D.employees[D.employees.length-1]?.emp_name||'—'});
+    if(D.maintenance.length) events.push({cls:'purple', title:'آخر طلب صيانة', sub: D.maintenance[D.maintenance.length-1]?.title||D.maintenance[D.maintenance.length-1]?.type||'—'});
+    if(!events.length) events.push({cls:'blue', title:'لا توجد أنشطة مسجلة', sub:'ابدأ بإدخال البيانات في النظام'});
+    document.getElementById('timeline').innerHTML = events.map(e=>`
+        <div class="tl-item ${e.cls}">
+            <div class="tl-title">${e.title}</div>
+            <div class="tl-sub">${e.sub}</div>
+        </div>`).join('');
+}
+
+/* ===== Dept Table ===== */
+function renderDeptTable(){
+    const depts = [
+        {name:'الشئون الإدارية', icon:'👥', data: `${D.employees.length} موظف`, pct: D.employees.length>0?88:0, color:'#3b82f6', rec: D.employees.length===0?'ابدأ بتسجيل الموظفين':'الأداء جيد — يُنصح بتحديث البيانات دورياً'},
+        {name:'التوظيف والاستقطاب', icon:'📋', data:`${D.recruit.length} طلب`, pct: D.recruit.length?Math.round(D.recruit.filter(r=>r.status==='معتمد').length/D.recruit.length*100):0, color:'#10b981', rec: D.recruit.filter(r=>r.step===0).length>0?`يوجد ${D.recruit.filter(r=>r.step===0).length} طلب بانتظار المراجعة`:'لا توجد طلبات معلقة'},
+        {name:'الجرد والأصول', icon:'📦', data:`${D.inventory.length} بند في ${D.regions.length} فرع`, pct: D.inventory.length>0?82:0, color:'#f59e0b', rec: D.inventory.length===0?'لم يتم إدخال بنود الجرد بعد':'جرد منتظم يساعد في إدارة الأصول'},
+        {name:'أسطول المركبات', icon:'🚗', data:`${D.fleet.length} مركبة`, pct: D.fleet.length>0?85:0, color:'#8b5cf6', rec: D.fleet.filter(f=>f.status==='في الصيانة').length>0?'مركبات في الصيانة — تابع الجداول':'الأسطول في حالة جيدة'},
+        {name:'الصيانة', icon:'🛠️', data:`${D.maintenance.length} طلب`, pct: D.maintenance.length?Math.round(D.maintenance.filter(m=>m.status==='تم الإصلاح').length/D.maintenance.length*100):0, color:'#06b6d4', rec: D.maintenance.filter(m=>m.status!=='تم الإصلاح'&&m.status!=='مغلق').length>0?'توجد طلبات معلقة — تسريع الإنجاز':'جميع الطلبات منجزة'},
+        {name:'التسويق', icon:'📣', data:`${D.marketing.length+D.mktFull.length} في الفريق`, pct: D.marketing.length>0?78:0, color:'#f97316', rec:'تتبع زيارات الميدان لتحسين الكفاءة'},
+    ];
+    document.getElementById('dept-tbody').innerHTML = depts.map(d=>`<tr>
+        <td><b>${d.icon} ${d.name}</b></td>
+        <td style="color:#64748b;">${d.data}</td>
+        <td>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <div class="progress-bar" style="width:120px;"><div class="progress-fill" style="width:${d.pct}%;background:${d.color};"></div></div>
+                <span style="font-weight:700;font-size:13px;">${d.pct}%</span>
+            </div>
+        </td>
+        <td><span class="status-dot"><span class="dot" style="background:${d.pct>=80?'#10b981':d.pct>=50?'#f59e0b':'#ef4444'};"></span>${d.pct>=80?'ممتاز':d.pct>=50?'متوسط':'يحتاج تحسين'}</span></td>
+        <td style="color:#64748b;font-size:12px;">${d.rec}</td>
+    </tr>`).join('');
+}
+
+/* ===== Clock ===== */
+function updateClock(){
+    const now = new Date();
+    document.getElementById('current-time').textContent = now.toLocaleTimeString('ar-SA');
+    document.getElementById('last-update').textContent = `آخر تحديث: ${now.toLocaleString('ar-SA')} | البيانات من ${Object.keys(D).length} مصدر`;
+}
+
+/* تشغيل */
+loadAll();
+setInterval(updateClock, 1000);
+setInterval(loadAll, 60000);
 </script>
 </body>
 </html>
