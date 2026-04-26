@@ -100,12 +100,33 @@
 
         <div id="clients" class="tab-content active">
             <h4>سجل عملاء الفرع</h4>
-            <div class="form-row">
-                <input type="text" id="in_client_name" placeholder="اسم العميل الجديد">
-                <input type="text" id="in_client_phone" placeholder="رقم الجوال">
-                <button class="btn btn-primary" onclick="addItem('clients')">تسجيل عميل</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <p style="color:#64748b; margin:0;">جميع بيانات العملاء متزامنة مع قاعدة بيانات التسويق (CRM)</p>
+                <button class="btn btn-success" onclick="openClientModal()">➕ تسجيل عميل جديد</button>
             </div>
-            <table id="tbl-clients"><thead><tr><th>اسم العميل</th><th>رقم التواصل</th></tr></thead><tbody></tbody></table>
+            <div class="table-container" style="overflow-x:auto; border:1px solid #e2e8f0; border-radius:8px;">
+                <table id="tbl-clients" style="min-width:1200px; font-size:12px;">
+                    <thead>
+                        <tr>
+                            <th>م</th>
+                            <th>اسم الشركة</th>
+                            <th>جهة الاتصال</th>
+                            <th>نوع الجهة</th>
+                            <th>المسمى الوظيفي</th>
+                            <th>رقم الجوال</th>
+                            <th>الهاتف الثابت</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>المدينة</th>
+                            <th>المنطقة</th>
+                            <th>الحي</th>
+                            <th>حالة التواصل</th>
+                            <th>ملاحظات</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
 
         <div id="finance" class="tab-content">
@@ -155,21 +176,130 @@
     </div>
 </div>
 
+<!-- مودال تسجيل / تعديل عميل كامل (مزامنة مع CRM) -->
+<div id="clientModal" class="modal" style="z-index:3000; align-items:flex-start; overflow-y:auto; padding:20px 0;">
+    <div style="background:white; width:900px; max-width:95vw; margin:auto; border-radius:15px; overflow:hidden; box-shadow:0 25px 50px rgba(0,0,0,0.25);">
+        <div style="background:var(--navy); color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0" id="clientModalTitle">➕ تسجيل عميل جديد</h3>
+            <span style="cursor:pointer; font-size:20px;" onclick="closeClientModal()">✕</span>
+        </div>
+        <div style="padding:20px; display:grid; grid-template-columns: repeat(3, 1fr); gap:15px;">
+            <div style="grid-column:span 3; display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">اسم الشركة *</label>
+                <input type="text" id="c_comp_name" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+            
+            <div style="grid-column:span 3; background:#f1f5f9; padding:8px; border-radius:5px; font-weight:bold; font-size:13px; margin-top:5px;">👤 بيانات جهة الاتصال</div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">اسم الشخص (جهة الاتصال)</label>
+                <input type="text" id="c_contact_p" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">نوع الجهة</label>
+                <select id="c_contact_type" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+                    <option>حكومي</option><option>خاص</option><option>فرد</option>
+                </select>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">المسمى الوظيفي</label>
+                <input type="text" id="c_job_title" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">رقم الجوال</label>
+                <input type="text" id="c_mobile_num" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">الهاتف الثابت</label>
+                <input type="text" id="c_tel_num" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">البريد الإلكتروني</label>
+                <input type="email" id="c_email_add" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+
+            <div style="grid-column:span 3; background:#f1f5f9; padding:8px; border-radius:5px; font-weight:bold; font-size:13px; margin-top:5px;">📍 العنوان والموقع</div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">المدينة</label>
+                <input type="text" id="c_city" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">المنطقة</label>
+                <input type="text" id="c_region" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">الحي</label>
+                <input type="text" id="c_district" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+
+            <div style="grid-column:span 3; background:#f1f5f9; padding:8px; border-radius:5px; font-weight:bold; font-size:13px; margin-top:5px;">📝 الحالة والمتابعة</div>
+            <div style="grid-column:span 3; display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">حالة التواصل مع العميل</label>
+                <input type="text" id="c_status" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+            <div style="grid-column:span 3; display:flex; flex-direction:column; gap:5px;">
+                <label style="font-size:12px; font-weight:bold; color:#64748b;">ملاحظات</label>
+                <input type="text" id="c_notes" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+        </div>
+        <div style="display:flex; gap:10px; padding:15px 20px; background:#f8fafc; border-top:1px solid #e2e8f0;">
+            <button class="btn btn-success" style="flex:1;" onclick="saveClientData()">💾 حفظ بيانات العميل</button>
+            <button class="btn" style="flex:1; background:#e2e8f0;" onclick="closeClientModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    let branches = [
-        { name: 'الرياض', region: 'central', clients: [{n:'أمانة الرياض', p:'011xxx'}], rev: 500000, exp: 150000 },
-        { name: 'مكة المكرمة', region: 'western', clients: [], rev: 0, exp: 0 }
+    const STORAGE_KEY = 'saden_branches_mgmt';
+    const CRM_KEY = 'saden_db_v4';
+    let branches = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+        { name: 'الرياض', region: 'central', rev: 500000, exp: 150000 },
+        { name: 'مكة المكرمة', region: 'western', rev: 0, exp: 0 },
+        { name: 'خميس مشيط', region: 'southern', rev: 0, exp: 0 },
+        { name: 'مختبر أمانة عسير', region: 'southern', rev: 0, exp: 0 },
+        { name: 'جيزان', region: 'southern', rev: 0, exp: 0 },
+        { name: 'نجران', region: 'southern', rev: 0, exp: 0 },
+        { name: 'بيشة', region: 'southern', rev: 0, exp: 0 },
+        { name: 'حائل', region: 'northern', rev: 0, exp: 0 },
+        { name: 'سكاكا', region: 'northern', rev: 0, exp: 0 },
+        { name: 'تبوك', region: 'northern', rev: 0, exp: 0 },
+        { name: 'المدينة المنورة', region: 'northern', rev: 0, exp: 0 },
+        { name: 'الدمام', region: 'central', rev: 0, exp: 0 },
+        { name: 'حفر الباطن', region: 'central', rev: 0, exp: 0 },
+        { name: 'القصيم', region: 'central', rev: 0, exp: 0 },
+        { name: 'جدة', region: 'western', rev: 0, exp: 0 },
+        { name: 'الطائف', region: 'western', rev: 0, exp: 0 },
+        { name: 'الباحة', region: 'western', rev: 0, exp: 0 }
     ];
     let activeBranch = null;
+    let editingClientIndex = -1; // -1 = إضافة جديدة
+
+    function getCRMData() {
+        return JSON.parse(localStorage.getItem(CRM_KEY) || '[]');
+    }
+
+    function saveCRMData(data) {
+        localStorage.setItem(CRM_KEY, JSON.stringify(data));
+        // إطلاق حدث تخزين يدوي للمزامنة بين الصفحات المفتوحة
+        window.dispatchEvent(new StorageEvent('storage', { key: CRM_KEY }));
+    }
+
+    function getBranchClients(branchName) {
+        return getCRMData().filter(c => c.branch === branchName);
+    }
+
+    function saveBranches() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(branches));
+    }
 
     function renderBranches() {
         ['western', 'central', 'northern', 'southern'].forEach(reg => {
             const list = document.getElementById('list-' + reg);
             list.innerHTML = '';
             branches.filter(b => b.region === reg).forEach(b => {
+                const clientCount = getBranchClients(b.name).length;
                 const item = document.createElement('div');
                 item.className = 'branch-item';
-                item.innerHTML = `<span>${b.name}</span> <span>⚙️</span>`;
+                item.innerHTML = `<span>${b.name}</span> <span style="color:#64748b; font-size:12px;">${clientCount} عميل</span>`;
                 item.onclick = () => openBranchPanel(b);
                 list.appendChild(item);
             });
@@ -183,7 +313,8 @@
         const name = document.getElementById('new_branch_name').value;
         const region = document.getElementById('new_branch_region').value;
         if(name && region) {
-            branches.push({ name: name, region: region, clients: [], rev: 0, exp: 0 });
+            branches.push({ name: name, region: region, rev: 0, exp: 0 });
+            saveBranches();
             renderBranches();
             closeAddModal();
             document.getElementById('new_branch_name').value = '';
@@ -206,36 +337,164 @@
         evt.currentTarget.classList.add('active');
     }
 
-    function addItem(type) {
-        if(type === 'clients') {
-            const name = document.getElementById('in_client_name').value;
-            const phone = document.getElementById('in_client_phone').value;
-            if(name) {
-                activeBranch.clients.push({ n: name, p: phone });
-                updateView();
-                document.getElementById('in_client_name').value = '';
-                document.getElementById('in_client_phone').value = '';
-            }
+    // ==========================
+    // إدارة العملاء الكاملة (مزامنة مع CRM)
+    // ==========================
+    function openClientModal(editIndex = -1) {
+        editingClientIndex = editIndex;
+        const modal = document.getElementById('clientModal');
+        const title = document.getElementById('clientModalTitle');
+        
+        if(editIndex >= 0) {
+            title.innerText = '📝 تعديل بيانات العميل';
+            const clients = getBranchClients(activeBranch.name);
+            const c = clients[editIndex];
+            document.getElementById('c_comp_name').value = c.comp_name || '';
+            document.getElementById('c_contact_p').value = c.contact_p || '';
+            document.getElementById('c_contact_type').value = c.contact_type || 'حكومي';
+            document.getElementById('c_job_title').value = c.job_title || '';
+            document.getElementById('c_mobile_num').value = c.mobile_num || '';
+            document.getElementById('c_tel_num').value = c.tel_num || '';
+            document.getElementById('c_email_add').value = c.email_add || '';
+            document.getElementById('c_city').value = c.city || '';
+            document.getElementById('c_region').value = c.region || '';
+            document.getElementById('c_district').value = c.district || '';
+            document.getElementById('c_status').value = c.status || '';
+            document.getElementById('c_notes').value = c.notes || '';
+        } else {
+            title.innerText = '➕ تسجيل عميل جديد';
+            clearClientForm();
         }
+        modal.style.display = 'flex';
+    }
+
+    function closeClientModal() {
+        document.getElementById('clientModal').style.display = 'none';
+        editingClientIndex = -1;
+        clearClientForm();
+    }
+
+    function clearClientForm() {
+        ['c_comp_name','c_contact_p','c_job_title','c_mobile_num','c_tel_num','c_email_add','c_city','c_region','c_district','c_status','c_notes'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        document.getElementById('c_contact_type').value = 'حكومي';
+    }
+
+    function saveClientData() {
+        const comp_name = document.getElementById('c_comp_name').value.trim();
+        if(!comp_name) return alert('اسم الشركة مطلوب');
+        if(!activeBranch) return alert('يرجى اختيار فرع أولاً');
+
+        const newData = {
+            branch: activeBranch.name,
+            comp_name: comp_name,
+            contact_p: document.getElementById('c_contact_p').value,
+            contact_type: document.getElementById('c_contact_type').value,
+            job_title: document.getElementById('c_job_title').value,
+            mobile_num: document.getElementById('c_mobile_num').value,
+            tel_num: document.getElementById('c_tel_num').value,
+            email_add: document.getElementById('c_email_add').value,
+            city: document.getElementById('c_city').value,
+            region: document.getElementById('c_region').value,
+            district: document.getElementById('c_district').value,
+            status: document.getElementById('c_status').value || 'جديد',
+            notes: document.getElementById('c_notes').value
+        };
+
+        let allData = getCRMData();
+
+        if(editingClientIndex >= 0) {
+            // تعديل: نحدد العميل بناءً على الفرع والاسم القديم
+            const branchClients = allData.filter(c => c.branch === activeBranch.name);
+            const oldClient = branchClients[editingClientIndex];
+            const globalIndex = allData.findIndex(c => c === oldClient);
+            if(globalIndex > -1) {
+                allData[globalIndex] = newData;
+            }
+        } else {
+            // إضافة جديدة
+            allData.push(newData);
+        }
+
+        saveCRMData(allData);
+        updateView();
+        renderBranches();
+        closeClientModal();
+        alert(editingClientIndex >= 0 ? '✅ تم تحديث بيانات العميل' : '✅ تم تسجيل العميل بنجاح');
+    }
+
+    function editClient(index) {
+        openClientModal(index);
+    }
+
+    function deleteClient(index) {
+        if(!confirm('هل أنت متأكد من حذف هذا العميل؟')) return;
+        let allData = getCRMData();
+        const branchClients = allData.filter(c => c.branch === activeBranch.name);
+        const target = branchClients[index];
+        allData = allData.filter(c => c !== target);
+        saveCRMData(allData);
+        updateView();
+        renderBranches();
     }
 
     function saveFinance() {
         activeBranch.rev = parseFloat(document.getElementById('in_rev').value) || 0;
         activeBranch.exp = parseFloat(document.getElementById('in_exp').value) || 0;
+        saveBranches();
         updateView();
         alert('تم حفظ البيانات المالية لشهر ' + document.getElementById('activeMonth').value);
     }
 
     function updateView() {
         if(!activeBranch) return;
-        // تحديث جدول العملاء
+        // تحديث جدول العملاء من قاعدة بيانات العملاء الموحدة
+        const clients = getBranchClients(activeBranch.name);
         const tbody = document.querySelector('#tbl-clients tbody');
-        tbody.innerHTML = activeBranch.clients.map(c => `<tr><td>${c.n}</td><td>${c.p}</td></tr>`).join('');
+        if(clients.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="14" style="text-align:center; color:#94a3b8; padding:40px;">لا توجد بيانات عملاء</td></tr>';
+        } else {
+            tbody.innerHTML = clients.map((c, i) => `
+                <tr>
+                    <td>${i+1}</td>
+                    <td style="font-weight:bold">${c.comp_name}</td>
+                    <td>${c.contact_p || '-'}</td>
+                    <td>${c.contact_type || '-'}</td>
+                    <td>${c.job_title || '-'}</td>
+                    <td>${c.mobile_num || '-'}</td>
+                    <td>${c.tel_num || '-'}</td>
+                    <td>${c.email_add || '-'}</td>
+                    <td>${c.city || '-'}</td>
+                    <td>${c.region || '-'}</td>
+                    <td>${c.district || '-'}</td>
+                    <td><span style="background:#dcfce7; color:#166534; padding:3px 8px; border-radius:5px; font-size:11px;">${c.status || 'جديد'}</span></td>
+                    <td>${c.notes || '-'}</td>
+                    <td>
+                        <button onclick="editClient(${i})" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:11px; margin-left:5px;">تعديل</button>
+                        <button onclick="deleteClient(${i})" style="background:var(--danger); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:11px;">حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
         // تحديث المالية
         document.getElementById('in_rev').value = activeBranch.rev;
         document.getElementById('in_exp').value = activeBranch.exp;
         document.getElementById('res_profit').innerText = (activeBranch.rev - activeBranch.exp).toLocaleString() + " ر.س";
     }
+
+    // ==========================
+    // المزامنة التلقائية بين الصفحات
+    // ==========================
+    window.addEventListener('storage', function(e) {
+        if(e.key === CRM_KEY) {
+            // تحديث العرض عند تغيير البيانات من صفحة أخرى
+            renderBranches();
+            if(activeBranch) {
+                updateView();
+            }
+        }
+    });
 
     renderBranches();
 </script>

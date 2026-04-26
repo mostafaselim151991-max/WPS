@@ -57,6 +57,14 @@
         .full-row { grid-column: span 3; }
         .section-tag { grid-column: span 3; background: #f1f5f9; padding: 8px; border-radius: 5px; font-weight: bold; font-size: 13px; margin-top: 10px; }
 
+        .btn-action { padding: 4px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 11px; font-family: 'Tajawal'; margin: 0 2px; font-weight: bold; }
+        .btn-view { background: #3b82f6; color: white; }
+        .btn-edit { background: #f59e0b; color: white; }
+        .btn-delete { background: #ef4444; color: white; }
+        .btn-view:hover { background: #2563eb; }
+        .btn-edit:hover { background: #d97706; }
+        .btn-delete:hover { background: #dc2626; }
+
         .btn-save { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -127,6 +135,7 @@
                             <th colspan="3">العنوان</th>
                             <th rowspan="2">حالة التواصل</th>
                             <th rowspan="2">ملاحظات</th>
+                            <th rowspan="2">الإجراءات</th>
                         </tr>
                         <tr>
                             <th>جهة الاتصال</th>
@@ -180,6 +189,7 @@
 <script>
     let currentBranch = "";
     let database = JSON.parse(localStorage.getItem('saden_db_v4')) || [];
+    let editingIndex = -1;
 
     function selectBranch(name, btn) {
         currentBranch = name;
@@ -191,33 +201,48 @@
     }
 
     function renderTable() {
-        const filtered = database.filter(d => d.branch === currentBranch);
         const tbody = document.getElementById('clientsBody');
-        if(filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="13" style="padding:40px; color:gray">لا توجد بيانات لهذا الفرع بعد</td></tr>`;
-            return;
+        tbody.innerHTML = '';
+        let rowNum = 0;
+        let hasData = false;
+        database.forEach((d, globalIndex) => {
+            if(d.branch !== currentBranch) return;
+            hasData = true;
+            rowNum++;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${rowNum}</td>
+                <td style="font-weight:bold">${d.comp_name || '-'}</td>
+                <td>${d.contact_p || '-'}</td>
+                <td>${d.contact_type || '-'}</td>
+                <td>${d.job_title || '-'}</td>
+                <td>${d.mobile_num || '-'}</td>
+                <td>${d.tel_num || '-'}</td>
+                <td>${d.email_add || '-'}</td>
+                <td>${d.city || '-'}</td>
+                <td>${d.region || '-'}</td>
+                <td>${d.district || '-'}</td>
+                <td><span style="background:#dcfce7; color:#166534; padding:3px 8px; border-radius:5px">${d.status || 'جديد'}</span></td>
+                <td>${d.notes || '-'}</td>
+                <td>
+                    <button class="btn-action btn-view" onclick="viewClient(${globalIndex})">👁️ عرض</button>
+                    <button class="btn-action btn-edit" onclick="editClient(${globalIndex})">✏️ تعديل</button>
+                    <button class="btn-action btn-delete" onclick="deleteClient(${globalIndex})">🗑️ حذف</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+        if(!hasData) {
+            tbody.innerHTML = `<tr><td colspan="14" style="padding:40px; color:gray">لا توجد بيانات لهذا الفرع بعد</td></tr>`;
         }
-        tbody.innerHTML = filtered.map((d, i) => `
-            <tr>
-                <td>${i+1}</td>
-                <td style="font-weight:bold">${d.comp_name}</td>
-                <td>${d.contact_p}</td>
-                <td>${d.contact_type}</td>
-                <td>${d.job_title}</td>
-                <td>${d.mobile_num}</td>
-                <td>${d.tel_num}</td>
-                <td>${d.email_add}</td>
-                <td>${d.city}</td>
-                <td>${d.region}</td>
-                <td>${d.district}</td>
-                <td><span style="background:#dcfce7; color:#166534; padding:3px 8px; border-radius:5px">${d.status}</span></td>
-                <td>${d.notes}</td>
-            </tr>
-        `).join('');
     }
 
     function openModal() {
         if(!currentBranch) return alert("يرجى اختيار فرع أولاً");
+        editingIndex = -1;
+        document.querySelector('#addModal .modal-header h3').innerText = 'إضافة عميل جديد للقاعدة';
+        document.querySelectorAll('.form-grid input').forEach(i => i.value = "");
+        document.getElementById('contact_type').selectedIndex = 0;
         document.getElementById('addModal').style.display = 'block';
     }
     function closeModal() { document.getElementById('addModal').style.display = 'none'; }
@@ -241,13 +266,78 @@
 
         if(!data.comp_name) return alert("اسم الشركة مطلوب");
 
-        database.push(data);
+        if(editingIndex >= 0) {
+            database[editingIndex] = data;
+            editingIndex = -1;
+            document.querySelector('#addModal .modal-header h3').innerText = 'إضافة عميل جديد للقاعدة';
+        } else {
+            database.push(data);
+        }
         localStorage.setItem('saden_db_v4', JSON.stringify(database));
         renderTable();
         closeModal();
         // مسح الحقول بعد الحفظ
         document.querySelectorAll('.form-grid input').forEach(i => i.value = "");
+        document.getElementById('contact_type').selectedIndex = 0;
+        // إطلاق حدث لمزامنة الفروع
+        window.dispatchEvent(new StorageEvent('storage', { key: 'saden_db_v4' }));
     }
+
+    function viewClient(index) {
+        const c = database[index];
+        if(!c) return;
+        let info = `اسم الشركة: ${c.comp_name || '-'}`;
+        info += `\nجهة الاتصال: ${c.contact_p || '-'}`;
+        info += `\nنوع الجهة: ${c.contact_type || '-'}`;
+        info += `\nالمسمى الوظيفي: ${c.job_title || '-'}`;
+        info += `\nرقم الجوال: ${c.mobile_num || '-'}`;
+        info += `\nالهاتف الثابت: ${c.tel_num || '-'}`;
+        info += `\nالبريد الإلكتروني: ${c.email_add || '-'}`;
+        info += `\nالمدينة: ${c.city || '-'}`;
+        info += `\nالمنطقة: ${c.region || '-'}`;
+        info += `\nالحي: ${c.district || '-'}`;
+        info += `\nحالة التواصل: ${c.status || '-'}`;
+        info += `\nملاحظات: ${c.notes || '-'}`;
+        alert(info);
+    }
+
+    function editClient(index) {
+        const c = database[index];
+        if(!c) return;
+        editingIndex = index;
+        document.getElementById('comp_name').value = c.comp_name || '';
+        document.getElementById('contact_p').value = c.contact_p || '';
+        document.getElementById('contact_type').value = c.contact_type || 'حكومي';
+        document.getElementById('job_title').value = c.job_title || '';
+        document.getElementById('mobile_num').value = c.mobile_num || '';
+        document.getElementById('tel_num').value = c.tel_num || '';
+        document.getElementById('email_add').value = c.email_add || '';
+        document.getElementById('city').value = c.city || '';
+        document.getElementById('region').value = c.region || '';
+        document.getElementById('district').value = c.district || '';
+        document.getElementById('status').value = c.status || '';
+        document.getElementById('notes').value = c.notes || '';
+        document.querySelector('#addModal .modal-header h3').innerText = 'تعديل بيانات العميل';
+        document.getElementById('addModal').style.display = 'block';
+    }
+
+    function deleteClient(index) {
+        if(!confirm('هل أنت متأكد من حذف هذا العميل؟')) return;
+        database.splice(index, 1);
+        localStorage.setItem('saden_db_v4', JSON.stringify(database));
+        renderTable();
+        window.dispatchEvent(new StorageEvent('storage', { key: 'saden_db_v4' }));
+    }
+
+    // ==========================
+    // المزامنة التلقائية من صفحات أخرى
+    // ==========================
+    window.addEventListener('storage', function(e) {
+        if(e.key === 'saden_db_v4') {
+            database = JSON.parse(localStorage.getItem('saden_db_v4')) || [];
+            if(currentBranch) renderTable();
+        }
+    });
 </script>
 </body>
 </html>
