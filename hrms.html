@@ -486,8 +486,6 @@
 
 <script>
     let db = [];
-    let departments = [];
-    let divisions = [];
 
     function calcTotalSalary() {
         const ids = ['base_salary','housing_allowance','transport_allowance','communication_allowance','location_allowance','other_allowances'];
@@ -497,6 +495,24 @@
         }, 0);
         const el = document.getElementById('total_salary');
         if(el) el.value = total > 0 ? total : '';
+    }
+
+    function getDepartments() {
+        return JSON.parse(localStorage.getItem('saden_depts') || '[]');
+    }
+    function getDivisions() {
+        return JSON.parse(localStorage.getItem('saden_divisions') || '[]');
+    }
+    function buildDepartmentOptions(selected){
+        const depts = getDepartments();
+        if(!depts.length) return '<option value="">-- لا توجد إدارات في الإعدادات --</option>';
+        return depts.map(d=>`<option value="${d.id}" ${d.id===selected?'selected':''}>${d.name}${d.code?' ('+d.code+')':''}</option>`).join('');
+    }
+    function buildDivisionOptions(deptId, selected){
+        const divs = getDivisions();
+        const filtered = deptId ? divs.filter(d => d.deptId === deptId || d.parent_dept === deptId) : [];
+        if(!filtered.length) return '<option value="">-- لا توجد أقسام --</option>';
+        return filtered.map(d=>`<option value="${d.id}" ${d.id===selected?'selected':''}>${d.name}${d.type?' ('+(d.type==='main'?'فرع':d.type==='sub'?'قسم':'فريق')+')':''}</option>`).join('');
     }
 
     function addCareerStep(data) {
@@ -639,9 +655,8 @@
 
     function loadDB() {
         db = JSON.parse(localStorage.getItem('saden_employees') || '[]');
-        departments = JSON.parse(localStorage.getItem('saden_departments') || '[]');
-        divisions = JSON.parse(localStorage.getItem('saden_divisions') || '[]');
         loadDepartmentsDropdown();
+        loadDivisionsDropdown();
         loadJobTitles();
         renderList();
         document.getElementById('emp_number').value = generateEmpNumber();
@@ -651,18 +666,8 @@
     function loadDepartmentsDropdown() {
         const select = document.getElementById('dept');
         if(!select) return;
-        
         const currentValue = select.value;
-        select.innerHTML = '<option value="">-- اختر الإدارة --</option>';
-        
-        departments.forEach(dept => {
-            const option = document.createElement('option');
-            option.value = dept.id;
-            option.dataset.type = dept.type;
-            option.textContent = `${dept.name}`;
-            select.appendChild(option);
-        });
-        
+        select.innerHTML = '<option value="">-- اختر الإدارة --</option>' + buildDepartmentOptions(currentValue);
         select.value = currentValue;
     }
     
@@ -675,27 +680,11 @@
         const deptId = deptSelect.value;
         const currentValue = divSelect.value;
         
-        divSelect.innerHTML = '<option value="">-- اختر القسم --</option>';
-        
-        if(deptId) {
-            const deptDivisions = divisions.filter(div => div.parent_dept === deptId);
-            deptDivisions.forEach(div => {
-                const option = document.createElement('option');
-                option.value = div.id;
-                option.textContent = `${div.name} (${div.type === 'main' ? 'فرع' : div.type === 'sub' ? 'قسم' : 'فريق'})`;
-                divSelect.appendChild(option);
-            });
-        }
-        
+        divSelect.innerHTML = '<option value="">-- اختر القسم --</option>' + buildDivisionOptions(deptId, currentValue);
         divSelect.value = currentValue;
     }
     
     function updateDepartmentInfo() {
-        const deptSelect = document.getElementById('dept');
-        const divSelect = document.getElementById('division');
-        
-        if(!deptSelect) return;
-        
         loadDivisionsDropdown();
     }
 
@@ -1218,7 +1207,9 @@
                     join_date: "تاريخ الالتحاق",
                     rejoin_date: "تاريخ المباشرة",
                     dept: "الإدارة",
+                    division: "القسم / الفرع",
                     direct_manager: "المدير المباشر"
+                    
                 }
             },
             {
@@ -1262,12 +1253,28 @@
             <div class="view-section">
                 <h4>${s.t}</h4>
                 <div class="data-grid">
-                    ${Object.entries(s.f).map(([key, label]) => `
+                    ${Object.entries(s.f).map(([key, label]) => {
+                        let displayValue = '-';
+                        if(emp[key]) {
+                            if(['base_salary','housing_allowance','transport_allowance','communication_allowance','location_allowance','other_allowances','total_salary'].includes(key)) {
+                                displayValue = (parseFloat(emp[key])||0).toLocaleString('ar-SA') + ' ريال';
+                            } else if(key === 'dept') {
+                                const depts = getDepartments();
+                                const dept = depts.find(d => d.id === emp[key]);
+                                displayValue = dept ? dept.name : emp[key];
+                            } else if(key === 'division') {
+                                displayValue = getDivisionInfo(emp[key]) || emp[key];
+                            } else {
+                                displayValue = emp[key];
+                            }
+                        }
+                        return `
                         <div ${key === 'total_salary' ? 'style="background:#f0fdf4; border-radius:8px; padding:10px; border:1px solid #86efac;"' : ''}>
                             <div class="data-label" ${key === 'total_salary' ? 'style="color:#059669; font-weight:800;"' : ''}>${label}</div>
-                            <div class="data-value" ${key === 'total_salary' ? 'style="color:#059669; font-size:18px;"' : ''}>${emp[key] ? ((['base_salary','housing_allowance','transport_allowance','communication_allowance','location_allowance','other_allowances','total_salary'].includes(key)) ? (parseFloat(emp[key])||0).toLocaleString('ar-SA') + ' ريال' : emp[key]) : '-'}</div>
+                            <div class="data-value" ${key === 'total_salary' ? 'style="color:#059669; font-size:18px;"' : ''}>${displayValue}</div>
                         </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `).join('');
@@ -1463,10 +1470,12 @@
     
     function getDivisionInfo(divisionId) {
         if (!divisionId) return '';
+        const divisions = getDivisions();
+        const departments = getDepartments();
         const div = divisions.find(d => d.id === divisionId);
-        if(!div) return '';
-        const dept = departments.find(d => d.id === div.parent_dept);
-        return div ? `${div.name} (${dept ? dept.name : ''})` : divisionId;
+        if(!div) return divisionId;
+        const dept = departments.find(d => d.id === (div.deptId || div.parent_dept));
+        return `${div.name}${dept ? ' (' + dept.name + ')' : ''}`;
     }
 
     loadDB();
