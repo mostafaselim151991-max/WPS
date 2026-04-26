@@ -154,8 +154,19 @@
     function loadStaffData() {
         const hrmsEmployees = JSON.parse(localStorage.getItem('saden_employees') || '[]');
         const marketingStored = JSON.parse(localStorage.getItem('saden_marketing_staff') || localStorage.getItem('saden_full_system') || '[]');
+        const departments = JSON.parse(localStorage.getItem('saden_depts') || '[]');
+        const divisions = JSON.parse(localStorage.getItem('saden_divisions') || '[]');
         const storedById = Object.fromEntries(marketingStored.map(s => [s.job_id, s]));
-        const merged = hrmsEmployees.filter(emp => emp.dept === 'التسويق').map(emp => {
+        const merged = hrmsEmployees.filter(emp => {
+            const dept = departments.find(d => d.id === emp.dept);
+            if(dept && dept.name === 'التسويق') return true;
+            const div = divisions.find(d => d.id === emp.division);
+            if(div) {
+                const divDept = departments.find(d => d.id === (div.deptId || div.parent_dept));
+                if(divDept && divDept.name === 'التسويق') return true;
+            }
+            return false;
+        }).map(emp => {
             const prev = storedById[emp.emp_number] || {};
             return {
                 job_id: emp.emp_number || '',

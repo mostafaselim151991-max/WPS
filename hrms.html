@@ -893,8 +893,19 @@
         const stored = JSON.parse(localStorage.getItem('saden_marketing_staff') || '[]');
         const existing = Object.fromEntries(stored.map(s => [s.job_id, s]));
         const marketingList = [];
+        const departments = getDepartments();
+        const divisions = getDivisions();
 
-        db.filter(emp => emp.dept === 'التسويق').forEach(emp => {
+        db.filter(emp => {
+            const dept = departments.find(d => d.id === emp.dept);
+            if(dept && dept.name === 'التسويق') return true;
+            const div = divisions.find(d => d.id === emp.division);
+            if(div) {
+                const divDept = departments.find(d => d.id === (div.deptId || div.parent_dept));
+                if(divDept && divDept.name === 'التسويق') return true;
+            }
+            return false;
+        }).forEach(emp => {
             const prev = existing[emp.emp_number] || {};
             marketingList.push({
                 job_id: emp.emp_number || '',
