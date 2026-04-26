@@ -71,9 +71,9 @@
         <!-- القائمة الجانبية -->
         <div class="settings-nav">
             <div class="settings-nav-title">⚙️ أقسام الإعدادات</div>
-            <button class="settings-nav-item active" onclick="showPanel('depts')">🏛️ الإدارات والأقسام</button>
-            <button class="settings-nav-item" onclick="showPanel('company')">🏢 بيانات الشركة</button>
-            <button class="settings-nav-item" onclick="showPanel('branches')">🌐 الفروع والمواقع</button>
+            <button class="settings-nav-item active" onclick="showPanel('company')">🏢 بيانات الشركة</button>
+            <button class="settings-nav-item" onclick="showPanel('depts')">🏛️ الإدارات</button>
+            <button class="settings-nav-item" onclick="showPanel('branches')">🌐 الفروع والأقسام</button>
             <button class="settings-nav-item" onclick="showPanel('jobtitles')">👔 المسميات الوظيفية</button>
             <button class="settings-nav-item" onclick="showPanel('users')">🔐 الدخول والصلاحيات</button>
         </div>
@@ -81,36 +81,8 @@
         <!-- المحتوى -->
         <div>
 
-            <!-- الإدارات والأقسام -->
-            <div id="panel-depts" class="settings-panel active">
-                <div class="panel-card">
-                    <div class="panel-header"><h3>🏛️ الإدارات والأقسام</h3></div>
-                    <div class="panel-body">
-                        <div class="form-row">
-                            <div class="field"><label>اسم الإدارة *</label><input type="text" id="dept-name" placeholder="مثال: الشئون الإدارية"></div>
-                            <div class="field"><label>الرمز</label><input type="text" id="dept-code" placeholder="HR" style="max-width:100px;"></div>
-                            <button class="btn btn-primary" style="margin-bottom:1px;" onclick="addDept()">+ إضافة إدارة</button>
-                        </div>
-                        <div id="dept-list"></div>
-
-                        <div style="border-top:1px solid var(--border);margin:22px 0 18px;"></div>
-                        <div style="font-weight:700;color:var(--navy);margin-bottom:14px;font-size:14px;">إضافة قسم تحت إدارة</div>
-                        <div class="form-row">
-                            <div class="field"><label>الإدارة *</label>
-                                <select id="div-dept">
-                                    <option value="">-- اختر الإدارة --</option>
-                                </select>
-                            </div>
-                            <div class="field"><label>اسم القسم *</label><input type="text" id="div-name" placeholder="مثال: قسم التوظيف"></div>
-                            <button class="btn btn-success" style="margin-bottom:1px;" onclick="addDiv()">+ إضافة قسم</button>
-                        </div>
-                        <div id="div-list"></div>
-                    </div>
-                </div>
-            </div>
-
             <!-- بيانات الشركة -->
-            <div id="panel-company" class="settings-panel">
+            <div id="panel-company" class="settings-panel active">
                 <div class="panel-card">
                     <div class="panel-header"><h3>🏢 بيانات الشركة</h3></div>
                     <div class="panel-body">
@@ -131,22 +103,65 @@
                 </div>
             </div>
 
-            <!-- الفروع والمواقع -->
-            <div id="panel-branches" class="settings-panel">
+            <!-- الإدارات -->
+            <div id="panel-depts" class="settings-panel">
                 <div class="panel-card">
-                    <div class="panel-header"><h3>🌐 الفروع والمواقع</h3></div>
+                    <div class="panel-header"><h3>🏛️ الإدارات</h3></div>
                     <div class="panel-body">
                         <div class="form-row">
+                            <div class="field"><label>اسم الإدارة *</label><input type="text" id="dept-name" placeholder="مثال: الشئون الإدارية"></div>
+                            <div class="field"><label>الرمز</label><input type="text" id="dept-code" placeholder="HR" style="max-width:100px;"></div>
+                            <button class="btn btn-primary" style="margin-bottom:1px;" onclick="addDept()">+ إضافة إدارة</button>
+                        </div>
+                        <div id="dept-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الفروع والأقسام -->
+            <div id="panel-branches" class="settings-panel">
+                <div class="panel-card">
+                    <div class="panel-header"><h3>🌐 الفروع والأقسام</h3></div>
+                    <div class="panel-body">
+                        <div style="font-weight:700;color:var(--navy);margin-bottom:14px;font-size:14px;">➕ إضافة فرع جديد</div>
+                        <div class="form-row">
+                            <div class="field"><label>الإدارة التابعة *</label>
+                                <select id="br-dept">
+                                    <option value="">-- اختر الإدارة --</option>
+                                </select>
+                            </div>
                             <div class="field"><label>اسم الفرع / الموقع *</label><input type="text" id="br-name" placeholder="مثال: فرع الرياض"></div>
                             <div class="field"><label>المدينة</label><input type="text" id="br-city"></div>
+                            <div class="field"><label>المنطقة</label>
+                                <select id="br-region">
+                                    <option value="central">الشرقية والوسطى</option>
+                                    <option value="western">المنطقة الغربية</option>
+                                    <option value="northern">المنطقة الشمالية</option>
+                                    <option value="southern">المنطقة الجنوبية</option>
+                                </select>
+                            </div>
                             <div class="field"><label>النوع</label>
                                 <select id="br-type">
                                     <option>فرع رئيسي</option><option>فرع</option><option>موقع عمل</option><option>مستودع</option>
                                 </select>
                             </div>
-                            <button class="btn btn-primary" style="margin-bottom:1px;" onclick="addBranch()">+ إضافة</button>
+                            <button class="btn btn-primary" style="margin-bottom:1px;" onclick="addBranch()">+ إضافة فرع</button>
                         </div>
-                        <div id="branch-list"></div>
+
+                        <div style="border-top:1px solid var(--border);margin:22px 0 18px;"></div>
+                        <div style="font-weight:700;color:var(--navy);margin-bottom:14px;font-size:14px;">➕ إضافة قسم تحت إدارة</div>
+                        <div class="form-row">
+                            <div class="field"><label>الإدارة *</label>
+                                <select id="div-dept">
+                                    <option value="">-- اختر الإدارة --</option>
+                                </select>
+                            </div>
+                            <div class="field"><label>اسم القسم *</label><input type="text" id="div-name" placeholder="مثال: قسم التوظيف"></div>
+                            <button class="btn btn-success" style="margin-bottom:1px;" onclick="addDiv()">+ إضافة قسم</button>
+                        </div>
+
+                        <div style="border-top:1px solid var(--border);margin:22px 0 18px;"></div>
+                        <div id="branch-div-list"></div>
                     </div>
                 </div>
             </div>
@@ -202,9 +217,9 @@
         document.querySelectorAll('.settings-nav-item').forEach(b=>b.classList.remove('active'));
         document.getElementById('panel-'+id).classList.add('active');
         event.currentTarget.classList.add('active');
-        if(id==='depts') renderDepts();
         if(id==='company') loadCompany();
-        if(id==='branches') renderBranches();
+        if(id==='depts') renderDepts();
+        if(id==='branches') renderBranchesDivs();
         if(id==='jobtitles') renderJobTitles();
     }
 
@@ -244,8 +259,11 @@
     }
     function updateDeptSelect(){
         const depts=getD(SK_DEPTS);
-        const sel=document.getElementById('div-dept');
-        sel.innerHTML='<option value="">-- اختر الإدارة --</option>'+depts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+        const divSel=document.getElementById('div-dept');
+        const brSel=document.getElementById('br-dept');
+        const opts='<option value="">-- اختر الإدارة --</option>'+depts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+        if(divSel) divSel.innerHTML=opts;
+        if(brSel) brSel.innerHTML=opts;
     }
 
     /* ======= الأقسام ======= */
@@ -298,35 +316,81 @@
         alert('✅ تم حفظ بيانات الشركة');
     }
 
-    /* ======= الفروع ======= */
+    /* ======= الفروع والأقسام ======= */
     function addBranch(){
+        const deptId=document.getElementById('br-dept').value;
         const name=document.getElementById('br-name').value.trim();
         const city=document.getElementById('br-city').value.trim();
+        const region=document.getElementById('br-region').value;
         const type=document.getElementById('br-type').value;
+        if(!deptId){alert('اختر الإدارة التابعة للفرع');return;}
         if(!name){alert('أدخل اسم الفرع');return;}
         const brs=getD(SK_BR);
-        brs.push({id:'b'+Date.now(),name,city,type});
+        brs.push({id:'b'+Date.now(),deptId,name,city,region,type});
         setD(SK_BR,brs);
+        document.getElementById('br-dept').value='';
         document.getElementById('br-name').value='';
         document.getElementById('br-city').value='';
-        renderBranches();
+        renderBranchesDivs();
+        window.dispatchEvent(new StorageEvent('storage', { key: SK_BR }));
     }
     function deleteBranch(id){
         setD(SK_BR,getD(SK_BR).filter(b=>b.id!==id));
-        renderBranches();
+        renderBranchesDivs();
+        window.dispatchEvent(new StorageEvent('storage', { key: SK_BR }));
     }
-    function renderBranches(){
+    function renderBranchesDivs(){
+        updateDeptSelect();
+        const depts=getD(SK_DEPTS);
         const brs=getD(SK_BR);
-        const el=document.getElementById('branch-list');
-        if(!brs.length){el.innerHTML='<div class="empty-msg">لا توجد فروع مضافة بعد</div>';return;}
-        let html=`<table class="data-table"><thead><tr><th>#</th><th>الاسم</th><th>المدينة</th><th>النوع</th><th>إجراء</th></tr></thead><tbody>`;
-        brs.forEach((b,i)=>{
-            html+=`<tr><td>${i+1}</td><td style="font-weight:700;">${b.name}</td><td>${b.city||'—'}</td>
-            <td><span class="badge badge-dept">${b.type}</span></td>
-            <td><button class="btn btn-danger btn-sm" onclick="deleteBranch('${b.id}')">حذف</button></td></tr>`;
+        const divs=getD(SK_DIVS);
+        const el=document.getElementById('branch-div-list');
+        const regionNames = {central:'الشرقية والوسطى', western:'المنطقة الغربية', northern:'المنطقة الشمالية', southern:'المنطقة الجنوبية'};
+        
+        if(!depts.length){el.innerHTML='<div class="empty-msg">لا توجد إدارات مضافة بعد. أضف إدارة أولاً من قسم الإدارات.</div>';return;}
+        
+        let html='';
+        depts.forEach(dept=>{
+            const deptBranches = brs.filter(b=>b.deptId===dept.id);
+            const deptDivs = divs.filter(d=>d.deptId===dept.id);
+            if(deptBranches.length===0 && deptDivs.length===0) return;
+            
+            html+=`<div style="margin-bottom:24px; background:#f8fafc; border-radius:12px; overflow:hidden; border:1px solid var(--border);">`;
+            html+=`<div style="background:var(--navy); color:white; padding:12px 18px; font-weight:700; font-size:14px;">🏛️ ${dept.name}${dept.code?' ('+dept.code+')':''}</div>`;
+            html+=`<div style="padding:16px;">`;
+            
+            // الفروع
+            if(deptBranches.length>0){
+                html+=`<div style="font-weight:700; color:var(--primary); margin-bottom:10px; font-size:13px;">📍 الفروع والمواقع</div>`;
+                html+=`<table class="data-table" style="margin-bottom:16px;"><thead><tr><th>#</th><th>الاسم</th><th>المدينة</th><th>المنطقة</th><th>النوع</th><th>إجراء</th></tr></thead><tbody>`;
+                deptBranches.forEach((b,i)=>{
+                    html+=`<tr><td>${i+1}</td><td style="font-weight:700;">${b.name}</td><td>${b.city||'—'}</td>
+                    <td>${regionNames[b.region]||b.region||'—'}</td>
+                    <td><span class="badge badge-dept">${b.type}</span></td>
+                    <td><button class="btn btn-danger btn-sm" onclick="deleteBranch('${b.id}')">حذف</button></td></tr>`;
+                });
+                html+=`</tbody></table>`;
+            }
+            
+            // الأقسام
+            if(deptDivs.length>0){
+                html+=`<div style="font-weight:700; color:var(--success); margin-bottom:10px; font-size:13px;">📂 الأقسام</div>`;
+                html+=`<table class="data-table"><thead><tr><th>#</th><th>القسم</th><th>إجراء</th></tr></thead><tbody>`;
+                deptDivs.forEach((d,i)=>{
+                    html+=`<tr><td>${i+1}</td><td style="font-weight:700;">${d.name}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="deleteDiv('${d.id}')">حذف</button></td></tr>`;
+                });
+                html+=`</tbody></table>`;
+            }
+            
+            html+=`</div></div>`;
         });
-        html+=`</tbody></table>`;
-        el.innerHTML=html;
+        
+        if(!html){
+            el.innerHTML='<div class="empty-msg">لا توجد فروع أو أقسام مضافة بعد</div>';
+        } else {
+            el.innerHTML=html;
+        }
     }
 
     /* ======= المسميات الوظيفية ======= */
@@ -358,7 +422,7 @@
     }
 
     renderDepts();
-    renderDivs();
+    renderBranchesDivs();
 
     const initPanel = new URLSearchParams(window.location.search).get('panel');
     if(initPanel){

@@ -321,6 +321,7 @@
                         <div class="field"><label>تاريخ المباشرة (بعد الإجازة)</label><input type="date" id="rejoin_date"></div>
                         <div class="field"><label>الإدارة الأم *</label><select id="dept" onchange="updateDepartmentInfo()"><option value="">-- اختر الإدارة --</option></select></div>
                         <div class="field"><label>القسم / الفرع *</label><select id="division"><option value="">-- اختر القسم --</option></select></div>
+                        <div class="field"><label>الفرع التشغيلي *</label><select id="branch_name"><option value="">-- اختر الفرع --</option></select></div>
                         <div class="field"><label>المدير المباشر</label><select id="direct_manager"><option value="">-- اختر مدير --</option></select></div>
                     </div>
                     <div style="border-top: 1px solid var(--border); margin-top: 20px; padding-top: 15px;">
@@ -658,6 +659,7 @@
         loadDepartmentsDropdown();
         loadDivisionsDropdown();
         loadJobTitles();
+        loadBranchesDropdown();
         renderList();
         document.getElementById('emp_number').value = generateEmpNumber();
         updateManagersList();
@@ -685,7 +687,9 @@
     }
     
     function updateDepartmentInfo() {
+        const deptId = document.getElementById('dept').value;
         loadDivisionsDropdown();
+        loadBranchesDropdown(deptId || null);
     }
 
     function updateManagersList() {
@@ -727,6 +731,30 @@
         const cur = sel.value;
         sel.innerHTML = '<option value="">-- اختر المسمى --</option>' + buildJobTitleOptions(cur);
         if(cur) sel.value = cur;
+    }
+
+    function loadBranchesDropdown(deptId) {
+        const select = document.getElementById('branch_name');
+        if(!select) return;
+        const currentValue = select.value;
+        const settingsBranches = JSON.parse(localStorage.getItem('saden_branches_settings') || '[]');
+        
+        // فلترة الفروع حسب الإدارة إذا تم تمريرها
+        let branches = settingsBranches;
+        if(deptId) {
+            branches = branches.filter(b => b.deptId === deptId);
+        }
+        
+        const branchNames = branches.length > 0 
+            ? branches.map(b => b.name)
+            : [
+                'خميس مشيط', 'مختبر أمانة عسير', 'جيزان', 'نجران', 'بيشة',
+                'حائل', 'سكاكا', 'تبوك', 'المدينة المنورة',
+                'الرياض', 'الدمام', 'حفر الباطن', 'القصيم',
+                'مكة المكرمة', 'جدة', 'الطائف', 'الباحة'
+            ];
+        select.innerHTML = '<option value="">-- اختر الفرع --</option>' +
+            branchNames.map(b => `<option value="${b}" ${b === currentValue ? 'selected' : ''}>${b}</option>`).join('');
     }
 
     function generateEmpNumber() {
@@ -1489,7 +1517,15 @@
         return `${div.name}${dept ? ' (' + dept.name + ')' : ''}`;
     }
 
+    // Listen for branches changes from settings
+    window.addEventListener('storage', function(e) {
+        if(e.key === 'saden_branches_settings') {
+            loadBranchesDropdown();
+        }
+    });
+
     loadDB();
+
 </script>
 
 </body>

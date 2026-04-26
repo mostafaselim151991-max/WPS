@@ -167,9 +167,26 @@
         </div>
 
         <div id="staff" class="tab-content">
-            <div class="tab-action-bar"><h3 style="margin:0">القوى العاملة</h3><button class="btn-add-record" onclick="toggleAddForm('staff')">➕ إضافة موظف</button></div>
-            <div id="form_staff" class="add-form-inline"><input type="text" id="in_staff_1" placeholder="الاسم"><input type="text" id="in_staff_2" placeholder="المسمى الوظيفي"><button class="btn-save" onclick="handleSave('staff')">حفظ</button></div>
-            <table id="tbl_staff"><thead><tr><th>الاسم</th><th>الوظيفة</th><th>التاريخ</th></tr></thead><tbody></tbody></table>
+            <div class="tab-action-bar"><h3 style="margin:0">القوى العاملة (متزامن مع HRMS)</h3></div>
+            <div class="table-container">
+                <table class="crm-table" id="tbl_staff">
+                    <thead>
+                        <tr>
+                            <th>م</th>
+                            <th>الرقم الوظيفي</th>
+                            <th>اسم الموظف</th>
+                            <th>المسمى الوظيفي</th>
+                            <th>الإدارة</th>
+                            <th>القسم</th>
+                            <th>المدير المباشر</th>
+                            <th>رقم الجوال</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>تاريخ الالتحاق</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
 
         <div id="finance" class="tab-content">
@@ -243,6 +260,24 @@
     let editingIndex = -1;
     const monthsAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
+    function loadBranchesFromSettings() {
+        const settingsBranches = JSON.parse(localStorage.getItem('saden_branches_settings') || '[]');
+        if(!settingsBranches.length) return;
+        
+        settingsBranches.forEach(sb => {
+            // Check if branch already exists by name
+            const exists = branches.find(b => b.name === sb.name);
+            if(!exists && sb.region) {
+                // Add new branch from settings with a unique id
+                branches.push({
+                    id: sb.id || ('s' + Date.now() + Math.random()),
+                    name: sb.name,
+                    region: sb.region
+                });
+            }
+        });
+    }
+
     function saveAppData() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
@@ -259,7 +294,47 @@
         return getCRMData().filter(c => c.branch === branchName);
     }
 
-    function initApp() { fillDateControls(); renderBranches(); }
+    function getHRMSData() {
+        return JSON.parse(localStorage.getItem('saden_employees') || '[]');
+    }
+
+    function getBranchStaff(branchName) {
+        const hrmsData = getHRMSData();
+        const divisions = JSON.parse(localStorage.getItem('saden_divisions') || '[]');
+        const depts = JSON.parse(localStorage.getItem('saden_depts') || '[]');
+        
+        return hrmsData.filter(emp => {
+            // مطابقة مباشرة باسم الفرع
+            if(emp.branch_name === branchName) return true;
+            
+            // مطابقة باسم القسم/الشعبة إذا كان اسم الفرع يطابق اسم قسم الموظف
+            if(emp.division) {
+                const div = divisions.find(d => d.id === emp.division);
+                if(div && div.name === branchName) return true;
+                // أيضاً التحقق من اسم الإدارة
+                const dept = depts.find(d => d.id === (div ? div.deptId : emp.dept));
+                if(dept && dept.name === branchName) return true;
+            }
+            
+            return false;
+        });
+    }
+
+    function getDepartmentName(deptId) {
+        if(!deptId) return '-';
+        const depts = JSON.parse(localStorage.getItem('saden_depts') || '[]');
+        const dept = depts.find(d => d.id === deptId);
+        return dept ? dept.name : deptId;
+    }
+
+    function getDivisionName(divisionId) {
+        if(!divisionId) return '-';
+        const divs = JSON.parse(localStorage.getItem('saden_divisions') || '[]');
+        const div = divs.find(d => d.id === divisionId);
+        return div ? div.name : divisionId;
+    }
+
+    function initApp() { loadBranchesFromSettings(); fillDateControls(); renderBranches(); }
 
     function renderBranches() {
         ['southern', 'northern', 'central', 'western'].forEach(reg => {
@@ -362,8 +437,8 @@
             }
         }
 
-        // باقي الوحدات من appData المحلي
-        ['projects', 'staff', 'finance', 'targets', 'rating', 'debt', 'other'].forEach(mod => {
+        // باقي الوحدات من appData المحلي (ما عدا staff الذي يأتي من HRMS)
+        ['projects', 'finance', 'targets', 'rating', 'debt', 'other'].forEach(mod => {
             const tbody = document.querySelector(`#tbl_${mod} tbody`);
             if(tbody) {
                 tbody.innerHTML = '';
@@ -375,6 +450,33 @@
                 }
             }
         });
+
+        // عرض الموظفين من قاعدة بيانات HRMS (متزامن تلقائياً)
+        const staffTbody = document.querySelector('#tbl_staff tbody');
+        if(staffTbody) {
+            staffTbody.innerHTML = '';
+            const branchStaff = getBranchStaff(activeBranch.name);
+            if(branchStaff.length > 0) {
+                branchStaff.forEach((emp, idx) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${idx + 1}</td>
+                        <td>${emp.emp_number || '-'}</td>
+                        <td style="font-weight:bold">${emp.emp_name || '-'}</td>
+                        <td>${emp.company_job || '-'}</td>
+                        <td>${getDepartmentName(emp.dept)}</td>
+                        <td>${getDivisionName(emp.division)}</td>
+                        <td>${emp.direct_manager || '-'}</td>
+                        <td>${emp.phone_number || '-'}</td>
+                        <td>${emp.email || '-'}</td>
+                        <td>${emp.join_date || '-'}</td>
+                    `;
+                    staffTbody.appendChild(row);
+                });
+            } else {
+                staffTbody.innerHTML = `<tr><td colspan="10" style="padding:40px; color:gray">لا يوجد موظفين مسجلين في HRMS لهذا الفرع</td></tr>`;
+            }
+        }
     }
 
     function openCRMModal() {
@@ -477,9 +579,14 @@
     // المزامنة التلقائية من صفحات أخرى
     // ==========================
     window.addEventListener('storage', function(e) {
-        if(e.key === CRM_KEY) {
+        if(e.key === CRM_KEY || e.key === 'saden_employees') {
             syncUI();
             renderBranches();
+        }
+        if(e.key === 'saden_branches_settings') {
+            loadBranchesFromSettings();
+            renderBranches();
+            if(activeBranch) syncUI();
         }
     });
 
