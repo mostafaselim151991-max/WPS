@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>طلبات التوظيف - إدارة الفروع</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a; --accent: #3b82f6; --success: #10b981;
+            --warning: #f59e0b; --danger: #ef4444; --border: #e2e8f0;
+            --bg: #f8fafc; --white: #ffffff;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; color: #334155; }
+        .container { max-width: 1100px; margin: auto; padding: 20px; }
+        header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid var(--accent); padding-bottom: 12px; }
+        header h1 { margin: 0; color: var(--primary); font-size: 22px; }
+        header p { margin: 5px 0 0; color: #64748b; font-size: 13px; }
+
+        .tabs-header { display: flex; gap: 8px; margin-bottom: 20px; background: white; padding: 10px; border-radius: 12px; border: 1px solid var(--border); }
+        .tab-btn { padding: 10px 22px; border: none; border-radius: 8px; font-family: 'Tajawal'; font-weight: 700; cursor: pointer; background: #f1f5f9; color: #64748b; transition: 0.2s; }
+        .tab-btn.active { background: var(--accent); color: white; }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* نموذج الطلب */
+        .form-card { background: white; border-radius: 14px; border: 1px solid var(--border); padding: 25px; margin-bottom: 20px; }
+        .form-card h3 { margin: 0 0 18px; color: var(--accent); font-size: 16px; border-right: 4px solid var(--accent); padding-right: 12px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+        .field { display: flex; flex-direction: column; }
+        .field label { font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 5px; }
+        .field input, .field select, .field textarea {
+            padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+            font-family: 'Tajawal'; font-size: 13px; background: #f8fafc;
+        }
+        .field input:focus, .field select:focus, .field textarea:focus {
+            outline: none; border-color: var(--accent); background: white;
+        }
+        .full { grid-column: 1 / -1; }
+        .btn { padding: 11px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-family: 'Tajawal'; font-size: 14px; transition: 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+
+        /* جدول الطلبات */
+        .requests-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+        .requests-table th { background: var(--primary); color: white; padding: 11px 10px; font-size: 12px; text-align: center; }
+        .requests-table td { padding: 10px; font-size: 12px; text-align: center; border-bottom: 1px solid var(--border); }
+        .requests-table tr:last-child td { border-bottom: none; }
+        .requests-table tr:hover td { background: #f0f9ff; }
+
+        /* شارات الحالة */
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .badge-pending  { background: #fef9c3; color: #b45309; }
+        .badge-review   { background: #dbeafe; color: #1d4ed8; }
+        .badge-approved { background: #dcfce7; color: #166534; }
+        .badge-rejected { background: #fee2e2; color: #991b1b; }
+        .badge-assigned { background: #f3e8ff; color: #6b21a8; }
+
+        /* مودال التوجيه */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: white; border-radius: 14px; padding: 25px; width: 90%; max-width: 480px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .modal-box h3 { margin: 0 0 15px; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+
+        /* تفاصيل الطلب */
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .detail-item .dl { font-size: 11px; color: #94a3b8; margin-bottom: 3px; }
+        .detail-item .dv { font-weight: 700; font-size: 13px; color: var(--primary); }
+
+        .empty-msg { text-align: center; padding: 40px; color: #94a3b8; font-size: 14px; }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .detail-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>📋 طلبات التوظيف</h1>
+        <p id="branch-label">إدارة الفروع &mdash; تقديم طلب توظيف جديد ومتابعة الطلبات</p>
+    </header>
+
+    <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('new-request')">➕ طلب توظيف جديد</button>
+        <button class="tab-btn" onclick="switchTab('my-requests')">📂 طلباتي</button>
+        <button class="tab-btn" id="admin-tab-btn" style="display:none;" onclick="switchTab('admin-requests')">🔔 الشئون الإدارية</button>
+    </div>
+
+    <!-- تبويب: طلب جديد -->
+    <div id="new-request" class="tab-pane active">
+        <div class="form-card">
+            <h3>بيانات المرشح للتوظيف</h3>
+            <div class="form-grid">
+                <div class="field full"><label>الاسم بالكامل *</label><input type="text" id="f_name" placeholder="الاسم الرباعي"></div>
+                <div class="field"><label>رقم الهوية / الإقامة / الجواز *</label><input type="text" id="f_idnum" placeholder="xxxxxxxxxx"></div>
+                <div class="field"><label>تاريخ انتهاء الإقامة</label><input type="date" id="f_iqama_exp"></div>
+                <div class="field"><label>المهنة في الإقامة</label><input type="text" id="f_iqama_job" placeholder="المهنة المدونة في الإقامة"></div>
+                <div class="field"><label>الجنسية *</label><input type="text" id="f_national" placeholder="مثال: سعودي، مصري..."></div>
+                <div class="field"><label>رقم الجوال *</label><input type="text" id="f_phone" placeholder="05xxxxxxxx"></div>
+                <div class="field"><label>البريد الإلكتروني</label><input type="email" id="f_email" placeholder="example@email.com"></div>
+                <div class="field"><label>المؤهل الدراسي *</label>
+                    <select id="f_edu">
+                        <option value="">-- اختر --</option>
+                        <option>بكالوريوس</option>
+                        <option>ليسانس</option>
+                        <option>دبلوم</option>
+                        <option>ثانوية عامة</option>
+                        <option>ماجستير</option>
+                        <option>دكتوراه</option>
+                        <option>أخرى</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h3>بيانات الوظيفة المطلوبة</h3>
+            <div class="form-grid">
+                <div class="field"><label>الوظيفة المرشح لها *</label><input type="text" id="f_position" placeholder="مثال: مهندس مدني، محاسب..."></div>
+                <div class="field"><label>القسم / الفرع *</label><input type="text" id="f_dept" placeholder="القسم أو الفرع المطلوب"></div>
+                <div class="field"><label>نوع العقد</label>
+                    <select id="f_contract">
+                        <option>دوام كامل</option>
+                        <option>دوام جزئي</option>
+                        <option>مؤقت</option>
+                        <option>تدريب</option>
+                    </select>
+                </div>
+                <div class="field"><label>الراتب المقترح (ريال)</label><input type="number" id="f_salary" placeholder="0"></div>
+                <div class="field full"><label>ملاحظات ومبررات الطلب</label><textarea id="f_notes" rows="3" placeholder="أسباب الحاجة للتعيين، متطلبات خاصة..."></textarea></div>
+            </div>
+            <div style="margin-top:18px; display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn btn-primary" onclick="submitRequest()">📤 إرسال الطلب للشئون الإدارية</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- تبويب: طلباتي -->
+    <div id="my-requests" class="tab-pane">
+        <div style="background:white; border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid var(--border); display:flex; gap:10px; align-items:center;">
+            <input type="text" id="search-my" placeholder="🔍 ابحث بالاسم أو الوظيفة..." oninput="renderMyRequests()"
+                style="flex:1; padding:10px; border:1px solid var(--border); border-radius:8px; font-family:'Tajawal';">
+        </div>
+        <div id="my-requests-list"></div>
+    </div>
+
+    <!-- تبويب: الشئون الإدارية -->
+    <div id="admin-requests" class="tab-pane">
+        <div style="background:white; border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid var(--border); display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <input type="text" id="search-admin" placeholder="🔍 ابحث بالاسم أو الوظيفة أو الفرع..." oninput="renderAdminRequests()"
+                style="flex:1; min-width:200px; padding:10px; border:1px solid var(--border); border-radius:8px; font-family:'Tajawal';">
+            <select id="filter-status" onchange="renderAdminRequests()"
+                style="padding:10px; border:1px solid var(--border); border-radius:8px; font-family:'Tajawal';">
+                <option value="">كل الحالات</option>
+                <option value="قيد المراجعة">قيد المراجعة</option>
+                <option value="موافق عليه">موافق عليه</option>
+                <option value="مرفوض">مرفوض</option>
+                <option value="تم التوجيه">تم التوجيه</option>
+            </select>
+        </div>
+        <div id="admin-requests-list"></div>
+    </div>
+</div>
+
+<!-- مودال التوجيه -->
+<div id="assign-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>🔀 توجيه الطلب إلى المختص</h3>
+        <input type="hidden" id="assign-req-id">
+        <div id="assign-req-preview" style="background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:15px; font-size:13px;"></div>
+        <div class="field" style="margin-bottom:14px;">
+            <label>الجهة / المختص المحوَّل إليه *</label>
+            <select id="assign-to" style="padding:10px; border:1px solid var(--border); border-radius:8px; font-family:'Tajawal'; font-size:13px;">
+                <option value="">-- اختر الجهة --</option>
+                <option>مدير الموارد البشرية</option>
+                <option>مدير الإدارة العامة</option>
+                <option>مدير القسم المعني</option>
+                <option>لجنة التوظيف</option>
+                <option>المدير التنفيذي</option>
+            </select>
+        </div>
+        <div class="field" style="margin-bottom:14px;">
+            <label>ملاحظات التوجيه</label>
+            <textarea id="assign-notes" rows="3" style="padding:10px; border:1px solid var(--border); border-radius:8px; font-family:'Tajawal'; font-size:13px;" placeholder="تعليمات أو ملاحظات للمختص..."></textarea>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:5px;">
+            <button class="btn btn-success" onclick="confirmAssign()" style="flex:2;">✅ تأكيد التوجيه</button>
+            <button class="btn" style="flex:1; background:#94a3b8; color:white;" onclick="closeModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- مودال التفاصيل -->
+<div id="detail-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width:560px;">
+        <h3>📄 تفاصيل الطلب</h3>
+        <div id="detail-content"></div>
+        <div style="margin-top:15px; text-align:left;">
+            <button class="btn" style="background:#94a3b8; color:white;" onclick="closeModal()">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'saden_recruitment_requests';
+    let requests = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let currentUser = { name: 'فرع جدة', role: 'branch' };
+
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(requests)); }
+
+    function switchTab(id) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
+        if(id === 'my-requests') renderMyRequests();
+        if(id === 'admin-requests') renderAdminRequests();
+    }
+
+    function getVal(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+    function submitRequest() {
+        const required = [
+            { id: 'f_name', label: 'الاسم بالكامل' },
+            { id: 'f_idnum', label: 'رقم الهوية / الإقامة / الجواز' },
+            { id: 'f_national', label: 'الجنسية' },
+            { id: 'f_phone', label: 'رقم الجوال' },
+            { id: 'f_edu', label: 'المؤهل الدراسي' },
+            { id: 'f_position', label: 'الوظيفة المرشح لها' },
+            { id: 'f_dept', label: 'القسم / الفرع' }
+        ];
+        for(const f of required) {
+            if(!getVal(f.id)) { alert(`❌ يرجى تعبئة: ${f.label}`); document.getElementById(f.id).focus(); return; }
+        }
+
+        const req = {
+            id: Date.now(),
+            submitted_by: currentUser.name,
+            submitted_at: new Date().toLocaleDateString('ar-SA'),
+            status: 'قيد المراجعة',
+            assigned_to: '',
+            assign_notes: '',
+            candidate: {
+                name: getVal('f_name'),
+                idnum: getVal('f_idnum'),
+                iqama_exp: getVal('f_iqama_exp'),
+                iqama_job: getVal('f_iqama_job'),
+                national: getVal('f_national'),
+                phone: getVal('f_phone'),
+                email: getVal('f_email'),
+                edu: getVal('f_edu')
+            },
+            job: {
+                position: getVal('f_position'),
+                dept: getVal('f_dept'),
+                contract: getVal('f_contract'),
+                salary: getVal('f_salary'),
+                notes: getVal('f_notes')
+            }
+        };
+
+        requests.unshift(req);
+        save();
+
+        ['f_name','f_idnum','f_iqama_exp','f_iqama_job','f_national','f_phone','f_email',
+         'f_position','f_dept','f_salary','f_notes'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = '';
+        });
+        document.getElementById('f_edu').value = '';
+        document.getElementById('f_contract').value = 'دوام كامل';
+
+        alert('✅ تم إرسال طلب التوظيف للشئون الإدارية بنجاح');
+        switchTab('my-requests');
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.querySelectorAll('.tab-btn')[0].classList.remove('active');
+    }
+
+    function statusBadge(s) {
+        const map = {
+            'قيد المراجعة': 'badge-pending',
+            'موافق عليه': 'badge-approved',
+            'مرفوض': 'badge-rejected',
+            'تم التوجيه': 'badge-assigned'
+        };
+        return `<span class="badge ${map[s] || 'badge-review'}">${s}</span>`;
+    }
+
+    function renderMyRequests() {
+        const q = (document.getElementById('search-my')?.value || '').toLowerCase();
+        const list = document.getElementById('my-requests-list');
+        const filtered = requests.filter(r =>
+            (!q || r.candidate.name.toLowerCase().includes(q) || r.job.position.toLowerCase().includes(q))
+        );
+        if(!filtered.length) { list.innerHTML = `<div class="empty-msg">لا توجد طلبات مقدمة حتى الآن</div>`; return; }
+        list.innerHTML = `
+            <div style="overflow-x:auto;">
+            <table class="requests-table">
+                <thead><tr>
+                    <th>#</th><th>اسم المرشح</th><th>الوظيفة</th><th>القسم/الفرع</th>
+                    <th>تاريخ الإرسال</th><th>الحالة</th><th>الموجَّه إلى</th><th>إجراء</th>
+                </tr></thead>
+                <tbody>
+                ${filtered.map((r,i) => `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td style="font-weight:700;">${r.candidate.name}</td>
+                        <td>${r.job.position}</td>
+                        <td>${r.job.dept}</td>
+                        <td>${r.submitted_at}</td>
+                        <td>${statusBadge(r.status)}</td>
+                        <td>${r.assigned_to || '-'}</td>
+                        <td><button class="btn btn-primary" style="padding:5px 12px; font-size:11px;" onclick="showDetail(${r.id})">تفاصيل</button></td>
+                    </tr>`).join('')}
+                </tbody>
+            </table></div>`;
+    }
+
+    function renderAdminRequests() {
+        const q = (document.getElementById('search-admin')?.value || '').toLowerCase();
+        const fs = document.getElementById('filter-status')?.value || '';
+        const list = document.getElementById('admin-requests-list');
+        const filtered = requests.filter(r => {
+            const matchQ = !q || r.candidate.name.toLowerCase().includes(q) ||
+                r.job.position.toLowerCase().includes(q) || r.job.dept.toLowerCase().includes(q);
+            const matchS = !fs || r.status === fs;
+            return matchQ && matchS;
+        });
+        if(!filtered.length) { list.innerHTML = `<div class="empty-msg">لا توجد طلبات تطابق البحث</div>`; return; }
+        list.innerHTML = `
+            <div style="overflow-x:auto;">
+            <table class="requests-table">
+                <thead><tr>
+                    <th>#</th><th>اسم المرشح</th><th>الجنسية</th><th>المؤهل</th>
+                    <th>الوظيفة</th><th>الفرع/القسم</th><th>مقدم من</th>
+                    <th>تاريخ الإرسال</th><th>الحالة</th><th>إجراءات</th>
+                </tr></thead>
+                <tbody>
+                ${filtered.map((r,i) => `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td style="font-weight:700;">${r.candidate.name}</td>
+                        <td>${r.candidate.national}</td>
+                        <td>${r.candidate.edu}</td>
+                        <td>${r.job.position}</td>
+                        <td>${r.job.dept}</td>
+                        <td>${r.submitted_by}</td>
+                        <td>${r.submitted_at}</td>
+                        <td>${statusBadge(r.status)}</td>
+                        <td>
+                            <div style="display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
+                                <button class="btn btn-primary" style="padding:4px 10px; font-size:11px;" onclick="showDetail(${r.id})">تفاصيل</button>
+                                <button class="btn btn-success" style="padding:4px 10px; font-size:11px;" onclick="openAssign(${r.id})">توجيه</button>
+                                <button class="btn btn-danger" style="padding:4px 10px; font-size:11px;" onclick="rejectReq(${r.id})">رفض</button>
+                            </div>
+                        </td>
+                    </tr>`).join('')}
+                </tbody>
+            </table></div>`;
+    }
+
+    function showDetail(id) {
+        const r = requests.find(x => x.id === id);
+        if(!r) return;
+        document.getElementById('detail-content').innerHTML = `
+            <div style="margin-bottom:12px;">${statusBadge(r.status)}
+                ${r.assigned_to ? `&nbsp;<span style="font-size:12px; color:#6b21a8; font-weight:700;">موجَّه إلى: ${r.assigned_to}</span>` : ''}
+            </div>
+            <div class="detail-grid" style="margin-bottom:15px;">
+                <div class="detail-item"><div class="dl">الاسم بالكامل</div><div class="dv">${r.candidate.name}</div></div>
+                <div class="detail-item"><div class="dl">رقم الهوية / الإقامة</div><div class="dv">${r.candidate.idnum}</div></div>
+                <div class="detail-item"><div class="dl">الجنسية</div><div class="dv">${r.candidate.national}</div></div>
+                <div class="detail-item"><div class="dl">رقم الجوال</div><div class="dv">${r.candidate.phone}</div></div>
+                ${r.candidate.email ? `<div class="detail-item"><div class="dl">البريد الإلكتروني</div><div class="dv">${r.candidate.email}</div></div>` : ''}
+                ${r.candidate.iqama_exp ? `<div class="detail-item"><div class="dl">تاريخ انتهاء الإقامة</div><div class="dv">${r.candidate.iqama_exp}</div></div>` : ''}
+                ${r.candidate.iqama_job ? `<div class="detail-item"><div class="dl">المهنة في الإقامة</div><div class="dv">${r.candidate.iqama_job}</div></div>` : ''}
+                <div class="detail-item"><div class="dl">المؤهل الدراسي</div><div class="dv">${r.candidate.edu}</div></div>
+                <div class="detail-item"><div class="dl">الوظيفة المرشح لها</div><div class="dv">${r.job.position}</div></div>
+                <div class="detail-item"><div class="dl">القسم / الفرع</div><div class="dv">${r.job.dept}</div></div>
+                <div class="detail-item"><div class="dl">نوع العقد</div><div class="dv">${r.job.contract}</div></div>
+                ${r.job.salary ? `<div class="detail-item"><div class="dl">الراتب المقترح</div><div class="dv">${parseInt(r.job.salary).toLocaleString('ar-SA')} ريال</div></div>` : ''}
+                <div class="detail-item"><div class="dl">مقدم من</div><div class="dv">${r.submitted_by}</div></div>
+                <div class="detail-item"><div class="dl">تاريخ الإرسال</div><div class="dv">${r.submitted_at}</div></div>
+            </div>
+            ${r.job.notes ? `<div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid var(--border); font-size:13px;"><strong>الملاحظات:</strong> ${r.job.notes}</div>` : ''}
+            ${r.assign_notes ? `<div style="background:#f3e8ff; padding:10px; border-radius:8px; margin-top:8px; font-size:13px; border:1px solid #e9d5ff;"><strong>ملاحظات التوجيه:</strong> ${r.assign_notes}</div>` : ''}
+        `;
+        document.getElementById('detail-modal').classList.add('open');
+    }
+
+    function openAssign(id) {
+        const r = requests.find(x => x.id === id);
+        if(!r) return;
+        document.getElementById('assign-req-id').value = id;
+        document.getElementById('assign-req-preview').innerHTML =
+            `<strong>المرشح:</strong> ${r.candidate.name} &nbsp;|&nbsp; <strong>الوظيفة:</strong> ${r.job.position} &nbsp;|&nbsp; <strong>الفرع:</strong> ${r.job.dept}`;
+        document.getElementById('assign-to').value = '';
+        document.getElementById('assign-notes').value = '';
+        document.getElementById('assign-modal').classList.add('open');
+    }
+
+    function confirmAssign() {
+        const id = parseInt(document.getElementById('assign-req-id').value);
+        const to = document.getElementById('assign-to').value;
+        if(!to) { alert('❌ يرجى اختيار الجهة المحوَّل إليها الطلب'); return; }
+        const r = requests.find(x => x.id === id);
+        if(r) {
+            r.status = 'تم التوجيه';
+            r.assigned_to = to;
+            r.assign_notes = document.getElementById('assign-notes').value;
+            save();
+        }
+        closeModal();
+        renderAdminRequests();
+        alert(`✅ تم توجيه الطلب إلى: ${to}`);
+    }
+
+    function rejectReq(id) {
+        if(!confirm('هل تريد رفض هذا الطلب؟')) return;
+        const r = requests.find(x => x.id === id);
+        if(r) { r.status = 'مرفوض'; save(); }
+        renderAdminRequests();
+    }
+
+    function closeModal() {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+    }
+
+    // إظهار تبويب الشئون الإدارية بناءً على صلاحية المستخدم
+    function initRole() {
+        const stored = JSON.parse(localStorage.getItem('saden_users') || '[]');
+        const loggedIn = localStorage.getItem('saden_logged_user');
+        if(!loggedIn) return;
+        const user = stored.find(u => u.username === loggedIn);
+        if(user && (user.isAdmin || (user.permissions && user.permissions['admMenu']))) {
+            document.getElementById('admin-tab-btn').style.display = '';
+        }
+    }
+
+    initRole();
+
+    // إذا فُتحت الصفحة من الشئون الإدارية افتح تبويب الشئون مباشرةً
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.get('view') === 'admin') {
+        document.getElementById('admin-tab-btn').style.display = '';
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('admin-requests').classList.add('active');
+        document.getElementById('admin-tab-btn').classList.add('active');
+        renderAdminRequests();
+    } else {
+        renderMyRequests();
+    }
+</script>
+</body>
+</html>

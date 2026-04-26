@@ -41,6 +41,13 @@
         /* المودال */
         .modal { display: none; position: fixed; z-index: 2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
         .modal-content { background:white; margin: 3% auto; padding:20px; width:90%; max-width:550px; border-radius:12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+
+        /* أزرار الإجراءات */
+        .act-btns { display: flex; gap: 5px; justify-content: center; flex-wrap: nowrap; }
+        .btn-edit  { background: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-family: 'Tajawal'; font-size: 11px; font-weight: bold; white-space: nowrap; }
+        .btn-del   { background: #b91c1c; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-family: 'Tajawal'; font-size: 11px; font-weight: bold; white-space: nowrap; }
+        .btn-move  { background: #059669; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-family: 'Tajawal'; font-size: 11px; font-weight: bold; white-space: nowrap; }
+        .btn-edit:hover { background: #1d4ed8; } .btn-del:hover { background: #991b1b; } .btn-move:hover { background: #047857; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .input-group { margin-bottom: 12px; text-align: right; }
         .input-group label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
@@ -76,7 +83,7 @@
             <p id="report-meta"></p>
         </div>
 
-        <button class="btn-main no-print btn-back" onclick="location.reload()" style="background:#6b7280; margin-bottom: 15px;">◀ العودة للرئيسية</button>
+        <button class="btn-main no-print btn-back" onclick="goHome()" style="background:#6b7280; margin-bottom: 15px;">◀ العودة للرئيسية</button>
         
         <div style="float: left;" class="no-print">
             <button class="btn-main" style="background:#16a34a; margin-left: 5px;" onclick="exportExcel()">📊 إكسيل</button>
@@ -115,6 +122,7 @@
                         <th rowspan="2">الوصف والمشتملات</th>
                         <th rowspan="2" style="width: 80px;">الحالة</th>
                         <th rowspan="2">ملاحظات</th>
+                        <th rowspan="2" class="no-print" style="width: 130px;">إجراءات</th>
                     </tr>
                     <tr>
                         <th style="width: 150px;">عربي</th>
@@ -166,8 +174,44 @@
         </div>
     </div>
 
+    <div id="editModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h3 style="border-bottom: 2px solid var(--blue); padding-bottom: 10px;">✏️ تعديل البند</h3>
+            <input type="hidden" id="editIdx">
+            <div class="grid-2">
+                <div class="input-group"><label>الاسم (عربي):</label><input type="text" id="editAr"></div>
+                <div class="input-group"><label>الاسم (إنجليزي):</label><input type="text" id="editEn"></div>
+                <div class="input-group"><label>العدد:</label><input type="number" id="editQty"></div>
+                <div class="input-group"><label>الماركة/النوع:</label><input type="text" id="editBrand"></div>
+                <div class="input-group"><label>السيريال:</label><input type="text" id="editSerial"></div>
+                <div class="input-group"><label>كود الباركود:</label><input type="text" id="editCode"></div>
+            </div>
+            <div class="input-group"><label>المشتملات/الوصف:</label><textarea id="editParts" rows="2"></textarea></div>
+            <div class="grid-2">
+                <div class="input-group"><label>الحالة:</label><select id="editStatus"><option>يعمل</option><option>صيانة</option><option>تالف</option></select></div>
+                <div class="input-group"><label>ملاحظات:</label><input type="text" id="editNotes"></div>
+            </div>
+            <button class="btn-main" onclick="saveEdit()" style="width:100%; background:#2563eb; font-size:16px; padding:12px;">💾 حفظ التعديلات</button>
+            <button class="btn-main" onclick="closeModals()" style="width:100%; background:#9ca3af; margin-top:10px;">إلغاء</button>
+        </div>
+    </div>
+
+    <div id="moveModal" class="modal">
+        <div class="modal-content" style="max-width: 420px;">
+            <h3 style="border-bottom: 2px solid #059669; padding-bottom: 10px;">🔄 نقل البند إلى فرع آخر</h3>
+            <input type="hidden" id="moveIdx">
+            <div id="moveItemPreview" style="background:#f0fdf4; padding:12px; border-radius:8px; margin-bottom:15px; font-size:13px; color:#374151;"></div>
+            <div class="input-group">
+                <label>اختر الفرع المستهدف:</label>
+                <select id="moveBranch" style="font-size:14px;"></select>
+            </div>
+            <button class="btn-main" onclick="confirmMove()" style="width:100%; background:#059669; font-size:16px; padding:12px;">✅ تأكيد النقل</button>
+            <button class="btn-main" onclick="closeModals()" style="width:100%; background:#9ca3af; margin-top:10px;">إلغاء</button>
+        </div>
+    </div>
+
     <script>
-        // قاعدة البيانات المؤقتة
+        // قاعدة البيانات
         let db = {
             activeBranch: '', mainTab: 'labs', subTab: 'soil',
             regions: {
@@ -178,6 +222,18 @@
             },
             inventory: []
         };
+
+        function saveData() {
+            localStorage.setItem('saden_inventory', JSON.stringify(db.inventory));
+            localStorage.setItem('saden_regions', JSON.stringify(db.regions));
+        }
+
+        function loadData() {
+            const inv = localStorage.getItem('saden_inventory');
+            const reg = localStorage.getItem('saden_regions');
+            if(inv) db.inventory = JSON.parse(inv);
+            if(reg) db.regions = JSON.parse(reg);
+        }
 
         // عرض المناطق والفروع
         function renderRegions() {
@@ -200,6 +256,7 @@
             const reg = document.getElementById('newRegion').value;
             if(city.trim()) {
                 db.regions[reg].cities.push(city);
+                saveData();
                 renderRegions();
                 closeModals();
                 document.getElementById('newCity').value = '';
@@ -255,6 +312,7 @@
             };
             
             db.inventory.push(newItem);
+            saveData();
             refreshTable();
             closeModals();
             
@@ -280,6 +338,7 @@
             );
 
             filtered.forEach((item, idx) => {
+                const realIdx = db.inventory.indexOf(item);
                 const bcId = `bc-${idx}`;
                 tbody.innerHTML += `
                     <tr>
@@ -298,6 +357,13 @@
                         <td>${item.p}</td>
                         <td style="color:${item.st==='يعمل'?'green':'red'}; font-weight:bold;">${item.st}</td>
                         <td>${item.n}</td>
+                        <td class="no-print">
+                            <div class="act-btns">
+                                <button class="btn-edit" onclick="openEdit(${realIdx})">✏️ تعديل</button>
+                                <button class="btn-del"  onclick="deleteItem(${realIdx})">🗑️ حذف</button>
+                                <button class="btn-move" onclick="openMove(${realIdx})">🔄 نقل إلى</button>
+                            </div>
+                        </td>
                     </tr>`;
                 
                 // رسم الباركود بعد إضافة الصف
@@ -315,6 +381,82 @@
             document.getElementById('report-meta').innerText = `الفرع: ${db.activeBranch} | القسم: ${titles[db.mainTab]} | التاريخ: ${new Date().toLocaleDateString('ar-SA')}`;
         }
 
+        function deleteItem(idx) {
+            const item = db.inventory[idx];
+            if(confirm(`هل تريد حذف البند:\n"${item.ar}" ؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+                db.inventory.splice(idx, 1);
+                saveData();
+                refreshTable();
+            }
+        }
+
+        function openEdit(idx) {
+            const item = db.inventory[idx];
+            document.getElementById('editIdx').value = idx;
+            document.getElementById('editAr').value = item.ar;
+            document.getElementById('editEn').value = item.en;
+            document.getElementById('editQty').value = item.q;
+            document.getElementById('editBrand').value = item.b;
+            document.getElementById('editSerial').value = item.s;
+            document.getElementById('editCode').value = item.c;
+            document.getElementById('editParts').value = item.p;
+            document.getElementById('editStatus').value = item.st;
+            document.getElementById('editNotes').value = item.n;
+            openModal('editModal');
+        }
+
+        function saveEdit() {
+            const idx = parseInt(document.getElementById('editIdx').value);
+            const item = db.inventory[idx];
+            item.ar = document.getElementById('editAr').value;
+            item.en = document.getElementById('editEn').value;
+            item.q  = document.getElementById('editQty').value;
+            item.b  = document.getElementById('editBrand').value;
+            item.s  = document.getElementById('editSerial').value;
+            item.c  = document.getElementById('editCode').value || item.c;
+            item.p  = document.getElementById('editParts').value;
+            item.st = document.getElementById('editStatus').value;
+            item.n  = document.getElementById('editNotes').value;
+            closeModals();
+            saveData();
+            refreshTable();
+        }
+
+        function openMove(idx) {
+            const item = db.inventory[idx];
+            document.getElementById('moveIdx').value = idx;
+            document.getElementById('moveItemPreview').innerHTML =
+                `<strong>البند:</strong> ${item.ar} ${item.en ? '/ '+item.en : ''}<br>
+                 <strong>الفرع الحالي:</strong> ${item.branch}<br>
+                 <strong>القسم:</strong> ${item.mainTab} / ${item.subTab}`;
+
+            const sel = document.getElementById('moveBranch');
+            sel.innerHTML = '';
+            for(let k in db.regions) {
+                db.regions[k].cities.forEach(city => {
+                    if(city !== item.branch) {
+                        const opt = document.createElement('option');
+                        opt.value = city;
+                        opt.textContent = `${city} (${db.regions[k].title})`;
+                        sel.appendChild(opt);
+                    }
+                });
+            }
+            openModal('moveModal');
+        }
+
+        function confirmMove() {
+            const idx = parseInt(document.getElementById('moveIdx').value);
+            const targetBranch = document.getElementById('moveBranch').value;
+            if(!targetBranch) return;
+            const itemName = db.inventory[idx].ar;
+            db.inventory[idx].branch = targetBranch;
+            saveData();
+            closeModals();
+            refreshTable();
+            alert(`✅ تم نقل البند "${itemName}" إلى فرع: ${targetBranch}`);
+        }
+
         function exportExcel() {
             const table = document.getElementById("main-table");
             const wb = XLSX.utils.table_to_book(table);
@@ -322,7 +464,15 @@
         }
 
         // بدء التشغيل
+        loadData();
         renderRegions();
+
+        function goHome() {
+            document.getElementById('inventory-screen').classList.add('hidden');
+            document.getElementById('regions-screen').classList.remove('hidden');
+            db.activeBranch = '';
+            renderRegions();
+        }
     </script>
 </body>
 </html>

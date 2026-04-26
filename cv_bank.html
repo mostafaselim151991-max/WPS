@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام سادن | مخزن السير الذاتية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#0284c7;--navy:#1e293b;--bg:#f8fafc;--text:#334155;--border:#e2e8f0;
+              --admin-color:#0369a1;--tech-color:#8b5cf6;--manager-color:#10b981;--finance-color:#f59e0b;
+              --success:#10b981;--danger:#ef4444;--branch-color:#7c3aed;}
+        *{box-sizing:border-box;}
+        body{font-family:'Tajawal',sans-serif;background:var(--bg);margin:0;color:var(--text);}
+        .container{max-width:1100px;margin:auto;padding:20px;}
+        header{text-align:center;margin-bottom:20px;border-bottom:3px solid var(--primary);padding-bottom:10px;}
+        header h1{margin:0;font-size:22px;color:var(--navy);}
+        header p{margin:5px 0 0;color:#64748b;font-size:13px;}
+        .main-tabs{display:flex;gap:6px;background:white;padding:10px;border-radius:12px;border:1px solid var(--border);margin-bottom:22px;}
+        .main-tab-btn{flex:1;padding:12px;border:none;border-radius:8px;font-family:'Tajawal';font-weight:700;font-size:14px;cursor:pointer;background:#f1f5f9;color:#64748b;transition:.2s;}
+        .main-tab-btn.active{background:var(--primary);color:white;}
+        .tab-pane{display:none;}.tab-pane.active{display:block;}
+        .workflow-section{background:white;border:1px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;box-shadow:0 2px 5px rgba(0,0,0,.05);}
+        .section-header{padding:14px 22px;color:white;display:flex;justify-content:space-between;align-items:center;background:var(--admin-color);}
+        .section-header h3{margin:0;font-size:15px;}
+        .section-content{padding:22px;}
+        .sub-title{font-weight:700;color:var(--navy);margin:18px 0 10px;border-right:4px solid var(--primary);padding:8px 10px;background:#f0f9ff;border-radius:0 6px 6px 0;}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+        .field{display:flex;flex-direction:column;}
+        .field label{font-size:12px;font-weight:700;margin-bottom:6px;color:#64748b;}
+        .field input,.field select,.field textarea{padding:11px;border:1px solid var(--border);border-radius:8px;font-family:'Tajawal';font-size:13px;transition:.2s;}
+        .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(2,132,199,.1);}
+        .btn{padding:11px 22px;border-radius:8px;font-weight:700;cursor:pointer;border:none;font-family:'Tajawal';font-size:13px;transition:.2s;}
+        .btn-primary{background:var(--primary);color:white;}
+        .btn-danger{background:var(--danger);color:white;}
+        .btn-gray{background:#94a3b8;color:white;}
+        .btn-success{background:var(--success);color:white;}
+        .btn-sm{padding:6px 12px;font-size:12px;border-radius:6px;}
+        .btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+        .toolbar{background:white;border-radius:12px;padding:12px 15px;margin-bottom:15px;border:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+        .toolbar input{flex:1;min-width:180px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Tajawal';font-size:13px;}
+        .toolbar select{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Tajawal';font-size:13px;}
+        .req-table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+        .req-table th{background:var(--navy);color:white;padding:11px 10px;font-size:12px;text-align:center;}
+        .req-table td{padding:9px 8px;font-size:12px;text-align:center;border-bottom:1px solid var(--border);}
+        .req-table tr:last-child td{border-bottom:none;}
+        .req-table tr:hover td{background:#f0f9ff;}
+        .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+        .badge-new{background:#ede9fe;color:#5b21b6;}
+        .badge-contacted{background:#dbeafe;color:#1d4ed8;}
+        .badge-candidate{background:#d1fae5;color:#065f46;}
+        .badge-unsuitable{background:#f1f5f9;color:#64748b;}
+        .empty-msg{text-align:center;padding:40px;color:#94a3b8;font-size:14px;}
+        .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+        .stat-card{background:white;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+        .stat-card .stat-num{font-size:26px;font-weight:700;color:var(--primary);}
+        .stat-card .stat-lbl{font-size:12px;color:#64748b;margin-top:4px;}
+        .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+        .overlay.open{display:flex;}
+        .modal{background:white;border-radius:14px;padding:28px;max-width:680px;width:95%;max-height:90vh;overflow-y:auto;position:relative;}
+        .modal h2{margin:0 0 18px;font-size:17px;color:var(--navy);border-bottom:2px solid var(--primary);padding-bottom:10px;}
+        .modal-close{position:absolute;top:14px;left:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;}
+        .detail-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+        .detail-item{flex:1;min-width:180px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+        .detail-item .d-lbl{font-size:11px;color:#64748b;font-weight:700;margin-bottom:4px;}
+        .detail-item .d-val{font-size:13px;color:var(--navy);font-weight:500;}
+        .contact-modal{max-width:420px;}
+        .contact-line{display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px;}
+        .contact-line span{flex:1;font-size:14px;font-weight:700;color:var(--navy);}
+        .contact-note{font-size:12px;color:#64748b;margin-top:8px;padding:8px;background:#f0f9ff;border-radius:6px;}
+        @media(max-width:640px){.grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}.main-tab-btn{font-size:12px;padding:9px 5px;}}
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>📁 مخزن السير الذاتية — مجموعة سادن</h1>
+        <p>إدارة وحفظ السير الذاتية للمتقدمين</p>
+    </header>
+
+    <div class="main-tabs">
+        <button class="main-tab-btn active" onclick="switchTab('add')">➕ إضافة سيرة ذاتية</button>
+        <button class="main-tab-btn" onclick="switchTab('bank')">📂 مخزن السير الذاتية</button>
+    </div>
+
+    <!-- تاب الإضافة -->
+    <div id="tab-add" class="tab-pane active">
+        <div class="workflow-section">
+            <div class="section-header"><h3>البيانات الشخصية</h3></div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>الاسم الكامل *</label><input type="text" id="f_name" placeholder="أدخل الاسم الكامل"></div>
+                    <div class="field"><label>رقم الهوية / الإقامة / الجواز</label><input type="text" id="f_id" placeholder="رقم الوثيقة"></div>
+                    <div class="field"><label>الجنسية *</label><input type="text" id="f_nationality" placeholder="الجنسية"></div>
+                    <div class="field"><label>رقم الجوال *</label><input type="tel" id="f_phone" placeholder="05xxxxxxxx"></div>
+                    <div class="field"><label>البريد الإلكتروني</label><input type="email" id="f_email" placeholder="example@email.com"></div>
+                    <div class="field"><label>العنوان</label><input type="text" id="f_address" placeholder="المدينة / الحي"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="workflow-section">
+            <div class="section-header"><h3>المؤهلات العلمية</h3></div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>المؤهل الدراسي</label>
+                        <select id="f_edu">
+                            <option value="">-- اختر --</option>
+                            <option>أقل من ثانوي</option>
+                            <option>ثانوي</option>
+                            <option>دبلوم</option>
+                            <option>بكالوريوس</option>
+                            <option>ماجستير</option>
+                            <option>دكتوراه</option>
+                        </select>
+                    </div>
+                    <div class="field"><label>التخصص</label><input type="text" id="f_major" placeholder="التخصص الدراسي"></div>
+                    <div class="field"><label>الجامعة / المعهد</label><input type="text" id="f_university" placeholder="اسم الجامعة أو المعهد"></div>
+                    <div class="field"><label>سنة التخرج</label><input type="number" id="f_grad_year" placeholder="مثال: 2020" min="1980" max="2030"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="workflow-section">
+            <div class="section-header"><h3>الخبرة العملية</h3></div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>سنوات الخبرة</label><input type="number" id="f_exp_years" placeholder="عدد السنوات" min="0" max="50"></div>
+                    <div class="field"><label>آخر جهة عمل</label><input type="text" id="f_last_employer" placeholder="اسم الشركة أو المؤسسة"></div>
+                    <div class="field"><label>المسمى الوظيفي الأخير</label><input type="text" id="f_last_title" placeholder="المسمى الوظيفي"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="workflow-section">
+            <div class="section-header"><h3>بيانات التوظيف</h3></div>
+            <div class="section-content">
+                <div class="grid">
+                    <div class="field"><label>الوظيفة المرغوبة *</label><input type="text" id="f_desired_job" placeholder="المسمى الوظيفي المطلوب"></div>
+                    <div class="field"><label>الراتب المتوقع (ريال)</label><input type="number" id="f_salary" placeholder="الراتب الشهري المتوقع" min="0"></div>
+                    <div class="field"><label>مدى التوفر</label>
+                        <select id="f_availability">
+                            <option value="">-- اختر --</option>
+                            <option>فوري</option>
+                            <option>بعد إشعار</option>
+                            <option>تحديد تاريخ</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid" style="margin-top:14px;">
+                    <div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="f_notes" rows="3" placeholder="أي ملاحظات إضافية..."></textarea></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" style="flex:2;" onclick="saveCV()">💾 حفظ السيرة الذاتية</button>
+            <button class="btn btn-gray" onclick="clearForm()">مسح الحقول</button>
+        </div>
+    </div>
+
+    <!-- تاب المخزن -->
+    <div id="tab-bank" class="tab-pane">
+        <div class="stats-row" id="stats-row"></div>
+
+        <div class="toolbar">
+            <input type="text" id="search-box" placeholder="🔍 بحث بالاسم أو الوظيفة..." oninput="renderTable()">
+            <select id="filter-nat" onchange="renderTable()"><option value="">جميع الجنسيات</option></select>
+            <select id="filter-job" onchange="renderTable()"><option value="">جميع الوظائف</option></select>
+            <select id="filter-status" onchange="renderTable()">
+                <option value="">جميع الحالات</option>
+                <option value="جديد">جديد</option>
+                <option value="تم التواصل">تم التواصل</option>
+                <option value="مرشح للتوظيف">مرشح للتوظيف</option>
+                <option value="غير مناسب">غير مناسب</option>
+            </select>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="req-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الاسم</th>
+                        <th>الجنسية</th>
+                        <th>المؤهل</th>
+                        <th>الوظيفة المرغوبة</th>
+                        <th>الراتب المتوقع</th>
+                        <th>تاريخ التسجيل</th>
+                        <th>الحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="cv-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal التفاصيل -->
+<div class="overlay" id="overlay-view" onclick="closeOverlay('overlay-view')">
+    <div class="modal" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeOverlay('overlay-view')">✕</button>
+        <h2>📄 تفاصيل السيرة الذاتية</h2>
+        <div id="modal-detail-content"></div>
+        <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <label style="font-size:13px;font-weight:700;color:#64748b;">الحالة:</label>
+            <select id="modal-status-select" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Tajawal';font-size:13px;">
+                <option value="جديد">جديد</option>
+                <option value="تم التواصل">تم التواصل</option>
+                <option value="مرشح للتوظيف">مرشح للتوظيف</option>
+                <option value="غير مناسب">غير مناسب</option>
+            </select>
+            <button class="btn btn-success btn-sm" onclick="saveStatus()">حفظ الحالة</button>
+            <button class="btn btn-gray btn-sm" onclick="closeOverlay('overlay-view')">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal التواصل -->
+<div class="overlay" id="overlay-contact" onclick="closeOverlay('overlay-contact')">
+    <div class="modal contact-modal" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeOverlay('overlay-contact')">✕</button>
+        <h2>📞 بيانات التواصل</h2>
+        <div id="modal-contact-content"></div>
+    </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'saden_cv_bank';
+
+function getData(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch{return[];}}
+function setData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}
+
+function switchTab(t){
+    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.main-tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+t).classList.add('active');
+    const idx=t==='add'?0:1;
+    document.querySelectorAll('.main-tab-btn')[idx].classList.add('active');
+    if(t==='bank'){populateFilters();renderTable();}
+}
+
+function saveCV(){
+    const name=document.getElementById('f_name').value.trim();
+    const nationality=document.getElementById('f_nationality').value.trim();
+    const phone=document.getElementById('f_phone').value.trim();
+    const desiredJob=document.getElementById('f_desired_job').value.trim();
+    if(!name||!nationality||!phone||!desiredJob){
+        alert('يرجى تعبئة الحقول الإلزامية: الاسم، الجنسية، رقم الجوال، الوظيفة المرغوبة');
+        return;
+    }
+    const cv={
+        id:'cv_'+Date.now(),
+        name,
+        doc_id:document.getElementById('f_id').value.trim(),
+        nationality,
+        phone,
+        email:document.getElementById('f_email').value.trim(),
+        address:document.getElementById('f_address').value.trim(),
+        edu:document.getElementById('f_edu').value,
+        major:document.getElementById('f_major').value.trim(),
+        university:document.getElementById('f_university').value.trim(),
+        grad_year:document.getElementById('f_grad_year').value.trim(),
+        exp_years:document.getElementById('f_exp_years').value.trim(),
+        last_employer:document.getElementById('f_last_employer').value.trim(),
+        last_title:document.getElementById('f_last_title').value.trim(),
+        desired_job:desiredJob,
+        salary:document.getElementById('f_salary').value.trim(),
+        availability:document.getElementById('f_availability').value,
+        notes:document.getElementById('f_notes').value.trim(),
+        status:'جديد',
+        reg_date:new Date().toLocaleDateString('ar-SA')
+    };
+    const data=getData();
+    data.unshift(cv);
+    setData(data);
+    alert('تم حفظ السيرة الذاتية بنجاح');
+    clearForm();
+    switchTab('bank');
+}
+
+function clearForm(){
+    ['f_name','f_id','f_nationality','f_phone','f_email','f_address','f_major','f_university','f_grad_year','f_exp_years','f_last_employer','f_last_title','f_desired_job','f_salary','f_notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f_edu').value='';
+    document.getElementById('f_availability').value='';
+}
+
+function populateFilters(){
+    const data=getData();
+    const nats=[...new Set(data.map(c=>c.nationality).filter(Boolean))];
+    const jobs=[...new Set(data.map(c=>c.desired_job).filter(Boolean))];
+    const fNat=document.getElementById('filter-nat');
+    const fJob=document.getElementById('filter-job');
+    const curNat=fNat.value, curJob=fJob.value;
+    fNat.innerHTML='<option value="">جميع الجنسيات</option>'+nats.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
+    fJob.innerHTML='<option value="">جميع الوظائف</option>'+jobs.map(j=>`<option value="${esc(j)}">${esc(j)}</option>`).join('');
+    fNat.value=curNat; fJob.value=curJob;
+}
+
+function renderTable(){
+    const data=getData();
+    const search=document.getElementById('search-box').value.trim().toLowerCase();
+    const natF=document.getElementById('filter-nat').value;
+    const jobF=document.getElementById('filter-job').value;
+    const statusF=document.getElementById('filter-status').value;
+    const filtered=data.filter(c=>{
+        const matchSearch=!search||(c.name.toLowerCase().includes(search)||c.desired_job.toLowerCase().includes(search));
+        const matchNat=!natF||c.nationality===natF;
+        const matchJob=!jobF||c.desired_job===jobF;
+        const matchStatus=!statusF||c.status===statusF;
+        return matchSearch&&matchNat&&matchJob&&matchStatus;
+    });
+    renderStats(data);
+    const tbody=document.getElementById('cv-table-body');
+    if(!filtered.length){tbody.innerHTML=`<tr><td colspan="9" class="empty-msg">لا توجد سير ذاتية مطابقة</td></tr>`;return;}
+    tbody.innerHTML=filtered.map((c,i)=>`
+        <tr>
+            <td>${i+1}</td>
+            <td style="font-weight:700;">${esc(c.name)}</td>
+            <td>${esc(c.nationality)}</td>
+            <td>${esc(c.edu||'—')}</td>
+            <td>${esc(c.desired_job)}</td>
+            <td>${c.salary?Number(c.salary).toLocaleString()+' ر.س':'—'}</td>
+            <td>${esc(c.reg_date)}</td>
+            <td>${badgeHtml(c.status)}</td>
+            <td>
+                <button class="btn btn-primary btn-sm" onclick="openView('${c.id}')">عرض</button>
+                <button class="btn btn-sm" style="background:#0ea5e9;color:white;margin:2px;" onclick="openContact('${c.id}')">تواصل</button>
+                <button class="btn btn-sm" style="background:#10b981;color:white;margin:2px;" onclick="createRecruitment('${c.id}')">📋 طلب توظيف</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteCV('${c.id}')">حذف</button>
+            </td>
+        </tr>`).join('');
+}
+
+function renderStats(data){
+    const total=data.length;
+    const newC=data.filter(c=>c.status==='جديد').length;
+    const cont=data.filter(c=>c.status==='تم التواصل').length;
+    const cand=data.filter(c=>c.status==='مرشح للتوظيف').length;
+    document.getElementById('stats-row').innerHTML=`
+        <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">إجمالي السير</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#7c3aed;">${newC}</div><div class="stat-lbl">جديد</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#1d4ed8;">${cont}</div><div class="stat-lbl">تم التواصل</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--success);">${cand}</div><div class="stat-lbl">مرشح للتوظيف</div></div>`;
+}
+
+function badgeHtml(status){
+    const map={'جديد':'badge-new','تم التواصل':'badge-contacted','مرشح للتوظيف':'badge-candidate','غير مناسب':'badge-unsuitable'};
+    return `<span class="badge ${map[status]||'badge-unsuitable'}">${esc(status)}</span>`;
+}
+
+let currentViewId=null;
+function openView(id){
+    const data=getData();
+    const cv=data.find(c=>c.id===id);
+    if(!cv)return;
+    currentViewId=id;
+    const fields=[
+        ['الاسم الكامل',cv.name],['رقم الوثيقة',cv.doc_id||'—'],['الجنسية',cv.nationality],['رقم الجوال',cv.phone],
+        ['البريد الإلكتروني',cv.email||'—'],['العنوان',cv.address||'—'],['المؤهل الدراسي',cv.edu||'—'],['التخصص',cv.major||'—'],
+        ['الجامعة / المعهد',cv.university||'—'],['سنة التخرج',cv.grad_year||'—'],['سنوات الخبرة',cv.exp_years?cv.exp_years+' سنة':'—'],
+        ['آخر جهة عمل',cv.last_employer||'—'],['المسمى الأخير',cv.last_title||'—'],['الوظيفة المرغوبة',cv.desired_job],
+        ['الراتب المتوقع',cv.salary?Number(cv.salary).toLocaleString()+' ر.س':'—'],['مدى التوفر',cv.availability||'—'],
+        ['تاريخ التسجيل',cv.reg_date],['ملاحظات',cv.notes||'—']
+    ];
+    let rows='<div class="detail-row" style="flex-wrap:wrap;">';
+    fields.forEach(([lbl,val])=>{rows+=`<div class="detail-item"><div class="d-lbl">${lbl}</div><div class="d-val">${esc(val)}</div></div>`;});
+    rows+='</div>';
+    document.getElementById('modal-detail-content').innerHTML=rows;
+    document.getElementById('modal-status-select').value=cv.status;
+    document.getElementById('overlay-view').classList.add('open');
+}
+
+function saveStatus(){
+    if(!currentViewId)return;
+    const data=getData();
+    const idx=data.findIndex(c=>c.id===currentViewId);
+    if(idx===-1)return;
+    data[idx].status=document.getElementById('modal-status-select').value;
+    setData(data);
+    closeOverlay('overlay-view');
+    populateFilters();
+    renderTable();
+}
+
+function openContact(id){
+    const data=getData();
+    const cv=data.find(c=>c.id===id);
+    if(!cv)return;
+    document.getElementById('modal-contact-content').innerHTML=`
+        <p style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;">${esc(cv.name)}</p>
+        <div class="contact-line">
+            <span>📱 ${esc(cv.phone)}</span>
+            <button class="btn btn-primary btn-sm" onclick="copyText('${esc(cv.phone)}')">نسخ</button>
+        </div>
+        <div class="contact-line">
+            <span>📧 ${esc(cv.email||'غير متوفر')}</span>
+            ${cv.email?`<button class="btn btn-primary btn-sm" onclick="copyText('${esc(cv.email)}')">نسخ</button>`:''}
+        </div>
+        <div class="contact-note">يمكنك التواصل مباشرة مع المتقدم عبر الجوال أو البريد الإلكتروني.</div>`;
+    document.getElementById('overlay-contact').classList.add('open');
+}
+
+function copyText(txt){
+    navigator.clipboard.writeText(txt).then(()=>alert('تم النسخ')).catch(()=>{
+        const el=document.createElement('textarea');el.value=txt;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);alert('تم النسخ');
+    });
+}
+
+function createRecruitment(id){
+    const cv = getData().find(c=>c.id===id);
+    if(!cv) return;
+    localStorage.setItem('saden_cv_prefill', JSON.stringify({
+        name:        cv.name||'',
+        idnum:       cv.doc_id||'',
+        national:    cv.nationality||'',
+        mobile:      cv.phone||'',
+        email:       cv.email||'',
+        edu:         cv.edu||'',
+        major:       cv.major||'',
+        university:  cv.university||'',
+        position:    cv.desired_job||'',
+        salary:      cv.salary||''
+    }));
+    window.location.href = 'employment_requisition.html?role=admin&cv_create=1';
+}
+
+function deleteCV(id){
+    if(!confirm('هل أنت متأكد من حذف هذه السيرة الذاتية؟'))return;
+    let data=getData().filter(c=>c.id!==id);
+    setData(data);
+    populateFilters();
+    renderTable();
+}
+
+function closeOverlay(id){document.getElementById(id).classList.remove('open');}
+function esc(str){if(!str)return'';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+document.addEventListener('DOMContentLoaded',()=>{populateFilters();renderStats(getData());});
+</script>
+</body>
+</html>

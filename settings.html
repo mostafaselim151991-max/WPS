@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام سادن | إعدادات النظام</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#0284c7;--navy:#1e293b;--bg:#f8fafc;--text:#334155;--border:#e2e8f0;--accent:#3b82f6;--success:#10b981;--danger:#ef4444;}
+        *{box-sizing:border-box;}
+        body{font-family:'Tajawal',sans-serif;background:var(--bg);margin:0;color:var(--text);}
+        .container{max-width:1100px;margin:auto;padding:20px;}
+        header{text-align:center;margin-bottom:24px;border-bottom:3px solid var(--primary);padding-bottom:12px;}
+        header h1{margin:0;font-size:22px;color:var(--navy);}
+        header p{margin:5px 0 0;color:#64748b;font-size:13px;}
+
+        .settings-grid{display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start;}
+        .settings-nav{background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 5px rgba(0,0,0,.05);}
+        .settings-nav-title{background:var(--navy);color:white;padding:14px 18px;font-weight:700;font-size:13px;}
+        .settings-nav-item{display:block;width:100%;text-align:right;padding:13px 18px;border:none;background:transparent;font-family:'Tajawal';font-size:13px;font-weight:700;color:#64748b;cursor:pointer;border-bottom:1px solid var(--border);transition:.2s;}
+        .settings-nav-item:last-child{border-bottom:none;}
+        .settings-nav-item:hover{background:#f0f9ff;color:var(--primary);}
+        .settings-nav-item.active{background:#eff6ff;color:var(--primary);border-right:4px solid var(--primary);}
+
+        .settings-panel{display:none;}
+        .settings-panel.active{display:block;}
+        .panel-card{background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 5px rgba(0,0,0,.05);margin-bottom:20px;}
+        .panel-header{background:var(--navy);color:white;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;}
+        .panel-header h3{margin:0;font-size:15px;}
+        .panel-body{padding:22px;}
+
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;}
+        .field{display:flex;flex-direction:column;}
+        .field label{font-size:12px;font-weight:700;margin-bottom:6px;color:#64748b;}
+        .field input,.field select{padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Tajawal';font-size:13px;}
+        .field input:focus,.field select:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(2,132,199,.1);}
+
+        .btn{padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;border:none;font-family:'Tajawal';font-size:13px;}
+        .btn-primary{background:var(--primary);color:white;}
+        .btn-success{background:var(--success);color:white;}
+        .btn-danger{background:var(--danger);color:white;}
+        .btn-gray{background:#94a3b8;color:white;}
+        .btn-sm{padding:5px 12px;font-size:12px;border-radius:6px;}
+
+        .data-table{width:100%;border-collapse:collapse;}
+        .data-table th{background:var(--navy);color:white;padding:10px;font-size:12px;text-align:right;}
+        .data-table td{padding:9px 10px;font-size:13px;border-bottom:1px solid var(--border);}
+        .data-table tr:last-child td{border-bottom:none;}
+        .data-table tr:hover td{background:#f0f9ff;}
+        .empty-msg{text-align:center;padding:30px;color:#94a3b8;font-size:13px;}
+        .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+        .badge-dept{background:#dbeafe;color:#1d4ed8;}
+        .badge-div{background:#d1fae5;color:#065f46;}
+        .form-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap;}
+        .form-row .field{flex:1;min-width:180px;margin:0;}
+        .tag-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+        .tag{background:#eff6ff;color:#1d4ed8;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;}
+        .tag button{background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;padding:0;line-height:1;}
+
+        @media(max-width:700px){.settings-grid{grid-template-columns:1fr;} .settings-nav{margin-bottom:10px;}}
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>⚙️ إعدادات النظام</h1>
+        <p>إدارة إعدادات وتهيئة النظام المركزي لمجموعة سادن</p>
+    </header>
+
+    <div class="settings-grid">
+        <!-- القائمة الجانبية -->
+        <div class="settings-nav">
+            <div class="settings-nav-title">⚙️ أقسام الإعدادات</div>
+            <button class="settings-nav-item active" onclick="showPanel('depts')">🏛️ الإدارات والأقسام</button>
+            <button class="settings-nav-item" onclick="showPanel('company')">🏢 بيانات الشركة</button>
+            <button class="settings-nav-item" onclick="showPanel('branches')">🌐 الفروع والمواقع</button>
+            <button class="settings-nav-item" onclick="showPanel('jobtitles')">👔 المسميات الوظيفية</button>
+            <button class="settings-nav-item" onclick="showPanel('users')">🔐 الدخول والصلاحيات</button>
+        </div>
+
+        <!-- المحتوى -->
+        <div>
+
+            <!-- الإدارات والأقسام -->
+            <div id="panel-depts" class="settings-panel active">
+                <div class="panel-card">
+                    <div class="panel-header"><h3>🏛️ الإدارات والأقسام</h3></div>
+                    <div class="panel-body">
+                        <div class="form-row">
+                            <div class="field"><label>اسم الإدارة *</label><input type="text" id="dept-name" placeholder="مثال: الشئون الإدارية"></div>
+                            <div class="field"><label>الرمز</label><input type="text" id="dept-code" placeholder="HR" style="max-width:100px;"></div>
+                            <button class="btn btn-primary" style="margin-bottom:1px;" onclick="addDept()">+ إضافة إدارة</button>
+                        </div>
+                        <div id="dept-list"></div>
+
+                        <div style="border-top:1px solid var(--border);margin:22px 0 18px;"></div>
+                        <div style="font-weight:700;color:var(--navy);margin-bottom:14px;font-size:14px;">إضافة قسم تحت إدارة</div>
+                        <div class="form-row">
+                            <div class="field"><label>الإدارة *</label>
+                                <select id="div-dept">
+                                    <option value="">-- اختر الإدارة --</option>
+                                </select>
+                            </div>
+                            <div class="field"><label>اسم القسم *</label><input type="text" id="div-name" placeholder="مثال: قسم التوظيف"></div>
+                            <button class="btn btn-success" style="margin-bottom:1px;" onclick="addDiv()">+ إضافة قسم</button>
+                        </div>
+                        <div id="div-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- بيانات الشركة -->
+            <div id="panel-company" class="settings-panel">
+                <div class="panel-card">
+                    <div class="panel-header"><h3>🏢 بيانات الشركة</h3></div>
+                    <div class="panel-body">
+                        <div class="grid">
+                            <div class="field"><label>اسم الشركة بالعربي</label><input type="text" id="co-name-ar" placeholder="مجموعة سادن"></div>
+                            <div class="field"><label>اسم الشركة بالإنجليزي</label><input type="text" id="co-name-en" placeholder="Saden Group"></div>
+                            <div class="field"><label>رقم السجل التجاري</label><input type="text" id="co-cr"></div>
+                            <div class="field"><label>رقم الضريبة (VAT)</label><input type="text" id="co-vat"></div>
+                            <div class="field"><label>العنوان</label><input type="text" id="co-address"></div>
+                            <div class="field"><label>رقم الهاتف</label><input type="tel" id="co-phone"></div>
+                            <div class="field"><label>البريد الإلكتروني</label><input type="email" id="co-email"></div>
+                            <div class="field"><label>الموقع الإلكتروني</label><input type="text" id="co-website"></div>
+                        </div>
+                        <div style="margin-top:18px;display:flex;gap:10px;">
+                            <button class="btn btn-primary" onclick="saveCompany()">💾 حفظ البيانات</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الفروع والمواقع -->
+            <div id="panel-branches" class="settings-panel">
+                <div class="panel-card">
+                    <div class="panel-header"><h3>🌐 الفروع والمواقع</h3></div>
+                    <div class="panel-body">
+                        <div class="form-row">
+                            <div class="field"><label>اسم الفرع / الموقع *</label><input type="text" id="br-name" placeholder="مثال: فرع الرياض"></div>
+                            <div class="field"><label>المدينة</label><input type="text" id="br-city"></div>
+                            <div class="field"><label>النوع</label>
+                                <select id="br-type">
+                                    <option>فرع رئيسي</option><option>فرع</option><option>موقع عمل</option><option>مستودع</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" style="margin-bottom:1px;" onclick="addBranch()">+ إضافة</button>
+                        </div>
+                        <div id="branch-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- المسميات الوظيفية -->
+            <div id="panel-jobtitles" class="settings-panel">
+                <div class="panel-card">
+                    <div class="panel-header"><h3>👔 المسميات الوظيفية</h3></div>
+                    <div class="panel-body">
+                        <div class="form-row">
+                            <div class="field"><label>المسمى الوظيفي *</label><input type="text" id="jt-name" placeholder="مثال: مهندس جيوتقني"></div>
+                            <div class="field"><label>الدرجة الوظيفية</label><input type="text" id="jt-grade" placeholder="مثال: A1"></div>
+                            <button class="btn btn-primary" style="margin-bottom:1px;" onclick="addJobTitle()">+ إضافة</button>
+                        </div>
+                        <div id="jobtitle-list" class="tag-list" style="margin-top:14px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الدخول والصلاحيات -->
+            <div id="panel-users" class="settings-panel">
+                <div class="panel-card">
+                    <div class="panel-header"><h3>🔐 الدخول والصلاحيات</h3></div>
+                    <div class="panel-body" style="padding:0;">
+                        <iframe id="accounts-frame" src="accounts.html" style="width:100%;height:700px;border:none;border-radius:0 0 12px 12px;" onload="resizeFrame(this)"></iframe>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const SK_DEPTS  = 'saden_depts';
+    const SK_DIVS   = 'saden_divisions';
+    const SK_CO     = 'saden_company';
+    const SK_BR     = 'saden_branches_settings';
+    const SK_JT     = 'saden_jobtitles';
+
+    function getD(k){ return JSON.parse(localStorage.getItem(k)||'[]'); }
+    function setD(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+
+    function resizeFrame(iframe){
+        try{
+            const h = iframe.contentWindow.document.body.scrollHeight;
+            if(h > 400) iframe.style.height = h + 'px';
+        }catch(e){}
+    }
+
+    function showPanel(id){
+        document.querySelectorAll('.settings-panel').forEach(p=>p.classList.remove('active'));
+        document.querySelectorAll('.settings-nav-item').forEach(b=>b.classList.remove('active'));
+        document.getElementById('panel-'+id).classList.add('active');
+        event.currentTarget.classList.add('active');
+        if(id==='depts') renderDepts();
+        if(id==='company') loadCompany();
+        if(id==='branches') renderBranches();
+        if(id==='jobtitles') renderJobTitles();
+    }
+
+    /* ======= الإدارات ======= */
+    function addDept(){
+        const name=document.getElementById('dept-name').value.trim();
+        const code=document.getElementById('dept-code').value.trim();
+        if(!name){alert('أدخل اسم الإدارة');return;}
+        const depts=getD(SK_DEPTS);
+        if(depts.find(d=>d.name===name)){alert('الإدارة موجودة مسبقاً');return;}
+        depts.push({id:'d'+Date.now(),name,code});
+        setD(SK_DEPTS,depts);
+        document.getElementById('dept-name').value='';
+        document.getElementById('dept-code').value='';
+        renderDepts();
+    }
+    function deleteDept(id){
+        if(!confirm('حذف الإدارة وجميع أقسامها؟')) return;
+        setD(SK_DEPTS, getD(SK_DEPTS).filter(d=>d.id!==id));
+        setD(SK_DIVS, getD(SK_DIVS).filter(v=>v.deptId!==id));
+        renderDepts();
+    }
+    function renderDepts(){
+        const depts=getD(SK_DEPTS);
+        const divs=getD(SK_DIVS);
+        const el=document.getElementById('dept-list');
+        if(!depts.length){el.innerHTML='<div class="empty-msg">لا توجد إدارات مضافة بعد</div>';updateDeptSelect();return;}
+        let html=`<table class="data-table"><thead><tr><th>#</th><th>الإدارة</th><th>الرمز</th><th>عدد الأقسام</th><th>إجراء</th></tr></thead><tbody>`;
+        depts.forEach((d,i)=>{
+            const cnt=divs.filter(v=>v.deptId===d.id).length;
+            html+=`<tr><td>${i+1}</td><td style="font-weight:700;">${d.name}</td><td><span class="badge badge-dept">${d.code||'—'}</span></td><td>${cnt}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteDept('${d.id}')">حذف</button></td></tr>`;
+        });
+        html+=`</tbody></table>`;
+        el.innerHTML=html;
+        updateDeptSelect();
+    }
+    function updateDeptSelect(){
+        const depts=getD(SK_DEPTS);
+        const sel=document.getElementById('div-dept');
+        sel.innerHTML='<option value="">-- اختر الإدارة --</option>'+depts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+    }
+
+    /* ======= الأقسام ======= */
+    function addDiv(){
+        const deptId=document.getElementById('div-dept').value;
+        const name=document.getElementById('div-name').value.trim();
+        if(!deptId||!name){alert('اختر الإدارة وأدخل اسم القسم');return;}
+        const divs=getD(SK_DIVS);
+        if(divs.find(v=>v.deptId===deptId&&v.name===name)){alert('القسم موجود مسبقاً');return;}
+        divs.push({id:'v'+Date.now(),deptId,name});
+        setD(SK_DIVS,divs);
+        document.getElementById('div-name').value='';
+        renderDivs();
+    }
+    function deleteDiv(id){
+        setD(SK_DIVS, getD(SK_DIVS).filter(v=>v.id!==id));
+        renderDivs();
+    }
+    function renderDivs(){
+        const depts=getD(SK_DEPTS);
+        const divs=getD(SK_DIVS);
+        const el=document.getElementById('div-list');
+        if(!divs.length){el.innerHTML='<div class="empty-msg">لا توجد أقسام مضافة بعد</div>';return;}
+        let html=`<table class="data-table"><thead><tr><th>#</th><th>القسم</th><th>تابع لـ</th><th>إجراء</th></tr></thead><tbody>`;
+        divs.forEach((v,i)=>{
+            const dept=depts.find(d=>d.id===v.deptId);
+            html+=`<tr><td>${i+1}</td><td style="font-weight:700;">${v.name}</td>
+            <td><span class="badge badge-div">${dept?dept.name:'—'}</span></td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteDiv('${v.id}')">حذف</button></td></tr>`;
+        });
+        html+=`</tbody></table>`;
+        el.innerHTML=html;
+    }
+
+    /* ======= بيانات الشركة ======= */
+    function loadCompany(){
+        const co=JSON.parse(localStorage.getItem(SK_CO)||'{}');
+        ['name-ar','name-en','cr','vat','address','phone','email','website'].forEach(k=>{
+            const el=document.getElementById('co-'+k);
+            if(el) el.value=co[k]||'';
+        });
+    }
+    function saveCompany(){
+        const co={};
+        ['name-ar','name-en','cr','vat','address','phone','email','website'].forEach(k=>{
+            const el=document.getElementById('co-'+k);
+            if(el) co[k]=el.value.trim();
+        });
+        localStorage.setItem(SK_CO,JSON.stringify(co));
+        alert('✅ تم حفظ بيانات الشركة');
+    }
+
+    /* ======= الفروع ======= */
+    function addBranch(){
+        const name=document.getElementById('br-name').value.trim();
+        const city=document.getElementById('br-city').value.trim();
+        const type=document.getElementById('br-type').value;
+        if(!name){alert('أدخل اسم الفرع');return;}
+        const brs=getD(SK_BR);
+        brs.push({id:'b'+Date.now(),name,city,type});
+        setD(SK_BR,brs);
+        document.getElementById('br-name').value='';
+        document.getElementById('br-city').value='';
+        renderBranches();
+    }
+    function deleteBranch(id){
+        setD(SK_BR,getD(SK_BR).filter(b=>b.id!==id));
+        renderBranches();
+    }
+    function renderBranches(){
+        const brs=getD(SK_BR);
+        const el=document.getElementById('branch-list');
+        if(!brs.length){el.innerHTML='<div class="empty-msg">لا توجد فروع مضافة بعد</div>';return;}
+        let html=`<table class="data-table"><thead><tr><th>#</th><th>الاسم</th><th>المدينة</th><th>النوع</th><th>إجراء</th></tr></thead><tbody>`;
+        brs.forEach((b,i)=>{
+            html+=`<tr><td>${i+1}</td><td style="font-weight:700;">${b.name}</td><td>${b.city||'—'}</td>
+            <td><span class="badge badge-dept">${b.type}</span></td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteBranch('${b.id}')">حذف</button></td></tr>`;
+        });
+        html+=`</tbody></table>`;
+        el.innerHTML=html;
+    }
+
+    /* ======= المسميات الوظيفية ======= */
+    function addJobTitle(){
+        const name=document.getElementById('jt-name').value.trim();
+        const grade=document.getElementById('jt-grade').value.trim();
+        if(!name){alert('أدخل المسمى الوظيفي');return;}
+        const jts=getD(SK_JT);
+        if(jts.find(j=>j.name===name)){alert('المسمى موجود مسبقاً');return;}
+        jts.push({id:'j'+Date.now(),name,grade});
+        setD(SK_JT,jts);
+        document.getElementById('jt-name').value='';
+        document.getElementById('jt-grade').value='';
+        renderJobTitles();
+    }
+    function deleteJobTitle(id){
+        setD(SK_JT,getD(SK_JT).filter(j=>j.id!==id));
+        renderJobTitles();
+    }
+    function renderJobTitles(){
+        const jts=getD(SK_JT);
+        const el=document.getElementById('jobtitle-list');
+        if(!jts.length){el.innerHTML='<div class="empty-msg" style="width:100%;">لا توجد مسميات مضافة بعد</div>';return;}
+        el.innerHTML=jts.map(j=>`
+            <div class="tag">
+                ${j.name}${j.grade?` <span style="opacity:.7;font-size:10px;">(${j.grade})</span>`:''}
+                <button onclick="deleteJobTitle('${j.id}')">×</button>
+            </div>`).join('');
+    }
+
+    renderDepts();
+    renderDivs();
+
+    const initPanel = new URLSearchParams(window.location.search).get('panel');
+    if(initPanel){
+        const btn = document.querySelector(`.settings-nav-item[onclick*="'${initPanel}'"]`);
+        if(btn){ btn.click(); }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الإدارات والأقسام - سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --muted: #64748b;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .page-header {
+            background: var(--primary);
+            color: white;
+            padding: 18px 25px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h2 { margin: 0; font-size: 1.3rem; }
+        .page-header p { margin: 4px 0 0; opacity: 0.7; font-size: 0.85rem; }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--accent);
+        }
+
+        .stat-box.green { border-top-color: var(--success); }
+        .stat-box.orange { border-top-color: var(--warning); }
+        .stat-box.red { border-top-color: var(--danger); }
+        .stat-box .num { font-size: 1.9rem; font-weight: bold; color: var(--primary); }
+        .stat-box .lbl { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+        /* === تبويبات === */
+        .tabs-header {
+            display: flex;
+            gap: 5px;
+            background: var(--white);
+            padding: 8px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            background: transparent;
+            color: var(--muted);
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-body { display: none; }
+        .tab-body.active { display: block; }
+
+        /* === بطاقة النموذج === */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 15px;
+            color: var(--primary);
+            margin: 0 0 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .form-grid.full { grid-template-columns: 1fr; }
+
+        .field-group { display: flex; flex-direction: column; gap: 6px; }
+        .field-group label { font-size: 13px; font-weight: bold; color: var(--accent); }
+
+        .field-group input,
+        .field-group select,
+        .field-group textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-size: 14px;
+            background: var(--bg);
+            transition: border-color 0.2s;
+        }
+
+        .field-group input:focus,
+        .field-group select:focus,
+        .field-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        .field-group textarea { resize: vertical; min-height: 70px; }
+
+        .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: var(--white); color: var(--primary); border: 1px solid var(--border); }
+        .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+        /* === شريط البحث === */
+        .search-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            background: var(--white);
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .search-bar input,
+        .search-bar select {
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-size: 14px;
+            background: var(--bg);
+        }
+
+        .search-bar input { flex: 1; min-width: 200px; }
+
+        /* === بطاقات الإدارات === */
+        .dept-list { display: flex; flex-direction: column; gap: 14px; }
+
+        .dept-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border-right: 5px solid var(--accent);
+        }
+
+        .dept-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            cursor: pointer;
+            user-select: none;
+            background: #f8fafc;
+            transition: background 0.2s;
+        }
+
+        .dept-card-header:hover { background: #eef2ff; }
+
+        .dept-card-header .dept-title {
+            font-weight: bold;
+            font-size: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dept-card-header .dept-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-active { background: #d1fae5; color: #065f46; }
+        .badge-inactive { background: #f1f5f9; color: #64748b; }
+        .badge-count { background: #dbeafe; color: #1e40af; }
+
+        /* === الأقسام داخل الإدارة === */
+        .sections-container {
+            display: none;
+            padding: 0 18px 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .sections-container.open { display: block; }
+
+        .sections-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0 10px;
+        }
+
+        .sections-header span {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--muted);
+        }
+
+        .sections-table-wrap {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .sections-table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .sections-table-wrap thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        .sections-table-wrap thead th { padding: 10px 12px; white-space: nowrap; }
+        .sections-table-wrap tbody tr { border-bottom: 1px solid var(--border); transition: background 0.2s; }
+        .sections-table-wrap tbody tr:hover { background: #f8fafc; }
+        .sections-table-wrap tbody td { padding: 10px 12px; vertical-align: middle; }
+
+        .empty-sections {
+            text-align: center;
+            padding: 20px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* === Modal === */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 26px;
+            width: 600px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .modal h3 {
+            margin: 0 0 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end; }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .search-bar { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div>
+        <h2>🏢 إدارة الإدارات والأقسام</h2>
+        <p>الهيكل التنظيمي - شركة سادن للاستشارات الجيولوجية</p>
+    </div>
+</div>
+
+<div class="stats-row">
+    <div class="stat-box">
+        <div class="num" id="statDepts">0</div>
+        <div class="lbl">إجمالي الإدارات</div>
+    </div>
+    <div class="stat-box green">
+        <div class="num" id="statActiveDepts">0</div>
+        <div class="lbl">إدارات نشطة</div>
+    </div>
+    <div class="stat-box orange">
+        <div class="num" id="statSections">0</div>
+        <div class="lbl">إجمالي الأقسام</div>
+    </div>
+    <div class="stat-box red">
+        <div class="num" id="statActiveSections">0</div>
+        <div class="lbl">أقسام نشطة</div>
+    </div>
+</div>
+
+<div class="tabs-header">
+    <button class="tab-btn active" onclick="switchTab('depts-tab', this)">🏢 الإدارات</button>
+    <button class="tab-btn" onclick="switchTab('sections-tab', this)">📂 الأقسام</button>
+</div>
+
+<!-- ===== تبويب الإدارات ===== -->
+<div id="depts-tab" class="tab-body active">
+
+    <div class="card">
+        <div class="card-title" id="deptFormTitle">➕ إنشاء إدارة جديدة</div>
+        <input type="hidden" id="editDeptId">
+        <div class="form-grid">
+            <div class="field-group">
+                <label>اسم الإدارة *</label>
+                <input type="text" id="deptName" placeholder="مثال: إدارة الموارد البشرية">
+            </div>
+            <div class="field-group">
+                <label>الاسم الإنجليزي</label>
+                <input type="text" id="deptNameEn" placeholder="Human Resources">
+            </div>
+            <div class="field-group">
+                <label>الموقع / المقر</label>
+                <input type="text" id="deptLocation" placeholder="الرياض">
+            </div>
+            <div class="field-group">
+                <label>مدير الإدارة</label>
+                <select id="deptManager">
+                    <option value="">-- اختر --</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>الحالة</label>
+                <select id="deptStatus">
+                    <option value="active">نشطة</option>
+                    <option value="inactive">غير نشطة</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-grid full">
+            <div class="field-group">
+                <label>ملاحظات</label>
+                <textarea id="deptNotes" placeholder="أي ملاحظات..."></textarea>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-success" onclick="saveDept()">💾 حفظ الإدارة</button>
+            <button class="btn btn-outline" onclick="resetDeptForm()">إلغاء</button>
+        </div>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="deptSearch" placeholder="🔍 بحث في الإدارات..." oninput="renderDepts()">
+        <select id="deptFilterStatus" onchange="renderDepts()">
+            <option value="">كل الحالات</option>
+            <option value="active">نشطة</option>
+            <option value="inactive">غير نشطة</option>
+        </select>
+    </div>
+
+    <div class="dept-list" id="deptList"></div>
+</div>
+
+<!-- ===== تبويب الأقسام ===== -->
+<div id="sections-tab" class="tab-body">
+
+    <div class="card">
+        <div class="card-title" id="secFormTitle">➕ إنشاء قسم جديد</div>
+        <input type="hidden" id="editSecId">
+        <div class="form-grid">
+            <div class="field-group">
+                <label>الإدارة التابع لها *</label>
+                <select id="secDeptId">
+                    <option value="">-- اختر الإدارة --</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>اسم القسم *</label>
+                <input type="text" id="secName" placeholder="مثال: قسم الرواتب">
+            </div>
+            <div class="field-group">
+                <label>الاسم الإنجليزي</label>
+                <input type="text" id="secNameEn" placeholder="Payroll Section">
+            </div>
+            <div class="field-group">
+                <label>الموقع</label>
+                <input type="text" id="secLocation" placeholder="الرياض">
+            </div>
+            <div class="field-group">
+                <label>رئيس القسم</label>
+                <select id="secManager">
+                    <option value="">-- اختر --</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>الحالة</label>
+                <select id="secStatus">
+                    <option value="active">نشط</option>
+                    <option value="inactive">غير نشط</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-grid full">
+            <div class="field-group">
+                <label>ملاحظات</label>
+                <textarea id="secNotes" placeholder="أي ملاحظات..."></textarea>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-success" onclick="saveSec()">💾 حفظ القسم</button>
+            <button class="btn btn-outline" onclick="resetSecForm()">إلغاء</button>
+        </div>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="secSearch" placeholder="🔍 بحث في الأقسام..." oninput="renderSections()">
+        <select id="secFilterDept" onchange="renderSections()">
+            <option value="">كل الإدارات</option>
+        </select>
+        <select id="secFilterStatus" onchange="renderSections()">
+            <option value="">كل الحالات</option>
+            <option value="active">نشط</option>
+            <option value="inactive">غير نشط</option>
+        </select>
+    </div>
+
+    <div class="card" style="padding:0; overflow:hidden;">
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">
+            <thead style="background:var(--primary); color:white;">
+                <tr>
+                    <th style="padding:12px;">م</th>
+                    <th style="padding:12px;">اسم القسم</th>
+                    <th style="padding:12px;">الإدارة</th>
+                    <th style="padding:12px;">الموقع</th>
+                    <th style="padding:12px;">رئيس القسم</th>
+                    <th style="padding:12px;">الحالة</th>
+                    <th style="padding:12px;">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="secTableBody"></tbody>
+        </table>
+        <div id="secEmptyState" style="text-align:center; padding:30px; color:var(--muted); display:none;">
+            لا توجد أقسام بعد. ابدأ بإنشاء قسم جديد.
+        </div>
+    </div>
+</div>
+
+<!-- Modal تعديل الإدارة -->
+<div class="modal-overlay" id="editDeptModal">
+    <div class="modal">
+        <h3>✏️ تعديل الإدارة</h3>
+        <input type="hidden" id="mdEditDeptId">
+        <div class="form-grid">
+            <div class="field-group">
+                <label>اسم الإدارة *</label>
+                <input type="text" id="mdDeptName">
+            </div>
+            <div class="field-group">
+                <label>الاسم الإنجليزي</label>
+                <input type="text" id="mdDeptNameEn">
+            </div>
+            <div class="field-group">
+                <label>الموقع</label>
+                <input type="text" id="mdDeptLocation">
+            </div>
+            <div class="field-group">
+                <label>مدير الإدارة</label>
+                <select id="mdDeptManager"><option value="">-- اختر --</option></select>
+            </div>
+            <div class="field-group">
+                <label>الحالة</label>
+                <select id="mdDeptStatus">
+                    <option value="active">نشطة</option>
+                    <option value="inactive">غير نشطة</option>
+                </select>
+            </div>
+        </div>
+        <div class="field-group" style="margin-top:10px;">
+            <label>ملاحظات</label>
+            <textarea id="mdDeptNotes" rows="2"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-success btn-sm" onclick="saveEditDept()">حفظ</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteDept(document.getElementById('mdEditDeptId').value)">حذف</button>
+            <button class="btn btn-outline btn-sm" onclick="closeModal('editDeptModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal تعديل القسم -->
+<div class="modal-overlay" id="editSecModal">
+    <div class="modal">
+        <h3>✏️ تعديل القسم</h3>
+        <input type="hidden" id="mdEditSecId">
+        <div class="form-grid">
+            <div class="field-group">
+                <label>الإدارة *</label>
+                <select id="mdSecDeptId"><option value="">-- اختر --</option></select>
+            </div>
+            <div class="field-group">
+                <label>اسم القسم *</label>
+                <input type="text" id="mdSecName">
+            </div>
+            <div class="field-group">
+                <label>الاسم الإنجليزي</label>
+                <input type="text" id="mdSecNameEn">
+            </div>
+            <div class="field-group">
+                <label>الموقع</label>
+                <input type="text" id="mdSecLocation">
+            </div>
+            <div class="field-group">
+                <label>رئيس القسم</label>
+                <select id="mdSecManager"><option value="">-- اختر --</option></select>
+            </div>
+            <div class="field-group">
+                <label>الحالة</label>
+                <select id="mdSecStatus">
+                    <option value="active">نشط</option>
+                    <option value="inactive">غير نشط</option>
+                </select>
+            </div>
+        </div>
+        <div class="field-group" style="margin-top:10px;">
+            <label>ملاحظات</label>
+            <textarea id="mdSecNotes" rows="2"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-success btn-sm" onclick="saveEditSec()">حفظ</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSec(document.getElementById('mdEditSecId').value)">حذف</button>
+            <button class="btn btn-outline btn-sm" onclick="closeModal('editSecModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DEPT_KEY = 'saden_org_depts';
+    const SEC_KEY  = 'saden_org_sections';
+
+    let depts    = JSON.parse(localStorage.getItem(DEPT_KEY) || '[]');
+    let sections = JSON.parse(localStorage.getItem(SEC_KEY)  || '[]');
+    let employees = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+
+    function save() {
+        localStorage.setItem(DEPT_KEY, JSON.stringify(depts));
+        localStorage.setItem(SEC_KEY,  JSON.stringify(sections));
+        updateStats();
+    }
+
+    /* ======= تبويبات ======= */
+    function switchTab(id, btn) {
+        document.querySelectorAll('.tab-body').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    /* ======= قوائم الموظفين ======= */
+    function fillEmpSelect(id) {
+        const sel = document.getElementById(id);
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">-- اختر --</option>';
+        employees.forEach(e => {
+            const o = document.createElement('option');
+            o.value = e.emp_number || e.id || '';
+            o.textContent = `${e.emp_name || e.full_name || ''} (${e.company_job || e.position || ''})`;
+            sel.appendChild(o);
+        });
+        sel.value = cur;
+    }
+
+    function fillDeptSelect(id) {
+        const sel = document.getElementById(id);
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">-- اختر الإدارة --</option>';
+        depts.forEach(d => {
+            const o = document.createElement('option');
+            o.value = d.id;
+            o.textContent = d.name;
+            sel.appendChild(o);
+        });
+        sel.value = cur;
+    }
+
+    /* ======= إحصائيات ======= */
+    function updateStats() {
+        document.getElementById('statDepts').textContent = depts.length;
+        document.getElementById('statActiveDepts').textContent = depts.filter(d => d.status === 'active').length;
+        document.getElementById('statSections').textContent = sections.length;
+        document.getElementById('statActiveSections').textContent = sections.filter(s => s.status === 'active').length;
+    }
+
+    /* ======================================================
+       الإدارات
+    ====================================================== */
+    function saveDept() {
+        const name = document.getElementById('deptName').value.trim();
+        if (!name) { alert('يرجى إدخال اسم الإدارة'); return; }
+
+        const entry = {
+            id: 'dept_' + Date.now(),
+            name,
+            nameEn:   document.getElementById('deptNameEn').value.trim(),
+            location: document.getElementById('deptLocation').value.trim(),
+            manager:  document.getElementById('deptManager').value,
+            status:   document.getElementById('deptStatus').value,
+            notes:    document.getElementById('deptNotes').value.trim(),
+            createdAt: new Date().toLocaleDateString('ar-SA')
+        };
+
+        depts.push(entry);
+        save();
+        renderDepts();
+        refreshDeptSelects();
+        resetDeptForm();
+    }
+
+    function resetDeptForm() {
+        ['deptName','deptNameEn','deptLocation','deptNotes'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('deptManager').value = '';
+        document.getElementById('deptStatus').value = 'active';
+        document.getElementById('editDeptId').value = '';
+        document.getElementById('deptFormTitle').textContent = '➕ إنشاء إدارة جديدة';
+    }
+
+    function openEditDeptModal(id) {
+        const d = depts.find(x => x.id === id);
+        if (!d) return;
+        fillEmpSelect('mdDeptManager');
+        document.getElementById('mdEditDeptId').value = d.id;
+        document.getElementById('mdDeptName').value = d.name;
+        document.getElementById('mdDeptNameEn').value = d.nameEn || '';
+        document.getElementById('mdDeptLocation').value = d.location || '';
+        document.getElementById('mdDeptManager').value = d.manager || '';
+        document.getElementById('mdDeptStatus').value = d.status;
+        document.getElementById('mdDeptNotes').value = d.notes || '';
+        document.getElementById('editDeptModal').classList.add('active');
+    }
+
+    function saveEditDept() {
+        const id = document.getElementById('mdEditDeptId').value;
+        const idx = depts.findIndex(d => d.id === id);
+        if (idx === -1) return;
+        const name = document.getElementById('mdDeptName').value.trim();
+        if (!name) { alert('يرجى إدخال اسم الإدارة'); return; }
+
+        depts[idx].name     = name;
+        depts[idx].nameEn   = document.getElementById('mdDeptNameEn').value.trim();
+        depts[idx].location = document.getElementById('mdDeptLocation').value.trim();
+        depts[idx].manager  = document.getElementById('mdDeptManager').value;
+        depts[idx].status   = document.getElementById('mdDeptStatus').value;
+        depts[idx].notes    = document.getElementById('mdDeptNotes').value.trim();
+
+        save();
+        renderDepts();
+        refreshDeptSelects();
+        closeModal('editDeptModal');
+    }
+
+    function deleteDept(id) {
+        const hasSecs = sections.some(s => s.deptId === id);
+        if (hasSecs) {
+            alert('لا يمكن حذف الإدارة لأنها تحتوي على أقسام. احذف الأقسام أولاً.');
+            return;
+        }
+        if (!confirm('هل أنت متأكد من حذف هذه الإدارة؟')) return;
+        depts = depts.filter(d => d.id !== id);
+        save();
+        renderDepts();
+        refreshDeptSelects();
+        closeModal('editDeptModal');
+    }
+
+    function renderDepts() {
+        const q = document.getElementById('deptSearch').value.toLowerCase();
+        const st = document.getElementById('deptFilterStatus').value;
+
+        const filtered = depts.filter(d => {
+            const mQ = !q || d.name.toLowerCase().includes(q) || (d.nameEn || '').toLowerCase().includes(q);
+            const mS = !st || d.status === st;
+            return mQ && mS;
+        });
+
+        const list = document.getElementById('deptList');
+
+        if (filtered.length === 0) {
+            list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">لا توجد إدارات. ابدأ بإنشاء إدارة جديدة.</div>';
+            return;
+        }
+
+        list.innerHTML = filtered.map(d => {
+            const deptSecs = sections.filter(s => s.deptId === d.id);
+            const empObj = employees.find(e => (e.emp_number || e.id) === d.manager);
+            const managerName = empObj ? (empObj.emp_name || empObj.full_name) : (d.manager ? d.manager : 'غير محدد');
+
+            const secRows = deptSecs.length === 0
+                ? `<div class="empty-sections">لا توجد أقسام تحت هذه الإدارة بعد.</div>`
+                : `<div class="sections-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>م</th>
+                                <th>اسم القسم</th>
+                                <th>الموقع</th>
+                                <th>رئيس القسم</th>
+                                <th>الحالة</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${deptSecs.map((s, i) => {
+                                const sm = employees.find(e => (e.emp_number || e.id) === s.manager);
+                                const smName = sm ? (sm.emp_name || sm.full_name) : (s.manager || '—');
+                                return `<tr>
+                                    <td>${i+1}</td>
+                                    <td><strong>${s.name}</strong>${s.nameEn ? `<br><small style="color:var(--muted)">${s.nameEn}</small>` : ''}</td>
+                                    <td>${s.location || '—'}</td>
+                                    <td>${smName}</td>
+                                    <td><span class="badge ${s.status === 'active' ? 'badge-active' : 'badge-inactive'}">${s.status === 'active' ? 'نشط' : 'غير نشط'}</span></td>
+                                    <td><button class="btn btn-outline btn-sm" onclick="openEditSecModal('${s.id}'); event.stopPropagation();">تعديل</button></td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+
+            return `
+            <div class="dept-card">
+                <div class="dept-card-header" onclick="toggleDeptSections('secs_${d.id}')">
+                    <div class="dept-title">
+                        🏢 ${d.name}
+                        ${d.nameEn ? `<small style="color:var(--muted);font-weight:normal;">${d.nameEn}</small>` : ''}
+                    </div>
+                    <div class="dept-meta">
+                        ${d.location ? `<span>📍 ${d.location}</span>` : ''}
+                        <span>👔 ${managerName}</span>
+                        <span class="badge badge-count">${deptSecs.length} قسم</span>
+                        <span class="badge ${d.status === 'active' ? 'badge-active' : 'badge-inactive'}">${d.status === 'active' ? 'نشطة' : 'غير نشطة'}</span>
+                        <button class="btn btn-outline btn-sm" onclick="openEditDeptModal('${d.id}'); event.stopPropagation();">✏️ تعديل</button>
+                        <span style="font-size:16px; color:var(--muted);">▼</span>
+                    </div>
+                </div>
+                <div class="sections-container" id="secs_${d.id}">
+                    <div class="sections-header">
+                        <span>📂 الأقسام التابعة للإدارة</span>
+                        <button class="btn btn-primary btn-sm" onclick="addSecUnder('${d.id}')">+ إضافة قسم</button>
+                    </div>
+                    ${secRows}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function toggleDeptSections(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle('open');
+    }
+
+    function addSecUnder(deptId) {
+        switchTab('sections-tab', document.querySelectorAll('.tab-btn')[1]);
+        fillDeptSelect('secDeptId');
+        document.getElementById('secDeptId').value = deptId;
+        document.getElementById('secName').focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ======================================================
+       الأقسام
+    ====================================================== */
+    function saveSec() {
+        const deptId = document.getElementById('secDeptId').value;
+        const name   = document.getElementById('secName').value.trim();
+        if (!deptId) { alert('يرجى اختيار الإدارة التابع لها القسم'); return; }
+        if (!name)   { alert('يرجى إدخال اسم القسم'); return; }
+
+        const entry = {
+            id: 'sec_' + Date.now(),
+            deptId,
+            name,
+            nameEn:   document.getElementById('secNameEn').value.trim(),
+            location: document.getElementById('secLocation').value.trim(),
+            manager:  document.getElementById('secManager').value,
+            status:   document.getElementById('secStatus').value,
+            notes:    document.getElementById('secNotes').value.trim(),
+            createdAt: new Date().toLocaleDateString('ar-SA')
+        };
+
+        sections.push(entry);
+        save();
+        renderSections();
+        renderDepts();
+        resetSecForm();
+    }
+
+    function resetSecForm() {
+        ['secName','secNameEn','secLocation','secNotes'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('secDeptId').value = '';
+        document.getElementById('secManager').value = '';
+        document.getElementById('secStatus').value = 'active';
+        document.getElementById('editSecId').value = '';
+        document.getElementById('secFormTitle').textContent = '➕ إنشاء قسم جديد';
+    }
+
+    function openEditSecModal(id) {
+        const s = sections.find(x => x.id === id);
+        if (!s) return;
+        fillEmpSelect('mdSecManager');
+        fillDeptSelect('mdSecDeptId');
+        document.getElementById('mdEditSecId').value = s.id;
+        document.getElementById('mdSecDeptId').value = s.deptId;
+        document.getElementById('mdSecName').value = s.name;
+        document.getElementById('mdSecNameEn').value = s.nameEn || '';
+        document.getElementById('mdSecLocation').value = s.location || '';
+        document.getElementById('mdSecManager').value = s.manager || '';
+        document.getElementById('mdSecStatus').value = s.status;
+        document.getElementById('mdSecNotes').value = s.notes || '';
+        document.getElementById('editSecModal').classList.add('active');
+    }
+
+    function saveEditSec() {
+        const id  = document.getElementById('mdEditSecId').value;
+        const idx = sections.findIndex(s => s.id === id);
+        if (idx === -1) return;
+        const name = document.getElementById('mdSecName').value.trim();
+        if (!name) { alert('يرجى إدخال اسم القسم'); return; }
+
+        sections[idx].deptId   = document.getElementById('mdSecDeptId').value;
+        sections[idx].name     = name;
+        sections[idx].nameEn   = document.getElementById('mdSecNameEn').value.trim();
+        sections[idx].location = document.getElementById('mdSecLocation').value.trim();
+        sections[idx].manager  = document.getElementById('mdSecManager').value;
+        sections[idx].status   = document.getElementById('mdSecStatus').value;
+        sections[idx].notes    = document.getElementById('mdSecNotes').value.trim();
+
+        save();
+        renderSections();
+        renderDepts();
+        closeModal('editSecModal');
+    }
+
+    function deleteSec(id) {
+        if (!confirm('هل أنت متأكد من حذف هذا القسم؟')) return;
+        sections = sections.filter(s => s.id !== id);
+        save();
+        renderSections();
+        renderDepts();
+        closeModal('editSecModal');
+    }
+
+    function renderSections() {
+        const q  = document.getElementById('secSearch').value.toLowerCase();
+        const di = document.getElementById('secFilterDept').value;
+        const st = document.getElementById('secFilterStatus').value;
+
+        const filtered = sections.filter(s => {
+            const mQ = !q || s.name.toLowerCase().includes(q) || (s.nameEn || '').toLowerCase().includes(q);
+            const mD = !di || s.deptId === di;
+            const mS = !st || s.status === st;
+            return mQ && mD && mS;
+        });
+
+        const tbody = document.getElementById('secTableBody');
+        const empty = document.getElementById('secEmptyState');
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '';
+            empty.style.display = 'block';
+            return;
+        }
+
+        empty.style.display = 'none';
+        tbody.innerHTML = filtered.map((s, i) => {
+            const dept = depts.find(d => d.id === s.deptId);
+            const deptName = dept ? dept.name : '—';
+            const em = employees.find(e => (e.emp_number || e.id) === s.manager);
+            const managerName = em ? (em.emp_name || em.full_name) : (s.manager || '—');
+
+            return `<tr>
+                <td style="padding:10px;">${i + 1}</td>
+                <td style="padding:10px;"><strong>${s.name}</strong>${s.nameEn ? `<br><small style="color:var(--muted)">${s.nameEn}</small>` : ''}</td>
+                <td style="padding:10px;">${deptName}</td>
+                <td style="padding:10px;">${s.location || '—'}</td>
+                <td style="padding:10px;">${managerName}</td>
+                <td style="padding:10px;"><span class="badge ${s.status === 'active' ? 'badge-active' : 'badge-inactive'}">${s.status === 'active' ? 'نشط' : 'غير نشط'}</span></td>
+                <td style="padding:10px;">
+                    <button class="btn btn-outline btn-sm" onclick="openEditSecModal('${s.id}')">✏️ تعديل</button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function refreshDeptSelects() {
+        fillDeptSelect('secDeptId');
+        fillDeptSelect('secFilterDept');
+        fillDeptSelect('mdSecDeptId');
+    }
+
+    /* ======= Modal ======= */
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    /* ======= تهيئة ======= */
+    window.onload = function() {
+        fillEmpSelect('deptManager');
+        fillEmpSelect('secManager');
+        fillEmpSelect('mdDeptManager');
+        fillEmpSelect('mdSecManager');
+        fillDeptSelect('secDeptId');
+        fillDeptSelect('secFilterDept');
+        fillDeptSelect('mdSecDeptId');
+        renderDepts();
+        renderSections();
+        updateStats();
+    };
+
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'saden_employees') {
+            employees = JSON.parse(e.newValue || '[]');
+            fillEmpSelect('deptManager');
+            fillEmpSelect('secManager');
+        }
+    });
+</script>
+</body>
+</html>

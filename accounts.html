@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الحسابات والصلاحيات - سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --accent-light: rgba(59,130,246,0.08);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --muted: #64748b;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .page-header {
+            background: var(--primary);
+            color: white;
+            padding: 18px 25px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h2 { margin: 0; font-size: 1.3rem; }
+        .page-header p { margin: 4px 0 0; opacity: 0.7; font-size: 0.85rem; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 20px;
+        }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 15px;
+            color: var(--primary);
+            margin: 0 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .field-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+        .field-group label { font-size: 13px; font-weight: bold; color: var(--accent); }
+
+        .field-group input, .field-group select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-size: 14px;
+            background: var(--bg);
+        }
+
+        .field-group input:focus, .field-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Tajawal';
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s, transform 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: white; color: var(--primary); border: 1px solid var(--border); }
+        .btn-sm { padding: 5px 12px; font-size: 12px; width: auto; }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .role-admin { background: #fef3c7; color: #92400e; }
+        .role-manager { background: #dbeafe; color: #1e40af; }
+        .role-user { background: #d1fae5; color: #065f46; }
+        .role-readonly { background: #f1f5f9; color: #475569; }
+
+        /* جدول المستخدمين */
+        .users-table-wrap {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead { background: var(--primary); color: white; }
+        thead th { padding: 12px 10px; white-space: nowrap; font-weight: bold; }
+        tbody tr { border-bottom: 1px solid var(--border); transition: background 0.2s; }
+        tbody tr:hover { background: var(--accent-light); }
+        tbody td { padding: 10px; vertical-align: middle; }
+
+        /* منطقة الصلاحيات */
+        .permissions-wrap {
+            max-height: 420px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 5px 0;
+        }
+
+        .dept-block {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dept-block:last-child { border-bottom: none; }
+
+        .dept-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: #f8fafc;
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--primary);
+        }
+
+        .dept-header:hover { background: var(--accent-light); }
+
+        .dept-header input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); }
+
+        .dept-pages {
+            display: none;
+            padding: 8px 14px 12px 14px;
+            background: white;
+        }
+
+        .dept-pages.open { display: block; }
+
+        .page-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        .page-item:hover { background: #f1f5f9; }
+        .page-item input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--success); cursor: pointer; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            width: 550px;
+            max-width: 95vw;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .modal h3 {
+            margin: 0 0 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+            color: var(--primary);
+        }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+
+        /* stats */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-top: 4px solid var(--accent);
+        }
+
+        .stat-box.green { border-top-color: var(--success); }
+        .stat-box.orange { border-top-color: var(--warning); }
+        .stat-box.red { border-top-color: var(--danger); }
+        .stat-box .num { font-size: 1.8rem; font-weight: bold; color: var(--primary); }
+        .stat-box .lbl { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div>
+        <h2>⚙️ إدارة الحسابات والصلاحيات</h2>
+        <p>التحكم في وصول المستخدمين لإدارات وأقسام النظام</p>
+    </div>
+</div>
+
+<div class="stats-row">
+    <div class="stat-box">
+        <div class="num" id="statTotal">0</div>
+        <div class="lbl">إجمالي الحسابات</div>
+    </div>
+    <div class="stat-box orange">
+        <div class="num" id="statAdmin">0</div>
+        <div class="lbl">مدراء النظام</div>
+    </div>
+    <div class="stat-box green">
+        <div class="num" id="statActive">0</div>
+        <div class="lbl">حسابات نشطة</div>
+    </div>
+    <div class="stat-box red">
+        <div class="num" id="statDisabled">0</div>
+        <div class="lbl">حسابات موقوفة</div>
+    </div>
+</div>
+
+<div class="layout">
+
+    <!-- نموذج الإضافة / التعديل -->
+    <div>
+        <div class="card">
+            <div class="card-title" id="formCardTitle">إضافة مستخدم جديد</div>
+            <input type="hidden" id="editUserId">
+
+            <div class="field-group">
+                <label>اسم المستخدم</label>
+                <input type="text" id="f_username" placeholder="username">
+            </div>
+            <div class="field-group">
+                <label>الاسم الكامل</label>
+                <input type="text" id="f_fullname" placeholder="الاسم الظاهر">
+            </div>
+            <div class="field-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="f_password" placeholder="••••••••">
+            </div>
+            <div class="field-group">
+                <label>الدور الوظيفي</label>
+                <select id="f_role">
+                    <option value="user">مستخدم عادي</option>
+                    <option value="manager">مدير قسم</option>
+                    <option value="admin">مدير النظام (صلاحية كاملة)</option>
+                    <option value="readonly">قراءة فقط</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>الحالة</label>
+                <select id="f_status">
+                    <option value="active">نشط</option>
+                    <option value="disabled">موقوف</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <div style="font-weight:bold; font-size:13px; color:var(--accent); margin-bottom:8px;">الصلاحيات (الإدارات والأقسام)</div>
+                <div id="permissionsTree" class="permissions-wrap"></div>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-success" onclick="saveUser()">حفظ</button>
+                <button class="btn btn-outline" onclick="resetForm()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول المستخدمين -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div class="card-title" style="margin:0; border:none; padding:0;">قائمة المستخدمين</div>
+            <input type="text" id="userSearch" placeholder="بحث..." oninput="renderUsers()"
+                style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-family:'Tajawal'; font-size:13px; width:180px;">
+        </div>
+
+        <div class="users-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم المستخدم</th>
+                        <th>الاسم الكامل</th>
+                        <th>الدور</th>
+                        <th>الصلاحيات</th>
+                        <th>الحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal عرض الصلاحيات -->
+<div class="modal-overlay" id="permViewModal">
+    <div class="modal">
+        <h3>صلاحيات المستخدم: <span id="permViewName"></span></h3>
+        <div id="permViewContent" style="font-size:14px; line-height:2;"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('permViewModal').classList.remove('active')">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'saden_accounts';
+
+    const SYSTEM_TREE = [
+        {
+            id: 'finance', label: '💰 الإدارة المالية',
+            pages: [
+                { id: 'finance.html', label: 'برنامج الحسابات' }
+            ]
+        },
+        {
+            id: 'admin', label: '👥 الشئون الإدارية',
+            pages: [
+                { id: 'hrms.html', label: 'شئون العاملين' },
+                { id: 'employment_requisition.html', label: 'طلبات التوظيف' },
+                { id: 'job_offer.html', label: 'عروض التوظيف' }
+            ]
+        },
+        {
+            id: 'legal', label: '⚖️ الشئون القانونية',
+            pages: [
+                { id: 'external_cases.html', label: 'القضايا الخارجية' },
+                { id: 'employee_complaints.html', label: 'شكاوى الموظفين' },
+                { id: 'investigations.html', label: 'تحقيقات وأحكام' },
+                { id: 'manager_deductions.html', label: 'خصم من المدير المباشر' }
+            ]
+        },
+        {
+            id: 'operations', label: '⚙️ إدارة العمليات',
+            pages: [
+                { id: 'workshop.html', label: 'الورشة' },
+                { id: 'maintenance_workshop.html', label: 'معالجة طلبات الصيانة' },
+                { id: 'drilling.html', label: 'قسم الحفر' },
+                { id: 'car_control.html', label: 'حركة السيارات' },
+                { id: 'invent.html', label: 'قسم الجرد' }
+            ]
+        },
+        {
+            id: 'branches', label: '🏢 إدارة الفروع',
+            pages: [
+                { id: 'maintenance_request.html', label: 'طلب صيانة سيارة' },
+                { id: 'maintenance_branch.html', label: 'متابعة طلبات الصيانة' },
+                { id: 'branch_control.html', label: 'إدارة الفروع' }
+            ]
+        },
+        {
+            id: 'projects', label: '🏗️ إدارة المشروعات',
+            pages: []
+        },
+        {
+            id: 'tenders', label: '📑 إدارة المناقصات',
+            pages: []
+        },
+        {
+            id: 'marketing', label: '🎯 إدارة التسويق',
+            pages: [
+                { id: 'crm.html', label: 'قاعدة بيانات العملاء' },
+                { id: 'marketteam.html', label: 'فريق التسويق' }
+            ]
+        },
+        {
+            id: 'quality', label: '⚖️ إدارة الجودة',
+            pages: [
+                { id: 'kpi.html', label: 'KPIs الفروع والموظفين' }
+            ]
+        },
+        {
+            id: 'payroll', label: '💳 إدارة الرواتب',
+            pages: [
+                { id: 'salarydash.html', label: 'رواتب العاملين' },
+                { id: 'payroll.html', label: 'إنشاء مسير رواتب شهري' },
+                { id: 'برنامج التصفية.html', label: 'برنامج التصفية' },
+                { id: 'المخالصة.html', label: 'المخالصة القانونية' },
+                { id: 'تقسيم مبالغ التصفية.html', label: 'توزيع مبالغ التصفية' },
+                { id: 'loans.html', label: 'السلف' },
+                { id: 'حاسبة.html', label: 'حاسبة أيام عمل' },
+                { id: 'حاسبة التأمينات الإجتماعية.html', label: 'التأمينات الاجتماعية' },
+                { id: 'نماذج الخطابات.html', label: 'نماذج الخطابات' },
+                { id: 'سجل الخطابات.html', label: 'سجل الخطابات' }
+            ]
+        }
+    ];
+
+    let accounts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+        {
+            id: 'u1', username: 'admin', fullname: 'مدير النظام',
+            password: 'admin123', role: 'admin', status: 'active',
+            permissions: { all: true }
+        }
+    ];
+
+    function saveAccounts() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
+        updateStats();
+        renderUsers();
+    }
+
+    function updateStats() {
+        document.getElementById('statTotal').textContent = accounts.length;
+        document.getElementById('statAdmin').textContent = accounts.filter(a => a.role === 'admin').length;
+        document.getElementById('statActive').textContent = accounts.filter(a => a.status === 'active').length;
+        document.getElementById('statDisabled').textContent = accounts.filter(a => a.status === 'disabled').length;
+    }
+
+    function buildPermissionsTree(selectedPerms) {
+        const wrap = document.getElementById('permissionsTree');
+        wrap.innerHTML = '';
+
+        SYSTEM_TREE.forEach(dept => {
+            if (dept.pages.length === 0) return;
+
+            const block = document.createElement('div');
+            block.className = 'dept-block';
+
+            const allChecked = dept.pages.every(p => selectedPerms && selectedPerms[p.id]);
+            const someChecked = dept.pages.some(p => selectedPerms && selectedPerms[p.id]);
+
+            const header = document.createElement('div');
+            header.className = 'dept-header';
+            header.innerHTML = `
+                <input type="checkbox" id="dept_${dept.id}" ${allChecked ? 'checked' : ''} ${someChecked && !allChecked ? 'indeterminate' : ''}>
+                <span>${dept.label}</span>
+                <span style="margin-right:auto; font-size:11px; color:var(--muted);">${dept.pages.length} صفحة</span>
+                <span class="toggle-arrow">▼</span>
+            `;
+
+            const deptCheck = header.querySelector(`#dept_${dept.id}`);
+            if (someChecked && !allChecked) deptCheck.indeterminate = true;
+
+            deptCheck.addEventListener('change', (e) => {
+                const pagesDiv = block.querySelector('.dept-pages');
+                pagesDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = e.target.checked;
+                });
+            });
+
+            header.addEventListener('click', (e) => {
+                if (e.target.tagName === 'INPUT') return;
+                const pagesDiv = block.querySelector('.dept-pages');
+                pagesDiv.classList.toggle('open');
+                header.querySelector('.toggle-arrow').textContent = pagesDiv.classList.contains('open') ? '▲' : '▼';
+            });
+
+            const pagesDiv = document.createElement('div');
+            pagesDiv.className = 'dept-pages' + (someChecked ? ' open' : '');
+            if (someChecked) header.querySelector('.toggle-arrow').textContent = '▲';
+
+            dept.pages.forEach(page => {
+                const item = document.createElement('div');
+                item.className = 'page-item';
+                item.innerHTML = `
+                    <input type="checkbox" id="page_${page.id}" ${selectedPerms && selectedPerms[page.id] ? 'checked' : ''}>
+                    <label for="page_${page.id}" style="cursor:pointer;">${page.label}</label>
+                `;
+
+                item.querySelector('input').addEventListener('change', () => {
+                    const allP = dept.pages.every(p => pagesDiv.querySelector(`#page_${p.id}`)?.checked);
+                    const someP = dept.pages.some(p => pagesDiv.querySelector(`#page_${p.id}`)?.checked);
+                    deptCheck.checked = allP;
+                    deptCheck.indeterminate = someP && !allP;
+                });
+
+                pagesDiv.appendChild(item);
+            });
+
+            block.appendChild(header);
+            block.appendChild(pagesDiv);
+            wrap.appendChild(block);
+        });
+    }
+
+    function collectPermissions() {
+        const perms = {};
+        SYSTEM_TREE.forEach(dept => {
+            dept.pages.forEach(page => {
+                const cb = document.getElementById(`page_${page.id}`);
+                if (cb && cb.checked) perms[page.id] = true;
+            });
+        });
+        return perms;
+    }
+
+    function saveUser() {
+        const username = document.getElementById('f_username').value.trim();
+        const fullname = document.getElementById('f_fullname').value.trim();
+        const password = document.getElementById('f_password').value;
+        const role = document.getElementById('f_role').value;
+        const status = document.getElementById('f_status').value;
+        const editId = document.getElementById('editUserId').value;
+
+        if (!username || !fullname) {
+            alert('يرجى إدخال اسم المستخدم والاسم الكامل');
+            return;
+        }
+
+        const duplicate = accounts.find(a => a.username === username && a.id !== editId);
+        if (duplicate) {
+            alert('اسم المستخدم موجود مسبقاً');
+            return;
+        }
+
+        const permissions = role === 'admin' ? { all: true } : collectPermissions();
+
+        if (editId) {
+            const idx = accounts.findIndex(a => a.id === editId);
+            if (idx !== -1) {
+                accounts[idx].username = username;
+                accounts[idx].fullname = fullname;
+                accounts[idx].role = role;
+                accounts[idx].status = status;
+                accounts[idx].permissions = permissions;
+                if (password) accounts[idx].password = password;
+            }
+        } else {
+            if (!password) { alert('يرجى إدخال كلمة المرور'); return; }
+            accounts.push({
+                id: 'u' + Date.now(),
+                username, fullname, password, role, status, permissions
+            });
+        }
+
+        saveAccounts();
+        resetForm();
+    }
+
+    function editUser(id) {
+        const acc = accounts.find(a => a.id === id);
+        if (!acc) return;
+
+        document.getElementById('editUserId').value = acc.id;
+        document.getElementById('f_username').value = acc.username;
+        document.getElementById('f_fullname').value = acc.fullname;
+        document.getElementById('f_password').value = '';
+        document.getElementById('f_role').value = acc.role;
+        document.getElementById('f_status').value = acc.status;
+        document.getElementById('formCardTitle').textContent = 'تعديل المستخدم: ' + acc.fullname;
+
+        buildPermissionsTree(acc.permissions?.all ? null : acc.permissions);
+
+        if (acc.permissions?.all) {
+            document.querySelectorAll('#permissionsTree input[type="checkbox"]').forEach(cb => cb.checked = true);
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteUser(id) {
+        const acc = accounts.find(a => a.id === id);
+        if (!acc) return;
+        if (acc.role === 'admin' && accounts.filter(a => a.role === 'admin').length <= 1) {
+            alert('لا يمكن حذف آخر مدير نظام');
+            return;
+        }
+        if (!confirm(`هل أنت متأكد من حذف حساب "${acc.fullname}"؟`)) return;
+        accounts = accounts.filter(a => a.id !== id);
+        saveAccounts();
+    }
+
+    function toggleStatus(id) {
+        const acc = accounts.find(a => a.id === id);
+        if (!acc) return;
+        acc.status = acc.status === 'active' ? 'disabled' : 'active';
+        saveAccounts();
+    }
+
+    function viewPermissions(id) {
+        const acc = accounts.find(a => a.id === id);
+        if (!acc) return;
+        document.getElementById('permViewName').textContent = acc.fullname;
+
+        if (acc.permissions?.all || acc.role === 'admin') {
+            document.getElementById('permViewContent').innerHTML = '<div style="color:#10b981; font-weight:bold;">✅ صلاحية كاملة على جميع أقسام النظام</div>';
+        } else {
+            let html = '';
+            SYSTEM_TREE.forEach(dept => {
+                const allowed = dept.pages.filter(p => acc.permissions?.[p.id]);
+                if (allowed.length > 0) {
+                    html += `<div style="margin-bottom:10px;"><strong>${dept.label}</strong><ul style="margin:4px 0 0 20px; padding:0;">`;
+                    allowed.forEach(p => { html += `<li>${p.label}</li>`; });
+                    html += '</ul></div>';
+                }
+            });
+            document.getElementById('permViewContent').innerHTML = html || '<span style="color:#64748b;">لا توجد صلاحيات محددة</span>';
+        }
+
+        document.getElementById('permViewModal').classList.add('active');
+    }
+
+    function resetForm() {
+        document.getElementById('editUserId').value = '';
+        document.getElementById('f_username').value = '';
+        document.getElementById('f_fullname').value = '';
+        document.getElementById('f_password').value = '';
+        document.getElementById('f_role').value = 'user';
+        document.getElementById('f_status').value = 'active';
+        document.getElementById('formCardTitle').textContent = 'إضافة مستخدم جديد';
+        buildPermissionsTree({});
+    }
+
+    function getRoleBadge(role) {
+        const map = {
+            admin: '<span class="role-badge role-admin">مدير النظام</span>',
+            manager: '<span class="role-badge role-manager">مدير قسم</span>',
+            user: '<span class="role-badge role-user">مستخدم عادي</span>',
+            readonly: '<span class="role-badge role-readonly">قراءة فقط</span>'
+        };
+        return map[role] || role;
+    }
+
+    function countPermissions(acc) {
+        if (acc.permissions?.all || acc.role === 'admin') return 'كاملة';
+        const count = SYSTEM_TREE.reduce((sum, dept) => {
+            return sum + dept.pages.filter(p => acc.permissions?.[p.id]).length;
+        }, 0);
+        return count + ' صفحة';
+    }
+
+    function renderUsers() {
+        const q = document.getElementById('userSearch').value.toLowerCase();
+        const filtered = accounts.filter(a =>
+            !q || a.username.toLowerCase().includes(q) || a.fullname.toLowerCase().includes(q)
+        );
+
+        const tbody = document.getElementById('usersTableBody');
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--muted);">لا توجد نتائج</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map((acc, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td><strong>${acc.username}</strong></td>
+                <td>${acc.fullname}</td>
+                <td>${getRoleBadge(acc.role)}</td>
+                <td>
+                    <button class="btn btn-outline btn-sm" onclick="viewPermissions('${acc.id}')">
+                        ${countPermissions(acc)} 🔍
+                    </button>
+                </td>
+                <td>
+                    <span style="color:${acc.status === 'active' ? '#10b981' : '#ef4444'}; font-weight:bold;">
+                        ${acc.status === 'active' ? '● نشط' : '○ موقوف'}
+                    </span>
+                </td>
+                <td>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <button class="btn btn-outline btn-sm" onclick="editUser('${acc.id}')">تعديل</button>
+                        <button class="btn btn-sm" style="background:${acc.status === 'active' ? '#fef3c7' : '#d1fae5'}; color:${acc.status === 'active' ? '#92400e' : '#065f46'}; border:none;"
+                            onclick="toggleStatus('${acc.id}')">
+                            ${acc.status === 'active' ? 'إيقاف' : 'تفعيل'}
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteUser('${acc.id}')">حذف</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    buildPermissionsTree({});
+    updateStats();
+    renderUsers();
+</script>
+</body>
+</html>

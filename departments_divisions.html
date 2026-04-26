@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الإدارات والأقسام</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a; --accent: #3b82f6; --success: #10b981;
+            --danger: #ef4444; --warning: #f59e0b; --light: #f8fafc;
+            --border: #e2e8f0; --text: #1e293b;
+        }
+        
+        * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { margin: 0; padding: 20px; background: linear-gradient(135deg, var(--light) 0%, #e2e8f0 100%); }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        /* --- النوافذ المقسمة --- */
+        .tabs-header {
+            display: flex; gap: 10px; margin-bottom: 20px; background: white;
+            padding: 10px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .tab-btn {
+            padding: 12px 25px; border: none; background: #e2e8f0; color: var(--text);
+            border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s;
+            font-size: 14px;
+        }
+        
+        .tab-btn.active {
+            background: var(--accent); color: white;
+        }
+        
+        .tab-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* --- عنوان القسم --- */
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--accent);
+        }
+        
+        .section-header h2 { margin: 0; color: var(--primary); font-size: 24px; }
+        
+        /* --- أزرار --- */
+        .btn {
+            padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer;
+            font-weight: bold; transition: 0.3s; font-size: 14px;
+        }
+        
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
+        
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; }
+        
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        
+        .btn-small { padding: 6px 12px; font-size: 12px; }
+        
+        /* --- النماذج --- */
+        .form-card {
+            background: white; padding: 25px; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 30px;
+            border-top: 4px solid var(--accent);
+        }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 8px; font-weight: 600; color: var(--text); font-size: 14px; }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px; border: 1px solid var(--border); border-radius: 8px;
+            font-size: 14px; font-family: 'Tajawal', sans-serif;
+            background: var(--light); transition: 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none; border-color: var(--accent); background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-actions {
+            display: flex; gap: 10px; justify-content: flex-end;
+        }
+        
+        /* --- الجداول --- */
+        .table-container {
+            background: white; border-radius: 15px; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%; border-collapse: collapse; font-size: 14px;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, var(--accent) 0%, #2563eb 100%);
+            color: white; font-weight: bold;
+        }
+        
+        th { padding: 15px; text-align: right; }
+        
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: 0.3s;
+        }
+        
+        tbody tr:hover { background: var(--light); }
+        
+        td { padding: 15px; }
+        
+        .badge {
+            display: inline-block; padding: 6px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: bold; color: white;
+        }
+        
+        .badge-active { background: var(--success); }
+        .badge-inactive { background: #64748b; }
+        
+        /* --- الإجراءات --- */
+        .actions {
+            display: flex; gap: 8px; align-items: center;
+        }
+        
+        .action-btn {
+            padding: 6px 10px; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 12px; transition: 0.3s;
+        }
+        
+        .edit-btn { background: #dbeafe; color: var(--accent); }
+        .edit-btn:hover { background: var(--accent); color: white; }
+        
+        .delete-btn { background: #fee2e2; color: var(--danger); }
+        .delete-btn:hover { background: var(--danger); color: white; }
+        
+        /* --- الإحصائيات --- */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px; margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white; padding: 20px; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center;
+            border-bottom: 4px solid var(--accent);
+        }
+        
+        .stat-value { font-size: 28px; font-weight: bold; color: var(--accent); }
+        .stat-label { color: #64748b; margin-top: 5px; font-size: 13px; }
+        
+        /* --- الأقسام الفرعية --- */
+        .nested-section {
+            background: #f0f9ff; padding: 15px; border-radius: 10px;
+            border-right: 4px solid var(--accent); margin: 10px 0;
+        }
+        
+        .nested-title {
+            font-weight: bold; color: var(--accent); margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .divisions-list {
+            display: grid; gap: 10px;
+        }
+        
+        .division-item {
+            background: white; padding: 12px; border-radius: 8px;
+            border-right: 3px solid #f59e0b; display: flex;
+            justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        /* --- نافذة مشروطة --- */
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            align-items: center; justify-content: center;
+        }
+        
+        .modal.show { display: flex; }
+        
+        .modal-content {
+            background: white; padding: 30px; border-radius: 15px;
+            width: 90%; max-width: 600px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header h3 { margin: 0; color: var(--primary); }
+        .modal-actions {
+            display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;
+        }
+        
+        /* --- البحث --- */
+        .search-box {
+            background: white; padding: 15px; border-radius: 15px;
+            margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex; gap: 15px; align-items: center;
+        }
+        
+        .search-box input,
+        .search-box select {
+            padding: 12px; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 14px;
+        }
+        
+        .search-box input { flex: 1; }
+        .search-box select { min-width: 150px; }
+        
+        /* --- رسالة فارغة --- */
+        .empty-state {
+            text-align: center; padding: 60px 20px;
+            color: #64748b;
+        }
+        
+        .empty-state p { margin: 0; font-size: 16px; }
+        
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .search-box { flex-direction: column; }
+            .section-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            table { font-size: 12px; }
+            th, td { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- === النوافذ === -->
+    <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('departments')">🏢 الإدارات الرئيسية</button>
+        <button class="tab-btn" onclick="switchTab('divisions')">📋 الأقسام والفروع</button>
+    </div>
+    
+    <!-- === تبويب الإدارات === -->
+    <div id="departments" class="tab-content active">
+        <div class="section-header">
+            <h2>🏢 إدارة الإدارات الرئيسية</h2>
+        </div>
+        
+        <!-- الإحصائيات -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="deptTotal">0</div>
+                <div class="stat-label">إجمالي الإدارات</div>
+            </div>
+            <div class="stat-card" style="border-color: #10b981;">
+                <div class="stat-value" id="deptActive">0</div>
+                <div class="stat-label">إدارات نشطة</div>
+            </div>
+            <div class="stat-card" style="border-color: #f59e0b;">
+                <div class="stat-value" id="deptDivisions">0</div>
+                <div class="stat-label">إجمالي الأقسام</div>
+            </div>
+        </div>
+        
+        <!-- نموذج إنشاء إدارة -->
+        <div class="form-card">
+            <h3 style="margin-top: 0;">➕ إنشاء إدارة جديدة</h3>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>اسم الإدارة (عربي) *</label>
+                    <input type="text" id="deptName" placeholder="مثال: الإدارة الفنية">
+                </div>
+                
+                <div class="form-group">
+                    <label>الاسم الإنجليزي</label>
+                    <input type="text" id="deptNameEn" placeholder="Technical Department">
+                </div>
+                
+                <div class="form-group">
+                    <label>المقر الرئيسي</label>
+                    <input type="text" id="deptHQ" placeholder="الرياض">
+                </div>
+                
+                <div class="form-group">
+                    <label>مدير الإدارة</label>
+                    <select id="deptHead">
+                        <option value="">-- اختر مدير --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>الوصف</label>
+                <textarea id="deptDesc" placeholder="وصف الإدارة وأهدافها..." rows="3"></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="addDepartment()">💾 حفظ الإدارة</button>
+                <button class="btn" style="background: #e2e8f0; color: var(--primary);" onclick="resetDeptForm()">🔄 إعادة</button>
+            </div>
+        </div>
+        
+        <!-- البحث -->
+        <div class="search-box">
+            <input type="text" id="searchDept" placeholder="🔍 ابحث عن إدارة..." onkeyup="filterDepartments()">
+            <select id="filterDeptStatus" onchange="filterDepartments()">
+                <option value="">-- الحالة --</option>
+                <option value="active">نشط</option>
+                <option value="inactive">غير نشط</option>
+            </select>
+        </div>
+        
+        <!-- جدول الإدارات -->
+        <div class="table-container">
+            <table id="deptTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم الإدارة</th>
+                        <th>المقر</th>
+                        <th>المدير</th>
+                        <th>عدد الأقسام</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="deptList"></tbody>
+            </table>
+            <div id="emptyDept" class="empty-state" style="display: none;">
+                <p>📭 لا توجد إدارات حتى الآن</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- === تبويب الأقسام === -->
+    <div id="divisions" class="tab-content">
+        <div class="section-header">
+            <h2>📋 إدارة الأقسام والفروع</h2>
+        </div>
+        
+        <!-- الإحصائيات -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="divTotal">0</div>
+                <div class="stat-label">إجمالي الأقسام</div>
+            </div>
+            <div class="stat-card" style="border-color: #10b981;">
+                <div class="stat-value" id="divActive">0</div>
+                <div class="stat-label">أقسام نشطة</div>
+            </div>
+            <div class="stat-card" style="border-color: #f59e0b;">
+                <div class="stat-value" id="divEmps">0</div>
+                <div class="stat-label">موظفون معينون</div>
+            </div>
+        </div>
+        
+        <!-- نموذج إنشاء قسم -->
+        <div class="form-card">
+            <h3 style="margin-top: 0;">➕ إنشاء قسم / فرع جديد</h3>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>الإدارة الأم *</label>
+                    <select id="divDept" onchange="loadDivisionManagers()">
+                        <option value="">-- اختر الإدارة --</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>اسم القسم (عربي) *</label>
+                    <input type="text" id="divName" placeholder="مثال: قسم الحفر">
+                </div>
+                
+                <div class="form-group">
+                    <label>الاسم الإنجليزي</label>
+                    <input type="text" id="divNameEn" placeholder="Drilling Section">
+                </div>
+                
+                <div class="form-group">
+                    <label>نوع القسم *</label>
+                    <select id="divType">
+                        <option value="">-- اختر النوع --</option>
+                        <option value="main">فرع رئيسي</option>
+                        <option value="sub">قسم فرعي</option>
+                        <option value="team">فريق عمل</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>الموقع</label>
+                    <input type="text" id="divLocation" placeholder="مثال: الرياض - الدوادمي">
+                </div>
+                
+                <div class="form-group">
+                    <label>مدير القسم</label>
+                    <select id="divManager">
+                        <option value="">-- اختر مدير --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>ملاحظات</label>
+                <textarea id="divNotes" placeholder="ملاحظات إضافية..." rows="3"></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="addDivision()">💾 حفظ القسم</button>
+                <button class="btn" style="background: #e2e8f0; color: var(--primary);" onclick="resetDivForm()">🔄 إعادة</button>
+            </div>
+        </div>
+        
+        <!-- البحث -->
+        <div class="search-box">
+            <input type="text" id="searchDiv" placeholder="🔍 ابحث عن قسم..." onkeyup="filterDivisions()">
+            <select id="filterDivDept" onchange="filterDivisions()">
+                <option value="">-- الإدارة --</option>
+            </select>
+            <select id="filterDivStatus" onchange="filterDivisions()">
+                <option value="">-- الحالة --</option>
+                <option value="active">نشط</option>
+                <option value="inactive">غير نشط</option>
+            </select>
+        </div>
+        
+        <!-- جدول الأقسام -->
+        <div class="table-container">
+            <table id="divTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الإدارة الأم</th>
+                        <th>اسم القسم</th>
+                        <th>النوع</th>
+                        <th>الموقع</th>
+                        <th>المدير</th>
+                        <th>الموظفون</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="divList"></tbody>
+            </table>
+            <div id="emptyDiv" class="empty-state" style="display: none;">
+                <p>📭 لا توجد أقسام حتى الآن</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- === نافذة تعديل الإدارة === -->
+<div id="editDeptModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>✏️ تعديل بيانات الإدارة</h3>
+        </div>
+        <input type="hidden" id="editDeptId">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>اسم الإدارة</label>
+                <input type="text" id="editDeptName">
+            </div>
+            <div class="form-group">
+                <label>الاسم الإنجليزي</label>
+                <input type="text" id="editDeptNameEn">
+            </div>
+            <div class="form-group">
+                <label>المقر</label>
+                <input type="text" id="editDeptHQ">
+            </div>
+            <div class="form-group">
+                <label>المدير</label>
+                <select id="editDeptHead"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>الوصف</label>
+            <textarea id="editDeptDesc" rows="3"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-danger" onclick="deleteDepartment(document.getElementById('editDeptId').value)">🗑️ حذف</button>
+            <button class="btn" style="background: #e2e8f0; color: var(--primary);" onclick="closeDeptModal()">إلغاء</button>
+            <button class="btn btn-success" onclick="saveDeptEdit()">💾 حفظ</button>
+        </div>
+    </div>
+</div>
+
+<!-- === نافذة تعديل القسم === -->
+<div id="editDivModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>✏️ تعديل بيانات القسم</h3>
+        </div>
+        <input type="hidden" id="editDivId">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>الإدارة الأم</label>
+                <select id="editDivDept"></select>
+            </div>
+            <div class="form-group">
+                <label>اسم القسم</label>
+                <input type="text" id="editDivName">
+            </div>
+            <div class="form-group">
+                <label>النوع</label>
+                <select id="editDivType">
+                    <option value="main">فرع رئيسي</option>
+                    <option value="sub">قسم فرعي</option>
+                    <option value="team">فريق عمل</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الموقع</label>
+                <input type="text" id="editDivLocation">
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-danger" onclick="deleteDivision(document.getElementById('editDivId').value)">🗑️ حذف</button>
+            <button class="btn" style="background: #e2e8f0; color: var(--primary);" onclick="closeDivModal()">إلغاء</button>
+            <button class="btn btn-success" onclick="saveDivEdit()">💾 حفظ</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let departments = JSON.parse(localStorage.getItem('saden_departments') || '[]');
+let divisions = JSON.parse(localStorage.getItem('saden_divisions') || '[]');
+let employees = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
+    
+    if(tabName === 'divisions') {
+        loadDivisionDeptFilter();
+    }
+}
+
+function loadEmployeeDropdowns() {
+    const selects = ['deptHead', 'editDeptHead', 'divManager', 'editDivManager'];
+    selects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if(!select) return;
+        const current = select.value;
+        select.innerHTML = '<option value="">-- لم يتم التعيين --</option>';
+        employees.forEach(emp => {
+            const option = document.createElement('option');
+            option.value = emp.emp_number || emp.id;
+            option.textContent = `${emp.emp_name || emp.full_name} (${emp.emp_number})`;
+            select.appendChild(option);
+        });
+        select.value = current;
+    });
+}
+
+// === الإدارات ===
+function addDepartment() {
+    const name = document.getElementById('deptName').value.trim();
+    const nameEn = document.getElementById('deptNameEn').value.trim();
+    const hq = document.getElementById('deptHQ').value.trim();
+    const head = document.getElementById('deptHead').value;
+    const desc = document.getElementById('deptDesc').value.trim();
+    
+    if(!name) {
+        alert('❌ يرجى ملء اسم الإدارة');
+        return;
+    }
+    
+    const dept = {
+        id: 'dept_' + Date.now(),
+        name: name,
+        nameEn: nameEn,
+        hq: hq,
+        head: head,
+        desc: desc,
+        status: 'active',
+        createdAt: new Date().toLocaleDateString('ar-SA')
+    };
+    
+    departments.push(dept);
+    saveDepartments();
+    renderDepartments();
+    resetDeptForm();
+    updateStats();
+    alert('✅ تم إضافة الإدارة بنجاح!');
+}
+
+function openEditDeptModal(id) {
+    const dept = departments.find(d => d.id === id);
+    if(!dept) return;
+    
+    document.getElementById('editDeptId').value = id;
+    document.getElementById('editDeptName').value = dept.name;
+    document.getElementById('editDeptNameEn').value = dept.nameEn || '';
+    document.getElementById('editDeptHQ').value = dept.hq || '';
+    document.getElementById('editDeptHead').value = dept.head || '';
+    document.getElementById('editDeptDesc').value = dept.desc || '';
+    
+    document.getElementById('editDeptModal').classList.add('show');
+}
+
+function saveDeptEdit() {
+    const id = document.getElementById('editDeptId').value;
+    const idx = departments.findIndex(d => d.id === id);
+    if(idx === -1) return;
+    
+    departments[idx].name = document.getElementById('editDeptName').value;
+    departments[idx].nameEn = document.getElementById('editDeptNameEn').value;
+    departments[idx].hq = document.getElementById('editDeptHQ').value;
+    departments[idx].head = document.getElementById('editDeptHead').value;
+    departments[idx].desc = document.getElementById('editDeptDesc').value;
+    
+    saveDepartments();
+    renderDepartments();
+    closeDeptModal();
+    updateStats();
+    alert('✅ تم حفظ التعديلات بنجاح!');
+}
+
+function deleteDepartment(id) {
+    if(!confirm('هل أنت متأكد؟ سيؤثر على الأقسام التابعة!')) return;
+    
+    departments = departments.filter(d => d.id !== id);
+    divisions = divisions.filter(div => div.parent_dept !== id);
+    
+    saveDepartments();
+    saveDivisions();
+    renderDepartments();
+    renderDivisions();
+    closeDeptModal();
+    updateStats();
+    alert('✅ تم الحذف بنجاح!');
+}
+
+function closeDeptModal() {
+    document.getElementById('editDeptModal').classList.remove('show');
+}
+
+function renderDepartments() {
+    const tbody = document.getElementById('deptList');
+    const filtered = getFilteredDepartments();
+    
+    if(filtered.length === 0) {
+        document.getElementById('emptyDept').style.display = 'block';
+        document.getElementById('deptTable').style.display = 'none';
+        return;
+    }
+    
+    document.getElementById('emptyDept').style.display = 'none';
+    document.getElementById('deptTable').style.display = 'table';
+    
+    tbody.innerHTML = filtered.map((dept, idx) => {
+        const divCount = divisions.filter(d => d.parent_dept === dept.id).length;
+        const headEmp = employees.find(e => (e.emp_number || e.id) == dept.head);
+        const headName = headEmp ? (headEmp.emp_name || headEmp.full_name) : 'غير محدد';
+        
+        return `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><strong>${dept.name}</strong></td>
+                <td>${dept.hq || '-'}</td>
+                <td>${headName}</td>
+                <td><span class="badge badge-active">${divCount}</span></td>
+                <td><span class="badge ${dept.status === 'active' ? 'badge-active' : 'badge-inactive'}">${dept.status === 'active' ? '✅ نشط' : '❌ معطل'}</span></td>
+                <td>
+                    <div class="actions">
+                        <button class="action-btn edit-btn" onclick="openEditDeptModal('${dept.id}')">✏️ تعديل</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function getFilteredDepartments() {
+    const search = document.getElementById('searchDept').value.toLowerCase();
+    const status = document.getElementById('filterDeptStatus').value;
+    
+    return departments.filter(dept => {
+        const matchSearch = dept.name.toLowerCase().includes(search) || 
+                          (dept.nameEn && dept.nameEn.toLowerCase().includes(search));
+        const matchStatus = !status || dept.status === status;
+        return matchSearch && matchStatus;
+    });
+}
+
+function filterDepartments() {
+    renderDepartments();
+}
+
+function resetDeptForm() {
+    document.getElementById('deptName').value = '';
+    document.getElementById('deptNameEn').value = '';
+    document.getElementById('deptHQ').value = '';
+    document.getElementById('deptHead').value = '';
+    document.getElementById('deptDesc').value = '';
+}
+
+// === الأقسام ===
+function loadDivisionDeptFilter() {
+    const select = document.getElementById('filterDivDept');
+    const current = select.value;
+    select.innerHTML = '<option value="">-- الإدارة --</option>';
+    departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.id;
+        option.textContent = dept.name;
+        select.appendChild(option);
+    });
+    select.value = current;
+}
+
+function loadDivisionManagers() {
+    const deptId = document.getElementById('divDept').value;
+    const dept = departments.find(d => d.id === deptId);
+    
+    const select = document.getElementById('divManager');
+    select.innerHTML = '<option value="">-- اختر مدير --</option>';
+    
+    employees.forEach(emp => {
+        const option = document.createElement('option');
+        option.value = emp.emp_number || emp.id;
+        option.textContent = `${emp.emp_name || emp.full_name} (${emp.emp_number})`;
+        select.appendChild(option);
+    });
+}
+
+function addDivision() {
+    const deptId = document.getElementById('divDept').value;
+    const name = document.getElementById('divName').value.trim();
+    const type = document.getElementById('divType').value;
+    const location = document.getElementById('divLocation').value.trim();
+    const manager = document.getElementById('divManager').value;
+    const notes = document.getElementById('divNotes').value.trim();
+    
+    if(!deptId || !name || !type) {
+        alert('❌ يرجى ملء الحقول المطلوبة');
+        return;
+    }
+    
+    const div = {
+        id: 'div_' + Date.now(),
+        parent_dept: deptId,
+        name: name,
+        nameEn: document.getElementById('divNameEn').value.trim(),
+        type: type,
+        location: location,
+        manager: manager,
+        notes: notes,
+        status: 'active',
+        employees: [],
+        createdAt: new Date().toLocaleDateString('ar-SA')
+    };
+    
+    divisions.push(div);
+    saveDivisions();
+    renderDivisions();
+    resetDivForm();
+    updateStats();
+    alert('✅ تم إضافة القسم بنجاح!');
+}
+
+function openEditDivModal(id) {
+    const div = divisions.find(d => d.id === id);
+    if(!div) return;
+    
+    document.getElementById('editDivId').value = id;
+    document.getElementById('editDivDept').innerHTML = '';
+    departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.id;
+        option.textContent = dept.name;
+        option.selected = dept.id === div.parent_dept;
+        document.getElementById('editDivDept').appendChild(option);
+    });
+    
+    document.getElementById('editDivName').value = div.name;
+    document.getElementById('editDivType').value = div.type;
+    document.getElementById('editDivLocation').value = div.location || '';
+    
+    document.getElementById('editDivModal').classList.add('show');
+}
+
+function saveDivEdit() {
+    const id = document.getElementById('editDivId').value;
+    const idx = divisions.findIndex(d => d.id === id);
+    if(idx === -1) return;
+    
+    divisions[idx].parent_dept = document.getElementById('editDivDept').value;
+    divisions[idx].name = document.getElementById('editDivName').value;
+    divisions[idx].type = document.getElementById('editDivType').value;
+    divisions[idx].location = document.getElementById('editDivLocation').value;
+    
+    saveDivisions();
+    renderDivisions();
+    closeDivModal();
+    updateStats();
+    alert('✅ تم حفظ التعديلات!');
+}
+
+function deleteDivision(id) {
+    if(!confirm('هل أنت متأكد من حذف هذا القسم؟')) return;
+    
+    divisions = divisions.filter(d => d.id !== id);
+    saveDivisions();
+    renderDivisions();
+    closeDivModal();
+    updateStats();
+    alert('✅ تم الحذف!');
+}
+
+function closeDivModal() {
+    document.getElementById('editDivModal').classList.remove('show');
+}
+
+function renderDivisions() {
+    const tbody = document.getElementById('divList');
+    const filtered = getFilteredDivisions();
+    
+    if(filtered.length === 0) {
+        document.getElementById('emptyDiv').style.display = 'block';
+        document.getElementById('divTable').style.display = 'none';
+        return;
+    }
+    
+    document.getElementById('emptyDiv').style.display = 'none';
+    document.getElementById('divTable').style.display = 'table';
+    
+    tbody.innerHTML = filtered.map((div, idx) => {
+        const dept = departments.find(d => d.id === div.parent_dept);
+        const mgr = employees.find(e => (e.emp_number || e.id) == div.manager);
+        const typeLabel = { 'main': 'فرع رئيسي', 'sub': 'قسم فرعي', 'team': 'فريق عمل' }[div.type];
+        
+        return `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><strong>${dept ? dept.name : 'حذفت'}</strong></td>
+                <td>${div.name}</td>
+                <td>${typeLabel}</td>
+                <td>${div.location || '-'}</td>
+                <td>${mgr ? (mgr.emp_name || mgr.full_name) : '-'}</td>
+                <td><span class="badge badge-active">${div.employees ? div.employees.length : 0}</span></td>
+                <td><span class="badge ${div.status === 'active' ? 'badge-active' : 'badge-inactive'}">${div.status === 'active' ? '✅' : '❌'}</span></td>
+                <td>
+                    <div class="actions">
+                        <button class="action-btn edit-btn" onclick="openEditDivModal('${div.id}')">✏️ تعديل</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function getFilteredDivisions() {
+    const search = document.getElementById('searchDiv').value.toLowerCase();
+    const dept = document.getElementById('filterDivDept').value;
+    const status = document.getElementById('filterDivStatus').value;
+    
+    return divisions.filter(div => {
+        const matchSearch = div.name.toLowerCase().includes(search);
+        const matchDept = !dept || div.parent_dept === dept;
+        const matchStatus = !status || div.status === status;
+        return matchSearch && matchDept && matchStatus;
+    });
+}
+
+function filterDivisions() {
+    renderDivisions();
+}
+
+function resetDivForm() {
+    document.getElementById('divDept').value = '';
+    document.getElementById('divName').value = '';
+    document.getElementById('divNameEn').value = '';
+    document.getElementById('divType').value = '';
+    document.getElementById('divLocation').value = '';
+    document.getElementById('divManager').value = '';
+    document.getElementById('divNotes').value = '';
+}
+
+function updateStats() {
+    const activeDepts = departments.filter(d => d.status === 'active').length;
+    const activeDivs = divisions.filter(d => d.status === 'active').length;
+    let totalEmps = 0;
+    divisions.forEach(div => {
+        totalEmps += (div.employees ? div.employees.length : 0);
+    });
+    
+    document.getElementById('deptTotal').textContent = departments.length;
+    document.getElementById('deptActive').textContent = activeDepts;
+    document.getElementById('deptDivisions').textContent = divisions.length;
+    
+    document.getElementById('divTotal').textContent = divisions.length;
+    document.getElementById('divActive').textContent = activeDivs;
+    document.getElementById('divEmps').textContent = totalEmps;
+}
+
+function saveDepartments() {
+    localStorage.setItem('saden_departments', JSON.stringify(departments));
+}
+
+function saveDivisions() {
+    localStorage.setItem('saden_divisions', JSON.stringify(divisions));
+}
+
+window.onload = function() {
+    loadEmployeeDropdowns();
+    renderDepartments();
+    renderDivisions();
+    loadDivisionDeptFilter();
+    updateStats();
+    
+    window.addEventListener('storage', function(e) {
+        if(e.key === 'saden_employees') {
+            employees = JSON.parse(e.newValue || '[]');
+            loadEmployeeDropdowns();
+        }
+    });
+};
+</script>
+
+</body>
+</html>

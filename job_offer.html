@@ -50,26 +50,37 @@
         .joining-date-area { margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px; }
 
         @media print { .controls { display: none; } }
+
+        #access-denied{display:none;position:fixed;inset:0;background:#1e293b;color:white;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-size:18px;font-weight:700;z-index:9999;}
+        #access-denied p{color:#94a3b8;font-size:14px;}
+        .auto-fill-banner{background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 16px;margin-bottom:15px;color:#166534;font-weight:700;font-size:13px;display:none;}
     </style>
 </head>
-<body onload="setCurrentDate()">
+<body onload="initPage()">
+
+<div id="access-denied">
+    <div style="font-size:48px;">🔒</div>
+    <div>هذه الصفحة مخصصة لشئون الموظفين فقط</div>
+    <p>يرجى الدخول من خلال النظام الرئيسي</p>
+</div>
 
 <div class="controls">
     <h3 style="text-align: center;">✍️ لوحة التحكم - سادن (حل مشكلة العربي)</h3>
+    <div id="auto-fill-banner" class="auto-fill-banner">✅ تم ملء البيانات تلقائياً من طلب التوظيف المعتمد</div>
     <div class="input-grid">
         <div class="field"><label>تاريخ إنشاء العرض</label><input type="text" id="in-offer-date" oninput="updateStaticView('v-offer_date', this.value)"></div>
-        <div class="field"><label>الاسم</label><input type="text" oninput="updateStaticView('v-name', this.value)"></div>
-        <div class="field"><label>رقم الهوية / الجواز</label><input type="text" oninput="updateStaticView('v-id', this.value)"></div>
-        <div class="field"><label>الجنسية</label><input type="text" oninput="updateStaticView('v-nat', this.value)"></div>
-        <div class="field"><label>المؤهل</label><input type="text" oninput="updateStaticView('v-qual', this.value)"></div>
-        <div class="field"><label>المهنة في الإقامة</label><input type="text" oninput="updateStaticView('v-job_iqama', this.value)"></div>
-        <div class="field"><label>المسمى الوظيفي</label><input type="text" oninput="updateStaticView('v-title', this.value)"></div>
-        <div class="field"><label>أساسي</label><input type="number" oninput="updateStaticView('v-base', this.value)"></div>
-        <div class="field"><label>سكن</label><input type="number" oninput="updateStaticView('v-house', this.value)"></div>
-        <div class="field"><label>نقل</label><input type="number" oninput="updateStaticView('v-trans', this.value)"></div>
-        <div class="field"><label>اتصال</label><input type="number" oninput="updateStaticView('v-comm', this.value)"></div>
-        <div class="field"><label>إعاشة</label><input type="number" oninput="updateStaticView('v-food', this.value)"></div>
-        <div class="field"><label>الفرع</label><input type="text" oninput="updateStaticView('v-branch', this.value)"></div>
+        <div class="field"><label>الاسم</label><input type="text" id="in-name" oninput="updateStaticView('v-name', this.value)"></div>
+        <div class="field"><label>رقم الهوية / الجواز</label><input type="text" id="in-id" oninput="updateStaticView('v-id', this.value)"></div>
+        <div class="field"><label>الجنسية</label><input type="text" id="in-nat" oninput="updateStaticView('v-nat', this.value)"></div>
+        <div class="field"><label>المؤهل</label><input type="text" id="in-qual" oninput="updateStaticView('v-qual', this.value)"></div>
+        <div class="field"><label>المهنة في الإقامة</label><input type="text" id="in-job-iqama" oninput="updateStaticView('v-job_iqama', this.value)"></div>
+        <div class="field"><label>المسمى الوظيفي</label><input type="text" id="in-title" oninput="updateStaticView('v-title', this.value)"></div>
+        <div class="field"><label>أساسي</label><input type="number" id="in-base" oninput="updateStaticView('v-base', this.value)"></div>
+        <div class="field"><label>سكن</label><input type="number" id="in-house" oninput="updateStaticView('v-house', this.value)"></div>
+        <div class="field"><label>نقل</label><input type="number" id="in-trans" oninput="updateStaticView('v-trans', this.value)"></div>
+        <div class="field"><label>اتصال</label><input type="number" id="in-comm" oninput="updateStaticView('v-comm', this.value)"></div>
+        <div class="field"><label>إعاشة</label><input type="number" id="in-food" oninput="updateStaticView('v-food', this.value)"></div>
+        <div class="field"><label>الفرع</label><input type="text" id="in-branch" oninput="updateStaticView('v-branch', this.value)"></div>
         <div class="field"><label>تاريخ المباشرة (اختياري)</label><input type="date" onchange="updateJoiningDate(this.value)"></div>
     </div>
     <div class="action-btns">
@@ -142,11 +153,45 @@
 </div>
 
 <script>
+    function initPage(){
+        const urlP = new URLSearchParams(window.location.search);
+        const role = urlP.get('role');
+        if(role !== 'admin'){
+            document.getElementById('access-denied').style.display = 'flex';
+            document.querySelector('.controls').style.display = 'none';
+            document.getElementById('pdf-wrapper').style.display = 'none';
+            return;
+        }
+        setCurrentDate();
+        autoFillFromApproved();
+    }
+
     function setCurrentDate() {
         const today = new Date();
         const f = today.getDate().toString().padStart(2, '0') + ' / ' + (today.getMonth() + 1).toString().padStart(2, '0') + ' / ' + today.getFullYear();
         document.getElementById('v-offer_date').innerText = f;
         document.getElementById('in-offer-date').value = f;
+    }
+
+    function autoFillFromApproved(){
+        const raw = localStorage.getItem('saden_last_approved_offer');
+        if(!raw) return;
+        try {
+            const d = JSON.parse(raw);
+            const map = [
+                ['in-name','v-name',d.name],['in-id','v-id',d.idnum],['in-nat','v-nat',d.national],
+                ['in-qual','v-qual',d.edu],['in-job-iqama','v-job_iqama',d.iqama_job],
+                ['in-title','v-title',d.position],['in-branch','v-branch',d.branch],
+                ['in-base','v-base',d.sal_base],['in-house','v-house',d.sal_house],
+                ['in-trans','v-trans',d.sal_trans],['in-comm','v-comm',d.sal_comm],
+                ['in-food','v-food',d.sal_food]
+            ];
+            map.forEach(([inputId, viewId, val])=>{
+                const el = document.getElementById(inputId);
+                if(el && val){ el.value = val; updateStaticView(viewId, val); }
+            });
+            document.getElementById('auto-fill-banner').style.display = 'block';
+        } catch(e){}
     }
 
     function updateStaticView(id, val) { document.getElementById(id).innerText = val || "-"; }

@@ -61,6 +61,33 @@
         }
         .nav-btn:hover, .nav-btn.active { background: var(--accent); color: white; }
 
+        /* --- الإشعارات (Facebook style) --- */
+        #notif-bar { display: none; }
+        #notif-bell-wrap { position: relative; display: inline-block; margin-top: 12px; }
+        #notif-bell { background: rgba(255,255,255,0.12); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; color: #e2e8f0; display: flex; align-items: center; justify-content: center; position: relative; transition: background .2s; }
+        #notif-bell:hover { background: rgba(255,255,255,0.25); }
+        #notif-badge { position: absolute; top: -3px; right: -3px; background: #ef4444; color: white; border-radius: 50%; min-width: 18px; height: 18px; font-size: 10px; font-weight: 700; display: none; align-items: center; justify-content: center; border: 2px solid #1e293b; padding: 0 3px; }
+        #notif-panel { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 360px; max-height: 500px; background: white; border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 99999; overflow: hidden; flex-direction: column; text-align: right; font-weight: 400; cursor: default; }
+        #notif-panel.open { display: flex; }
+        .notif-panel-head { background: #1e293b; color: white; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+        .notif-panel-head button { background: rgba(255,255,255,0.15); border: none; color: white; padding: 5px 12px; border-radius: 8px; cursor: pointer; font-family: 'Tajawal'; font-size: 12px; }
+        .notif-panel-head button:hover { background: rgba(255,255,255,0.25); }
+        #notif-list { overflow-y: auto; flex: 1; }
+        .notif-entry { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; display: flex; gap: 12px; align-items: flex-start; cursor: default; transition: background .15s; }
+        .notif-entry:last-child { border-bottom: none; }
+        .notif-entry:hover { background: #f8fafc; }
+        .notif-entry.unread { background: #eff6ff; border-right: 4px solid #3b82f6; }
+        .notif-entry .notif-icon { font-size: 22px; flex-shrink: 0; width: 44px; height: 44px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .notif-entry.unread .notif-icon { background: #dbeafe; }
+        .notif-entry .notif-body { flex: 1; }
+        .notif-entry .notif-title { font-weight: 700; font-size: 13px; color: #1e293b; }
+        .notif-entry .notif-sub { font-size: 12px; color: #64748b; margin-top: 3px; line-height: 1.4; }
+        .notif-entry .notif-time { font-size: 11px; color: #3b82f6; margin-top: 5px; font-weight: 600; }
+        .notif-empty { text-align: center; padding: 48px 20px; color: #94a3b8; font-size: 13px; }
+        .notif-footer { padding: 10px; text-align: center; border-top: 1px solid #f1f5f9; flex-shrink: 0; }
+        .notif-footer button { background: none; border: none; color: #3b82f6; font-family: 'Tajawal'; font-weight: 700; font-size: 13px; cursor: pointer; padding: 6px 16px; border-radius: 8px; width: 100%; }
+        .notif-footer button:hover { background: #eff6ff; }
+
         /* --- القوائم المنسدلة --- */
         .has-submenu { justify-content: space-between !important; font-weight: bold; background: rgba(255,255,255,0.05) !important; }
         .has-submenu::after { content: '\25C0'; font-size: 10px; transition: transform 0.3s ease; }
@@ -73,9 +100,56 @@
         .sub-btn { width: 95% !important; margin: 2px auto !important; font-size: 13.5px !important; color: #cbd5e1 !important; padding: 10px 15px !important; }
 
         /* --- المحتوى الرئيسي --- */
-        .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; }
-        .content-container { width: 100%; height: 100%; background: var(--glass); border-radius: 20px; overflow: hidden; position: relative; }
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; padding: 0; }
+        .content-container { flex: 1; width: 100%; background: var(--glass); border-radius: 0 0 20px 20px; overflow: hidden; position: relative; padding: 0; }
         iframe { width: 100%; height: 100%; border: none; }
+
+        /* --- الشريط العلوي (Topbar) --- */
+        #topbar { background: white; border-bottom: 1px solid #e2e8f0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        #topbar-left { display: flex; align-items: center; gap: 6px; }
+        #topbar-right { display: flex; align-items: center; gap: 8px; }
+        .topbar-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #64748b; transition: background .15s; position: relative; }
+        .topbar-btn:hover { background: #f1f5f9; color: #1e293b; }
+        .topbar-badge { position: absolute; top: 4px; right: 4px; background: #ef4444; color: white; border-radius: 50%; min-width: 17px; height: 17px; font-size: 10px; font-weight: 700; display: none; align-items: center; justify-content: center; border: 2px solid white; padding: 0 2px; }
+        #user-chip { display: flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 24px; background: #f1f5f9; cursor: default; border: 1px solid #e2e8f0; }
+        #user-avatar { width: 30px; height: 30px; border-radius: 50%; background: #3b82f6; color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+        #user-name { font-size: 13px; font-weight: 700; color: #1e293b; }
+        #user-role-badge { font-size: 11px; color: #64748b; }
+        #logout-btn { background: none; border: 1px solid #fca5a5; color: #ef4444; border-radius: 8px; padding: 6px 14px; font-family: 'Tajawal'; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: .15s; }
+        #logout-btn:hover { background: #fee2e2; }
+
+        /* --- قوائم الـ dropdown من الـ topbar --- */
+        .topbar-dropdown { position: absolute; top: calc(100% + 8px); left: 0; background: white; border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.18); z-index: 99999; overflow: hidden; display: none; flex-direction: column; min-width: 340px; max-height: 480px; border: 1px solid #e2e8f0; }
+        .topbar-dropdown.open { display: flex; }
+        .td-head { background: #1e293b; color: white; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+        .td-head button { background: rgba(255,255,255,0.15); border: none; color: white; padding: 4px 12px; border-radius: 8px; cursor: pointer; font-family: 'Tajawal'; font-size: 12px; }
+        .td-head button:hover { background: rgba(255,255,255,0.25); }
+        .td-body { overflow-y: auto; flex: 1; }
+        .td-footer { padding: 10px; text-align: center; border-top: 1px solid #f1f5f9; flex-shrink: 0; }
+        .td-footer button { background: none; border: none; color: #3b82f6; font-family: 'Tajawal'; font-weight: 700; font-size: 13px; cursor: pointer; padding: 6px 16px; border-radius: 8px; width: 100%; }
+        .td-footer button:hover { background: #eff6ff; }
+
+        /* إشعارات */
+        .notif-entry { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; display: flex; gap: 12px; align-items: flex-start; cursor: default; transition: background .15s; }
+        .notif-entry:last-child { border-bottom: none; }
+        .notif-entry:hover { background: #f8fafc; }
+        .notif-entry.unread { background: #eff6ff; border-right: 4px solid #3b82f6; }
+        .notif-entry .notif-icon { font-size: 20px; flex-shrink: 0; width: 42px; height: 42px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .notif-entry.unread .notif-icon { background: #dbeafe; }
+        .notif-entry .notif-body { flex: 1; }
+        .notif-entry .notif-title { font-weight: 700; font-size: 13px; color: #1e293b; }
+        .notif-entry .notif-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+        .notif-entry .notif-time { font-size: 11px; color: #3b82f6; margin-top: 4px; font-weight: 600; }
+        .notif-empty { text-align: center; padding: 40px; color: #94a3b8; font-size: 13px; }
+        .notif-empty div { font-size: 38px; margin-bottom: 8px; }
+
+        /* بريد داخلي */
+        .mail-entry { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; display: flex; gap: 10px; align-items: flex-start; transition: background .15s; }
+        .mail-entry:hover { background: #f8fafc; }
+        .mail-entry.unread { background: #f0fdf4; border-right: 4px solid #10b981; font-weight: 700; }
+        .mail-entry .mail-from { font-size: 13px; font-weight: 700; color: #1e293b; }
+        .mail-entry .mail-subject { font-size: 12px; color: #64748b; }
+        .mail-entry .mail-time { font-size: 11px; color: #94a3b8; margin-top: 2px; }
         
         #adminTools { margin-top: auto; padding: 15px; background: rgba(0,0,0,0.2); }
         .admin-btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
@@ -148,6 +222,16 @@
                 <label>كلمة المرور:</label>
                 <input type="password" id="newP" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
             </div>
+            <div>
+                <label>الاسم الكامل:</label>
+                <input type="text" id="fullname" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            </div>
+            <div>
+                <label>القسم / الفرع / الإدارة:</label>
+                <select id="userDept" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                    <option value="">-- لا يوجد تحديد --</option>
+                </select>
+            </div>
         </div>
 
         <div id="permissionsSection" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
@@ -193,8 +277,9 @@
                 <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'admMenu')">👥 الشئون الإدارية</button>
                 <div id="admMenu" class="dropdown-content">
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'hrms.html')">⬅️شئون العاملين</button>
-                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'employment_requisition.html')">⬅️ طلبات التوظيف</button>
-                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'job_offer.html')">⬅️ عروض التوظيف</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'employment_requisition.html?role=admin')">⬅️ طلبات التوظيف</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'cv_bank.html')">⬅️ مخزن السير الذاتية</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'job_offer.html?role=admin')">⬅️ عروض التوظيف</button>
                 </div>
             </div>
 <div class="dropdown">
@@ -221,6 +306,7 @@
 <div class="dropdown">
                 <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'branchMenu')">🏢 إدارة الفروع</button>
                 <div id="branchMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'employment_requisition.html?view=branch&role=branch&branch=الفرع')">⬅️ طلب توظيف</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'maintenance_request.html')">⬅️ طلب صيانة سيارة</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'maintenance_branch.html')">⬅️ متابعة طلبات الصيانة</button>
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'branch_control.html')">⬅️ إدارة الفروع</button>
@@ -284,12 +370,59 @@
         </nav>
 
         <div id="adminTools" style="display: none;">
-            <button class="admin-btn" onclick="openAdminPanel()">⚙️ إدارة الحسابات</button>
         </div>
-        <button onclick="logout()" style="margin: 10px 15px; padding: 10px; color: var(--danger); border: 1px solid var(--danger); background: none; border-radius: 10px; cursor: pointer;">خروج</button>
+        <button onclick="loadPage(this, 'settings.html')" style="margin: 5px 15px 0; padding: 11px 15px; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; font-family: 'Tajawal'; font-size: 14px; font-weight: 700; width: calc(100% - 30px); text-align: right;">⚙️ إعدادات النظام</button>
     </aside>
 
     <main class="main-content">
+        <!-- الشريط العلوي -->
+        <div id="topbar">
+            <div id="topbar-left">
+                <span style="font-size:13px;color:#94a3b8;font-weight:500;">نظام مجموعة سادن الموحد</span>
+            </div>
+            <div id="topbar-right">
+                <!-- الإشعارات -->
+                <div style="position:relative;">
+                    <button class="topbar-btn" onclick="toggleDropdown('notif-drop',event)" title="الإشعارات">
+                        🔔
+                        <span id="notif-badge" class="topbar-badge"></span>
+                    </button>
+                    <div id="notif-drop" class="topbar-dropdown">
+                        <div class="td-head">
+                            <span>🔔 الإشعارات</span>
+                            <button onclick="event.stopPropagation();markAllRead()">تعليم الكل مقروء</button>
+                        </div>
+                        <div id="notif-list" class="td-body"></div>
+                        <div class="td-footer"><button onclick="event.stopPropagation();markAllRead()">تعليم الكل مقروء ✓</button></div>
+                    </div>
+                </div>
+                <!-- البريد الداخلي -->
+                <div style="position:relative;">
+                    <button class="topbar-btn" onclick="toggleDropdown('mail-drop',event)" title="البريد الداخلي">
+                        ✉️
+                        <span id="mail-badge" class="topbar-badge"></span>
+                    </button>
+                    <div id="mail-drop" class="topbar-dropdown">
+                        <div class="td-head"><span>✉️ البريد الداخلي</span></div>
+                        <div id="mail-list" class="td-body"></div>
+                    </div>
+                </div>
+                <!-- المستخدم -->
+                <div id="user-chip">
+                    <div id="user-avatar">م</div>
+                    <div>
+                        <div id="user-name">المستخدم</div>
+                        <div id="user-role-badge">—</div>
+                    </div>
+                </div>
+                <!-- تسجيل الخروج -->
+                <button id="logout-btn" onclick="logout()">
+                    <span>🚪</span> خروج
+                </button>
+            </div>
+        </div>
+
+        <div style="flex:1; padding:20px; overflow:hidden; display:flex; flex-direction:column;">
         <div class="content-container">
            <div id="welcome">
     <div style="text-align:center; padding: 40px 0;">
@@ -328,23 +461,26 @@
             </div>
             <iframe id="frame"></iframe>
         </div>
+        </div>
     </main>
 
     <script>
-// كود مطور يتأكد من وجود الحساب الأساسي بكلمة المرور الجديدة
-let users = JSON.parse(localStorage.getItem('sadenUsers')) || [];
-
-// إذا كانت القائمة فارغة أو لا تحتوي على الحساب الأساسي الجديد، قم بإضافته/تحديثه
-const adminExists = users.find(u => u.user === "superadmin" && u.pass === "10203040");
-
-
-if (!adminExists) {
-    // إزالة النسخة القديمة من superadmin إذا وجدت بكلمة مرور مختلفة
-    users = users.filter(u => u.user !== "superadmin");
-    // إضافة النسخة الجديدة
-    users.push({ user: "superadmin", pass: "10203040", role: "admin" });
-    localStorage.setItem('sadenUsers', JSON.stringify(users));
-}
+        (function() {
+            const accounts = JSON.parse(localStorage.getItem('saden_accounts') || '[]');
+            const adminExists = accounts.find(a => a.username === 'superadmin');
+            if (!adminExists) {
+                accounts.push({
+                    id: 'u_super',
+                    username: 'superadmin',
+                    fullname: 'مدير النظام',
+                    password: '10203040',
+                    role: 'admin',
+                    status: 'active',
+                    permissions: { all: true }
+                });
+                localStorage.setItem('saden_accounts', JSON.stringify(accounts));
+            }
+        })();
         function toggleMenu(btn, menuId) {
             const menu = document.getElementById(menuId);
             const isSubMenu = btn.closest('.dropdown-content') !== null;
@@ -374,14 +510,21 @@ if (!adminExists) {
         }
 
         function checkLogin() {
-            const u = document.getElementById('userInput').value;
+            const u = document.getElementById('userInput').value.trim();
             const p = document.getElementById('passInput').value;
-            const found = users.find(x => x.user === u && x.pass === p);
+
+            const accounts = JSON.parse(localStorage.getItem('saden_accounts') || '[]');
+            const found = accounts.find(a => a.username === u && a.password === p && a.status === 'active');
+
             if (found) {
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('userRole', found.role);
-                location.reload(); 
-            } else { document.getElementById('loginError').style.display = 'block'; }
+                sessionStorage.setItem('userId', found.id);
+                sessionStorage.setItem('userPerms', JSON.stringify(found.permissions || {}));
+                location.reload();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
         }
 
         function logout() { sessionStorage.clear(); location.reload(); }
@@ -389,16 +532,62 @@ if (!adminExists) {
         window.onload = function() {
             if (sessionStorage.getItem('isLoggedIn') === 'true') {
                 document.getElementById('loginOverlay').style.display = 'none';
-                if (sessionStorage.getItem('userRole') === 'admin') document.getElementById('adminTools').style.display = 'block';
+                const role = sessionStorage.getItem('userRole');
+                if (role === 'admin') document.getElementById('adminTools').style.display = 'block';
+                applyPermissions(role);
             }
         };
+
+        function applyPermissions(role) {
+            if (role === 'admin') return;
+
+            const perms = JSON.parse(sessionStorage.getItem('userPerms') || '{}');
+            if (perms.all) return;
+
+            document.querySelectorAll('.nav-btn.sub-btn[onclick]').forEach(btn => {
+                const match = (btn.getAttribute('onclick') || '').match(/'([^']+)'/);
+                if (!match) return;
+                const url = match[1];
+                if (!perms[url]) {
+                    btn.style.display = 'none';
+                }
+            });
+
+            document.querySelectorAll('.dropdown').forEach(dropdown => {
+                const visibleBtns = dropdown.querySelectorAll('.dropdown-content .sub-btn:not([style*="display: none"])');
+                if (visibleBtns.length === 0) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
 
        // دالة لفتح نافذة الإدارة وتجهيزها
 function openAdminPanel() {
     document.getElementById('userModal').style.display = 'flex';
     resetUserForm(); // تصفير الحقول للوضع الافتراضي
     generatePermissionsUI(); // بناء شجرة الصلاحيات من السايدبار الحالي
+    loadDepartmentsForUsers(); // تحميل قائمة الأقسام للمستخدمين
     renderUsers(); // عرض قائمة المستخدمين
+}
+
+// دالة لتحميل قائمة الأقسام في نموذج المستخدم
+function loadDepartmentsForUsers() {
+    const deptSelect = document.getElementById('userDept');
+    if(!deptSelect) return;
+    
+    const departments = JSON.parse(localStorage.getItem('saden_departments') || '[]');
+    const currentValue = deptSelect.value;
+    
+    deptSelect.innerHTML = '<option value="">-- لا يوجد تحديد --</option>';
+    
+    departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.id;
+        option.textContent = `${dept.name} (${dept.type === 'branch' ? 'فرع' : dept.type === 'division' ? 'إدارة' : 'شعبة'})`;
+        deptSelect.appendChild(option);
+    });
+    
+    deptSelect.value = currentValue;
 }
 
 // دالة لتوليد الصلاحيات تلقائياً من الـ Sidebar
@@ -445,8 +634,10 @@ function generatePermissionsUI() {
 
 // دالة الحفظ (إضافة أو تعديل)
 function saveUserAccount() {
-    const u = document.getElementById('newU').value;
+    const u = document.getElementById('newU').value.trim();
     const p = document.getElementById('newP').value;
+    const fullname = document.getElementById('fullname').value.trim();
+    const deptId = document.getElementById('userDept').value;
     const editId = document.getElementById('editUserId').value;
     
     let links = [];
@@ -459,62 +650,98 @@ function saveUserAccount() {
     });
 
     if (u && p) {
+        const accounts = JSON.parse(localStorage.getItem('saden_accounts') || '[]');
+        
         if (editId) {
             // وضع التعديل
-            const idx = users.findIndex(x => x.user === editId);
+            const idx = accounts.findIndex(x => x.id === editId);
             if (idx !== -1) {
-                users[idx] = { user: u, pass: p, role: "user", links: links, menus: menus };
+                accounts[idx] = { 
+                    id: editId,
+                    username: u, 
+                    password: p, 
+                    fullname: fullname,
+                    role: "user", 
+                    status: 'active',
+                    department: deptId,
+                    permissions: { links: links, menus: menus }
+                };
             }
         } else {
             // وضع الإضافة
-            users.push({ user: u, pass: p, role: "user", links: links, menus: menus });
+            accounts.push({ 
+                id: 'u_' + Date.now(),
+                username: u, 
+                password: p, 
+                fullname: fullname,
+                role: "user", 
+                status: 'active',
+                department: deptId,
+                permissions: { links: links, menus: menus }
+            });
         }
         
-        localStorage.setItem('sadenUsers', JSON.stringify(users));
+        localStorage.setItem('saden_accounts', JSON.stringify(accounts));
         renderUsers();
         resetUserForm();
-        alert("تم حفظ بيانات المستخدم وصلاحياته بنجاح");
+        alert("✅ تم حفظ بيانات المستخدم والقسم والصلاحيات بنجاح");
     } else {
-        alert("يرجى إكمال الاسم وكلمة المرور");
+        alert("❌ يرجى إكمال اسم المستخدم وكلمة المرور");
     }
 }
 
 // دالة عرض المستخدمين مع زر التعديل
 function renderUsers() {
     const container = document.getElementById('displayUsers');
-    container.innerHTML = users.map(u => `
-        <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center;">
-            <span>👤 <strong>${u.user}</strong></span>
-            <div>
-                <button onclick="editUser('${u.user}')" style="background:#3b82f6; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; margin-left:5px;">تعديل</button>
-                ${u.user !== 'superadmin' ? `<button onclick="deleteUser('${u.user}')" style="background:#fee2e2; color:#dc2626; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;">حذف</button>` : '<strong>(مدير)</strong>'}
+    const accounts = JSON.parse(localStorage.getItem('saden_accounts') || '[]');
+    const departments = JSON.parse(localStorage.getItem('saden_departments') || '[]');
+    
+    container.innerHTML = accounts.map(u => {
+        const deptName = u.department ? (departments.find(d => d.id === u.department)?.name || 'بدون قسم') : 'بدون قسم';
+        const displayName = u.fullname ? `${u.fullname} (${u.username})` : u.username;
+        
+        return `
+            <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center;">
+                <div>
+                    <div>👤 <strong>${displayName}</strong></div>
+                    <div style="font-size: 12px; color: #64748b;">📍 ${deptName}</div>
+                </div>
+                <div>
+                    ${u.username !== 'superadmin' ? `
+                        <button onclick="editUser('${u.id}')" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; margin-left:5px; font-size:12px;">✏️ تعديل</button>
+                        <button onclick="deleteUser('${u.id}')" style="background:#fee2e2; color:#dc2626; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px;">🗑️ حذف</button>
+                    ` : '<strong style="color:#10b981;">⭐ مدير النظام</strong>'}
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // دالة تعبئة النموذج ببيانات مستخدم للتعديل
-function editUser(userName) {
-    const user = users.find(x => x.user === userName);
+function editUser(userId) {
+    const accounts = JSON.parse(localStorage.getItem('saden_accounts') || '[]');
+    const user = accounts.find(x => x.id === userId);
     if (!user) return;
 
-    document.getElementById('modalTitle').innerText = "تعديل صلاحيات: " + userName;
-    document.getElementById('newU').value = user.user;
-    document.getElementById('newP').value = user.pass;
-    document.getElementById('editUserId').value = user.user; // تحديد أننا في وضع التعديل
+    document.getElementById('modalTitle').innerText = "✏️ تعديل بيانات المستخدم: " + user.username;
+    document.getElementById('newU').value = user.username;
+    document.getElementById('newP').value = user.password;
+    document.getElementById('fullname').value = user.fullname || '';
+    document.getElementById('userDept').value = user.department || '';
+    document.getElementById('editUserId').value = user.id;
 
     // تصفير الجيك بوكس أولاً
     document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
 
     // اختيار الجيك بوكس بناءً على صلاحيات المستخدم المخزنة
-    if (user.links) {
-        user.links.forEach(link => {
+    if (user.permissions && user.permissions.links) {
+        user.permissions.links.forEach(link => {
             const cb = document.querySelector(`.dept-check[value="${link}"]`);
             if (cb) cb.checked = true;
         });
     }
-    if (user.menus) {
-        user.menus.forEach(menuId => {
+    if (user.permissions && user.permissions.menus) {
+        user.permissions.menus.forEach(menuId => {
             const cb = document.querySelector(`.parent-check[data-menu="${menuId}"]`);
             if (cb) cb.checked = true;
         });
@@ -526,6 +753,8 @@ function resetUserForm() {
     document.getElementById('modalTitle').innerText = "إضافة مستخدم وصلاحيات جديدة";
     document.getElementById('newU').value = '';
     document.getElementById('newP').value = '';
+    document.getElementById('fullname').value = '';
+    document.getElementById('userDept').value = '';
     document.getElementById('editUserId').value = '';
     document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
 }
@@ -536,6 +765,17 @@ function toggleChildCheckboxes(parentInput) {
 }
 
 function closeUserModal() { document.getElementById('userModal').style.display = 'none'; }
+
+function deleteUser(userId) {
+    if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return;
+    
+    const accounts = JSON.parse(localStorage.getItem('saden_accounts') || '[]');
+    const filteredAccounts = accounts.filter(u => u.id !== userId);
+    
+    localStorage.setItem('saden_accounts', JSON.stringify(filteredAccounts));
+    renderUsers();
+    alert('✅ تم حذف المستخدم بنجاح');
+}
     document.addEventListener("DOMContentLoaded", function() {
     const welcomeDiv = document.getElementById('welcome');
     if(welcomeDiv) welcomeDiv.style.display = 'none';
@@ -565,9 +805,222 @@ function loadPage(btn, url) {
 
     // حفظ الرابط الحالي في الذاكرة المؤقتة للمتصفح
     sessionStorage.setItem('lastOpenPage', url);
-    
     if(event) event.stopPropagation();
 }
+
+/* ======================================================
+   نظام الإشعارات
+====================================================== */
+const NOTIF_KEY = 'saden_notifications';
+const NOTIF_READ_KEY = 'saden_notif_read';
+
+function getNotifications(){ return JSON.parse(localStorage.getItem(NOTIF_KEY)||'[]'); }
+function saveNotifications(arr){ localStorage.setItem(NOTIF_KEY, JSON.stringify(arr)); }
+function getReadIds(){ return JSON.parse(localStorage.getItem(NOTIF_READ_KEY)||'[]'); }
+function saveReadIds(arr){ localStorage.setItem(NOTIF_READ_KEY, JSON.stringify(arr)); }
+
+function pushNotif(icon, title, sub, roles){
+    const notifs = getNotifications();
+    notifs.unshift({
+        id: Date.now()+'_'+Math.random().toString(36).slice(2),
+        icon, title, sub,
+        roles: roles || ['admin','manager','user','readonly'],
+        time: new Date().toLocaleString('ar-SA')
+    });
+    if(notifs.length > 100) notifs.pop();
+    saveNotifications(notifs);
+}
+window.pushNotif = pushNotif;
+
+function getCurrentRole(){ return sessionStorage.getItem('userRole') || 'user'; }
+
+function getVisibleNotifs(){
+    const role = getCurrentRole();
+    const all = getNotifications();
+    return all.filter(n => !n.roles || n.roles.includes(role) || n.roles.includes('all'));
+}
+
+/* ====== Topbar ====== */
+function toggleDropdown(id, e){
+    if(e) e.stopPropagation();
+    const el = document.getElementById(id);
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.topbar-dropdown').forEach(d=>d.classList.remove('open'));
+    if(!isOpen){
+        el.classList.add('open');
+        if(id==='notif-drop') renderNotifPanel();
+        if(id==='mail-drop') renderMailList();
+    }
+}
+document.addEventListener('click', ()=>{ document.querySelectorAll('.topbar-dropdown').forEach(d=>d.classList.remove('open')); });
+
+function initTopbar(){
+    const userId = sessionStorage.getItem('userId');
+    const accounts = JSON.parse(localStorage.getItem('saden_accounts')||'[]');
+    const user = accounts.find(a=>a.id===userId) || {};
+    const name = user.fullname || user.username || 'مستخدم';
+    const role = sessionStorage.getItem('userRole')||'user';
+    const roleLabels = {admin:'مدير النظام', manager:'مدير قسم', user:'مستخدم', readonly:'قراءة فقط'};
+    document.getElementById('user-name').textContent = name;
+    document.getElementById('user-role-badge').textContent = roleLabels[role]||role;
+    document.getElementById('user-avatar').textContent = name.charAt(0);
+}
+
+/* البريد الداخلي */
+const MAIL_KEY = 'saden_internal_mail';
+function getMails(){ return JSON.parse(localStorage.getItem(MAIL_KEY)||'[]'); }
+function renderMailList(){
+    const userId = sessionStorage.getItem('userId')||'';
+    const mails = getMails().filter(m=>m.to===userId||m.to==='all').slice(0,20);
+    const el = document.getElementById('mail-list');
+    if(!mails.length){ el.innerHTML='<div class="notif-empty"><div>✉️</div>لا توجد رسائل</div>'; updateMailBadge(); return; }
+    el.innerHTML = mails.map(m=>`
+        <div class="mail-entry ${m.read?'':'unread'}">
+            <div style="flex:1;">
+                <div class="mail-from">من: ${m.fromName||m.from}</div>
+                <div class="mail-subject">${m.subject}</div>
+                <div class="mail-time">${m.time}</div>
+            </div>
+        </div>`).join('');
+    updateMailBadge();
+}
+function updateMailBadge(){
+    const userId = sessionStorage.getItem('userId')||'';
+    const unread = getMails().filter(m=>(m.to===userId||m.to==='all')&&!m.read).length;
+    const b = document.getElementById('mail-badge');
+    if(b){ b.style.display = unread?'flex':'none'; b.textContent = unread>99?'99+':unread; }
+}
+
+function toggleNotifPanel(e){
+    if(e) e.stopPropagation();
+    toggleDropdown('notif-drop', e);
+}
+function outsideNotifClose(){}
+
+function renderNotifPanel(){
+    const items = getVisibleNotifs();
+    const readIds = getReadIds();
+    const el = document.getElementById('notif-list');
+    if(!items.length){
+        el.innerHTML='<div class="notif-empty"><div>🔔</div>لا توجد إشعارات</div>';
+        return;
+    }
+    el.innerHTML = items.map(n=>{
+        const unread = !readIds.includes(n.id);
+        return `<div class="notif-entry ${unread?'unread':''}" onclick="readNotif('${n.id}',this)">
+            <div class="notif-icon">${n.icon}</div>
+            <div class="notif-body">
+                <div class="notif-title">${n.title}</div>
+                <div class="notif-sub">${n.sub||''}</div>
+                <div class="notif-time">${n.time}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function readNotif(id, el){
+    const readIds = getReadIds();
+    if(!readIds.includes(id)){ readIds.push(id); saveReadIds(readIds); }
+    el.classList.remove('unread');
+    updateNotifBadge();
+}
+
+function markAllRead(){
+    const items = getVisibleNotifs();
+    const readIds = getReadIds();
+    items.forEach(n=>{ if(!readIds.includes(n.id)) readIds.push(n.id); });
+    saveReadIds(readIds);
+    renderNotifPanel();
+    updateNotifBadge();
+}
+
+function updateNotifBadge(){
+    const items = getVisibleNotifs();
+    const readIds = getReadIds();
+    const unread = items.filter(n=>!readIds.includes(n.id)).length;
+    const badge = document.getElementById('notif-badge');
+    if(unread > 0){
+        badge.style.display = 'flex';
+        badge.textContent = unread > 99 ? '99+' : unread;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function updateTicker(){ /* لا يوجد ticker */ }
+
+function updateClock(){
+    const el = document.getElementById('topbar-left');
+    if(el){
+        const now = new Date();
+        const t = now.toLocaleTimeString('ar-SA');
+        const d = now.toLocaleDateString('ar-SA',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+        el.innerHTML = `<span style="font-size:12px;color:#94a3b8;font-weight:500;">${d} — ${t}</span>`;
+    }
+}
+
+function scanForChanges(){
+    const role = getCurrentRole();
+
+    /* طلبات التوظيف من الفروع */
+    if(['admin','manager'].includes(role)){
+        const reqs = JSON.parse(localStorage.getItem('saden_recruit_v3')||'[]');
+        const pending = reqs.filter(r=>r.step===0 && r.status==='انتظار شئون الموظفين');
+        const key = 'notif_chk_recruit';
+        const prev = parseInt(localStorage.getItem(key)||'0');
+        if(pending.length > prev){
+            pushNotif('📋','طلب توظيف جديد من فرع',`${pending.length} طلب بانتظار المراجعة`,['admin','manager']);
+            localStorage.setItem(key, pending.length);
+        }
+    }
+
+    /* السير الذاتية الجديدة */
+    if(['admin','manager'].includes(role)){
+        const cvs = JSON.parse(localStorage.getItem('saden_cv_bank')||'[]');
+        const key = 'notif_chk_cv';
+        const prev = parseInt(localStorage.getItem(key)||'0');
+        if(cvs.length > prev){
+            pushNotif('📄','سيرة ذاتية جديدة',`إجمالي السير: ${cvs.length}`,['admin','manager']);
+            localStorage.setItem(key, cvs.length);
+        }
+    }
+
+    /* الموظفون الجدد */
+    if(['admin','manager'].includes(role)){
+        const emps = JSON.parse(localStorage.getItem('saden_employees')||'[]');
+        const key = 'notif_chk_emp';
+        const prev = parseInt(localStorage.getItem(key)||'0');
+        if(emps.length > prev){
+            pushNotif('👤','موظف جديد تم إضافته',`إجمالي الموظفين: ${emps.length}`,['admin','manager']);
+            localStorage.setItem(key, emps.length);
+        }
+    }
+
+    /* طلبات التوظيف المعتمدة */
+    if(['admin'].includes(role)){
+        const reqs = JSON.parse(localStorage.getItem('saden_recruit_v3')||'[]');
+        const approved = reqs.filter(r=>r.status==='معتمد');
+        const key = 'notif_chk_approved';
+        const prev = parseInt(localStorage.getItem(key)||'0');
+        if(approved.length > prev){
+            pushNotif('✅','تم اعتماد طلب توظيف',`${approved.length} طلب معتمد — يمكن إصدار العرض الوظيفي`,['admin']);
+            localStorage.setItem(key, approved.length);
+        }
+    }
+
+    updateNotifBadge();
+    updateTicker();
+}
+
+/* تحديث الساعة كل ثانية ومسح الإشعارات كل 30 ثانية */
+setInterval(updateClock, 1000);
+setInterval(scanForChanges, 30000);
+
+/* تشغيل أولي */
+updateClock();
+scanForChanges();
+initTopbar();
+updateMailBadge();
 
  </script>
 </body>

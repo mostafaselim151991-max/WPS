@@ -210,6 +210,30 @@
         .stat-card-enhanced.orange { border-top-color: #f59e0b; }
         .stat-card-enhanced.pink { border-top-color: #ec4899; }
         .stat-card-enhanced.blue { border-top-color: #3b82f6; }
+
+        /* === التدرج الوظيفي وتدرج الراتب === */
+        .career-timeline { position: relative; padding-right: 20px; }
+        .career-timeline::before { content: ''; position: absolute; right: 8px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #0284c7, #10b981); }
+        .career-item { position: relative; background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+        .career-item::before { content: ''; position: absolute; right: -27px; top: 16px; width: 12px; height: 12px; border-radius: 50%; background: #0284c7; border: 2px solid white; box-shadow: 0 0 0 2px #0284c7; }
+        .career-item-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+        .career-item-title { font-weight: 700; font-size: 14px; color: #1e293b; }
+        .career-item-date { font-size: 12px; color: #0284c7; background: #eff6ff; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+        .career-item-details { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: #64748b; }
+        .career-item-badge { background: #f0fdf4; color: #059669; padding: 2px 8px; border-radius: 6px; border: 1px solid #bbf7d0; font-weight: 600; }
+        .career-item-badge.promo { background: #fef9c3; color: #b45309; border-color: #fde68a; }
+        .remove-career-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 13px; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
+        .remove-career-btn:hover { background: #fee2e2; }
+
+        .salary-item { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; }
+        .salary-item-arrow { font-size: 22px; color: #10b981; flex-shrink: 0; }
+        .salary-item-info { flex: 1; }
+        .salary-item-date { font-size: 12px; color: #64748b; margin-bottom: 3px; }
+        .salary-item-amount { font-size: 16px; font-weight: 800; color: #1e293b; }
+        .salary-item-change { font-size: 12px; color: #10b981; font-weight: 600; margin-top: 3px; }
+        .salary-item-change.decrease { color: #ef4444; }
+        .salary-item-reason { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .career-form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 14px; }
     </style>
 </head>
 <body>
@@ -238,7 +262,7 @@
                         <img id="profile_pic_preview" alt="معاينة الصورة">
                     </div>
                     <div class="grid">
-                        <div class="field"><label>الرقم الوظيفي</label><input type="text" id="emp_number"></div>
+                        <div class="field"><label>الرقم الوظيفي</label><input type="text" id="emp_number" readonly style="background:#f0f0f0; cursor:not-allowed; font-weight:800; color:#0284c7;"></div>
                         <div class="field"><label>اسم الموظف</label><input type="text" id="emp_name"></div>
                         <div class="field"><label>رقم الإقامة / الهوية</label><input type="text" id="id_number"></div>
                         <div class="field"><label>رقم جواز السفر</label><input type="text" id="pass_number"></div>
@@ -292,11 +316,18 @@
                 </div>
                 <div class="section-content">
                     <div class="grid">
-                        <div class="field"><label>المسمى الوظيفي</label><input type="text" id="company_job"></div>
+                        <div class="field"><label>المسمى الوظيفي</label><select id="company_job"><option value="">-- اختر المسمى --</option></select></div>
                         <div class="field"><label>تاريخ الإلتحاق</label><input type="date" id="join_date" onchange="calculateVacationBalance()"></div>
                         <div class="field"><label>تاريخ المباشرة (بعد الإجازة)</label><input type="date" id="rejoin_date"></div>
-                        <div class="field"><label>الإدارة</label><select id="dept"><option>الموارد البشرية</option><option>المالية</option><option>التشغيل</option><option>التسويق</option></select></div>
-                        <div class="field"><label>المدير المباشر</label><select id="direct_manager"><option value="">-- اختر مدير --</option></select></div>                    </div>
+                        <div class="field"><label>الإدارة الأم *</label><select id="dept" onchange="updateDepartmentInfo()"><option value="">-- اختر الإدارة --</option></select></div>
+                        <div class="field"><label>القسم / الفرع *</label><select id="division"><option value="">-- اختر القسم --</option></select></div>
+                        <div class="field"><label>المدير المباشر</label><select id="direct_manager"><option value="">-- اختر مدير --</option></select></div>
+                    </div>
+                    <div style="border-top: 1px solid var(--border); margin-top: 20px; padding-top: 15px;">
+                        <div style="font-weight: 700; color: var(--primary); margin-bottom: 12px;">📈 التدرج الوظيفي (الترقيات)</div>
+                        <div id="career-ladder-container" style="margin-bottom: 15px;"></div>
+                        <button type="button" class="btn" style="background:#0284c7; color:white;" onclick="addCareerStep()">➕ إضافة ترقية / تغيير وظيفي</button>
+                    </div>
                 </div>
             </div>
 
@@ -307,10 +338,22 @@
                 </div>
                 <div class="section-content">
                     <div class="grid">
-                        <div class="field"><label>الراتب الأساسي</label><input type="number" id="base_salary"></div>
-                        <div class="field"><label>بدل السكن</label><input type="number" id="housing_allowance"></div>
-                        <div class="field"><label>بدل النقل</label><input type="number" id="transport_allowance"></div>
+                        <div class="field"><label>الراتب الأساسي</label><input type="number" id="base_salary" oninput="calcTotalSalary()"></div>
+                        <div class="field"><label>بدل السكن</label><input type="number" id="housing_allowance" oninput="calcTotalSalary()"></div>
+                        <div class="field"><label>بدل الإنتقال</label><input type="number" id="transport_allowance" oninput="calcTotalSalary()"></div>
+                        <div class="field"><label>بدل الإتصال</label><input type="number" id="communication_allowance" oninput="calcTotalSalary()"></div>
+                        <div class="field"><label>بدل موقع</label><input type="number" id="location_allowance" oninput="calcTotalSalary()"></div>
+                        <div class="field"><label>بدلات أخرى</label><input type="number" id="other_allowances" oninput="calcTotalSalary()"></div>
+                        <div class="field" style="background:#f0fdf4; border-radius:8px; padding:10px; border:1px solid #86efac;">
+                            <label style="color:#059669; font-weight:800;">إجمالي الراتب</label>
+                            <input type="number" id="total_salary" readonly style="background:transparent; border:none; font-size:18px; font-weight:900; color:#059669; cursor:not-allowed;">
+                        </div>
                         <div class="field full-row"><label>رقم الآيبان (IBAN)</label><input type="text" id="iban"></div>
+                    </div>
+                    <div style="border-top: 1px solid var(--border); margin-top: 20px; padding-top: 15px;">
+                        <div style="font-weight: 700; color: #10b981; margin-bottom: 12px;">💵 تدرج الراتب (الزيادات)</div>
+                        <div id="salary-history-container" style="margin-bottom: 15px;"></div>
+                        <button type="button" class="btn" style="background:#10b981; color:white;" onclick="addSalaryStep()">➕ إضافة زيادة / تعديل راتب</button>
                     </div>
                 </div>
             </div>
@@ -443,13 +486,217 @@
 
 <script>
     let db = [];
+    let departments = [];
+    let divisions = [];
+
+    function calcTotalSalary() {
+        const ids = ['base_salary','housing_allowance','transport_allowance','communication_allowance','location_allowance','other_allowances'];
+        const total = ids.reduce((sum, id) => {
+            const val = parseFloat(document.getElementById(id)?.value) || 0;
+            return sum + val;
+        }, 0);
+        const el = document.getElementById('total_salary');
+        if(el) el.value = total > 0 ? total : '';
+    }
+
+    function addCareerStep(data) {
+        const container = document.getElementById('career-ladder-container');
+        const stepId = Date.now() + Math.random();
+        const safeId = 'cs_' + stepId.toString().replace('.','');
+        const html = `
+            <div class="career-form-row" id="${safeId}">
+                <div class="field">
+                    <label>التاريخ</label>
+                    <input type="date" data-cs-date="${safeId}" value="${data ? data.date : ''}">
+                </div>
+                <div class="field">
+                    <label>المسمى الوظيفي الجديد</label>
+                    <select data-cs-title="${safeId}"><option value="">-- اختر المسمى --</option>${buildJobTitleOptions(data ? data.title : '')}</select>
+                </div>
+                <div class="field">
+                    <label>الإدارة / القسم</label>
+                    <input type="text" data-cs-dept="${safeId}" placeholder="مثال: الموارد البشرية" value="${data ? data.dept : ''}">
+                </div>
+                <div class="field">
+                    <label>نوع الحركة</label>
+                    <select data-cs-type="${safeId}">
+                        <option value="ترقية" ${data && data.type === 'ترقية' ? 'selected' : ''}>ترقية</option>
+                        <option value="نقل" ${data && data.type === 'نقل' ? 'selected' : ''}>نقل</option>
+                        <option value="تعديل مسمى" ${data && data.type === 'تعديل مسمى' ? 'selected' : ''}>تعديل مسمى</option>
+                        <option value="تكليف" ${data && data.type === 'تكليف' ? 'selected' : ''}>تكليف</option>
+                    </select>
+                </div>
+                <div class="field" style="grid-column: 1 / -1;">
+                    <label>ملاحظات</label>
+                    <input type="text" data-cs-notes="${safeId}" placeholder="مرسوم رقم / أمر تعيين / ملاحظة" value="${data ? (data.notes || '') : ''}">
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button type="button" class="remove-career-btn" onclick="document.getElementById('${safeId}').remove()">✖ حذف</button>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    function collectCareerLadder() {
+        const container = document.getElementById('career-ladder-container');
+        const steps = [];
+        container.querySelectorAll('.career-form-row').forEach(row => {
+            const id = row.id;
+            const date = row.querySelector(`[data-cs-date="${id}"]`)?.value;
+            const title = row.querySelector(`[data-cs-title="${id}"]`)?.value;
+            if(date && title) {
+                steps.push({
+                    date,
+                    title,
+                    dept: row.querySelector(`[data-cs-dept="${id}"]`)?.value || '',
+                    type: row.querySelector(`[data-cs-type="${id}"]`)?.value || 'ترقية',
+                    notes: row.querySelector(`[data-cs-notes="${id}"]`)?.value || ''
+                });
+            }
+        });
+        return steps.sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
+    function loadCareerLadder(steps) {
+        const container = document.getElementById('career-ladder-container');
+        container.innerHTML = '';
+        if(!steps || !Array.isArray(steps)) return;
+        steps.forEach(s => addCareerStep(s));
+    }
+
+    function addSalaryStep(data) {
+        const container = document.getElementById('salary-history-container');
+        const stepId = 'ss_' + Date.now() + Math.random().toString(36).slice(2);
+        const safeId = stepId.replace('.','');
+        const html = `
+            <div class="career-form-row" id="${safeId}">
+                <div class="field">
+                    <label>التاريخ</label>
+                    <input type="date" data-ss-date="${safeId}" value="${data ? data.date : ''}">
+                </div>
+                <div class="field">
+                    <label>الراتب الأساسي الجديد (ريال)</label>
+                    <input type="number" min="0" data-ss-salary="${safeId}" placeholder="0" value="${data ? data.salary : ''}">
+                </div>
+                <div class="field">
+                    <label>بدل السكن</label>
+                    <input type="number" min="0" data-ss-housing="${safeId}" placeholder="0" value="${data ? (data.housing || '') : ''}">
+                </div>
+                <div class="field">
+                    <label>بدل الإنتقال</label>
+                    <input type="number" min="0" data-ss-transport="${safeId}" placeholder="0" value="${data ? (data.transport || '') : ''}">
+                </div>
+                <div class="field">
+                    <label>سبب التعديل</label>
+                    <select data-ss-reason="${safeId}">
+                        <option value="زيادة سنوية" ${data && data.reason === 'زيادة سنوية' ? 'selected' : ''}>زيادة سنوية</option>
+                        <option value="ترقية" ${data && data.reason === 'ترقية' ? 'selected' : ''}>ترقية</option>
+                        <option value="تعديل هيكل" ${data && data.reason === 'تعديل هيكل' ? 'selected' : ''}>تعديل هيكل</option>
+                        <option value="مكافأة" ${data && data.reason === 'مكافأة' ? 'selected' : ''}>مكافأة</option>
+                        <option value="أخرى" ${data && data.reason === 'أخرى' ? 'selected' : ''}>أخرى</option>
+                    </select>
+                </div>
+                <div class="field" style="grid-column: 1 / -1;">
+                    <label>ملاحظات</label>
+                    <input type="text" data-ss-notes="${safeId}" placeholder="مرجع القرار / ملاحظة" value="${data ? (data.notes || '') : ''}">
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button type="button" class="remove-career-btn" onclick="document.getElementById('${safeId}').remove()">✖ حذف</button>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    function collectSalaryHistory() {
+        const container = document.getElementById('salary-history-container');
+        const steps = [];
+        container.querySelectorAll('.career-form-row').forEach(row => {
+            const id = row.id;
+            const date = row.querySelector(`[data-ss-date="${id}"]`)?.value;
+            const salary = row.querySelector(`[data-ss-salary="${id}"]`)?.value;
+            if(date && salary) {
+                steps.push({
+                    date,
+                    salary: parseFloat(salary) || 0,
+                    housing: parseFloat(row.querySelector(`[data-ss-housing="${id}"]`)?.value) || 0,
+                    transport: parseFloat(row.querySelector(`[data-ss-transport="${id}"]`)?.value) || 0,
+                    reason: row.querySelector(`[data-ss-reason="${id}"]`)?.value || 'زيادة سنوية',
+                    notes: row.querySelector(`[data-ss-notes="${id}"]`)?.value || ''
+                });
+            }
+        });
+        return steps.sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
+    function loadSalaryHistory(steps) {
+        const container = document.getElementById('salary-history-container');
+        container.innerHTML = '';
+        if(!steps || !Array.isArray(steps)) return;
+        steps.forEach(s => addSalaryStep(s));
+    }
 
     function loadDB() {
         db = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+        departments = JSON.parse(localStorage.getItem('saden_departments') || '[]');
+        divisions = JSON.parse(localStorage.getItem('saden_divisions') || '[]');
+        loadDepartmentsDropdown();
+        loadJobTitles();
         renderList();
-        // توليد الرقم الوظيفي التلقائي عند فتح الصفحة للإضافة
         document.getElementById('emp_number').value = generateEmpNumber();
         updateManagersList();
+    }
+    
+    function loadDepartmentsDropdown() {
+        const select = document.getElementById('dept');
+        if(!select) return;
+        
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">-- اختر الإدارة --</option>';
+        
+        departments.forEach(dept => {
+            const option = document.createElement('option');
+            option.value = dept.id;
+            option.dataset.type = dept.type;
+            option.textContent = `${dept.name}`;
+            select.appendChild(option);
+        });
+        
+        select.value = currentValue;
+    }
+    
+    function loadDivisionsDropdown() {
+        const deptSelect = document.getElementById('dept');
+        const divSelect = document.getElementById('division');
+        
+        if(!deptSelect || !divSelect) return;
+        
+        const deptId = deptSelect.value;
+        const currentValue = divSelect.value;
+        
+        divSelect.innerHTML = '<option value="">-- اختر القسم --</option>';
+        
+        if(deptId) {
+            const deptDivisions = divisions.filter(div => div.parent_dept === deptId);
+            deptDivisions.forEach(div => {
+                const option = document.createElement('option');
+                option.value = div.id;
+                option.textContent = `${div.name} (${div.type === 'main' ? 'فرع' : div.type === 'sub' ? 'قسم' : 'فريق'})`;
+                divSelect.appendChild(option);
+            });
+        }
+        
+        divSelect.value = currentValue;
+    }
+    
+    function updateDepartmentInfo() {
+        const deptSelect = document.getElementById('dept');
+        const divSelect = document.getElementById('division');
+        
+        if(!deptSelect) return;
+        
+        loadDivisionsDropdown();
     }
 
     function updateManagersList() {
@@ -479,10 +726,27 @@
         select.value = currentValue;
     }
 
+    function buildJobTitleOptions(selected){
+        const jts = JSON.parse(localStorage.getItem('saden_jobtitles')||'[]');
+        if(!jts.length) return '<option value="">-- لا توجد مسميات في الإعدادات --</option>';
+        return jts.map(j=>`<option value="${j.name}" ${j.name===selected?'selected':''}>${j.name}${j.grade?' ('+j.grade+')':''}</option>`).join('');
+    }
+
+    function loadJobTitles(){
+        const sel = document.getElementById('company_job');
+        if(!sel) return;
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">-- اختر المسمى --</option>' + buildJobTitleOptions(cur);
+        if(cur) sel.value = cur;
+    }
+
     function generateEmpNumber() {
         if(db.length === 0) return '1001';
-        const lastNum = parseInt(db[db.length - 1].emp_number || '1000');
-        return (lastNum + 1).toString();
+        const maxNum = db.reduce((max, emp) => {
+            const n = parseInt(emp.emp_number) || 0;
+            return n > max ? n : max;
+        }, 0);
+        return (maxNum + 1).toString();
     }
 
     function calculateVacationBalance() {
@@ -532,8 +796,11 @@
         document.getElementById('vacation_balance').value = '';
         document.getElementById('edit-id').value = '-1';
         document.getElementById('evaluations-container').innerHTML = '';
+        document.getElementById('career-ladder-container').innerHTML = '';
+        document.getElementById('salary-history-container').innerHTML = '';
         document.getElementById('main-title').innerText = "إنشاء ملف موظف جديد";
         document.getElementById('submit-btn').innerText = "💾 حفظ البيانات";
+        loadJobTitles();
         updateManagersList();
     }
 
@@ -704,33 +971,27 @@
     });
     data.attachments = document.getElementById('attachments_input').value;
     data.evaluations = collectEvaluations();
+    data.career_ladder = collectCareerLadder();
+    data.salary_history = collectSalaryHistory();
     const profilePicInput = document.getElementById('profile_pic');
     data.profile_pic = profilePicInput.dataset.base64 || '';
 
     const empName = data.emp_name ? data.emp_name.trim() : '';
     const empNumber = data.emp_number ? data.emp_number.trim() : '';
     
-    if(!empName && !empNumber) {
-        alert('❌ يرجى تسجيل البيانات الأساسية:\n- اسم الموظف\n- الرقم الوظيفي');
-        return;
-    }
-    
     if(!empName) {
         alert('❌ يرجى تسجيل اسم الموظف');
-        return;
-    }
-    
-    if(!empNumber) {
-        alert('❌ يرجى تسجيل الرقم الوظيفي');
         return;
     }
 
     const editId = document.getElementById('edit-id').value;
 
     if(editId === "-1") {
+        data.emp_number = generateEmpNumber();
         db.push(data);
         alert("✅ تم حفظ الموظف: " + data.emp_name);
     } else {
+        data.emp_number = db[editId].emp_number;
         db[editId] = data;
         alert("✅ تم تحديث بيانات: " + data.emp_name);
         document.getElementById('edit-id').value = "-1";
@@ -830,7 +1091,7 @@
                 <div class="emp-card-meta">
                     <span>🆔 ${highlight(emp.emp_number || '-')}</span>
                     <span>🪪 ${highlight(emp.id_number || '-')}</span>
-                    <span>🏢 ${emp.dept || 'بدون إدارة'}</span>
+                    <span>🏢 ${getDivisionInfo(emp.division) || 'بدون قسم'}</span>
                 </div>
                 ${emp.direct_manager ? `<div class="emp-card-meta" style="border-top: 1px solid #e2e8f0; margin-top: 10px; padding-top: 10px;"><span>👔 مدير: ${emp.direct_manager}</span></div>` : ''}
                 ${emp.vacation_balance ? `<div style="background: #ecfdf5; padding: 10px; border-radius: 8px; text-align: center; margin-top: 10px; border: 1px solid #86efac;"><span style="font-size: 12px; color: #059669; font-weight: bold;">✓ إجازة متاحة: ${emp.vacation_balance} أيام</span></div>` : ''}
@@ -965,7 +1226,11 @@
                 f: {
                     base_salary: "الراتب الأساسي",
                     housing_allowance: "بدل السكن",
-                    transport_allowance: "بدل النقل",
+                    transport_allowance: "بدل الإنتقال",
+                    communication_allowance: "بدل الإتصال",
+                    location_allowance: "بدل موقع",
+                    other_allowances: "بدلات أخرى",
+                    total_salary: "إجمالي الراتب",
                     iban: "رقم الآيبان"
                 }
             },
@@ -998,9 +1263,9 @@
                 <h4>${s.t}</h4>
                 <div class="data-grid">
                     ${Object.entries(s.f).map(([key, label]) => `
-                        <div>
-                            <div class="data-label">${label}</div>
-                            <div class="data-value">${emp[key] || '-'}</div>
+                        <div ${key === 'total_salary' ? 'style="background:#f0fdf4; border-radius:8px; padding:10px; border:1px solid #86efac;"' : ''}>
+                            <div class="data-label" ${key === 'total_salary' ? 'style="color:#059669; font-weight:800;"' : ''}>${label}</div>
+                            <div class="data-value" ${key === 'total_salary' ? 'style="color:#059669; font-size:18px;"' : ''}>${emp[key] ? ((['base_salary','housing_allowance','transport_allowance','communication_allowance','location_allowance','other_allowances','total_salary'].includes(key)) ? (parseFloat(emp[key])||0).toLocaleString('ar-SA') + ' ريال' : emp[key]) : '-'}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -1032,8 +1297,71 @@
                 </div>
             `;
         }
+
+        // عرض التدرج الوظيفي
+        let careerHtml = '';
+        if(emp.career_ladder && emp.career_ladder.length > 0) {
+            const typeColors = { 'ترقية': '#fef9c3', 'نقل': '#eff6ff', 'تعديل مسمى': '#fdf4ff', 'تكليف': '#f0fdf4' };
+            const typeBorderColors = { 'ترقية': '#b45309', 'نقل': '#0284c7', 'تعديل مسمى': '#9333ea', 'تكليف': '#059669' };
+            careerHtml = `
+                <div class="view-section">
+                    <h4>📈 التدرج الوظيفي</h4>
+                    <div class="career-timeline">
+                        ${emp.career_ladder.map((step, idx) => `
+                            <div class="career-item">
+                                <div class="career-item-header">
+                                    <div>
+                                        <div class="career-item-title">${step.title}</div>
+                                        ${step.dept ? `<div style="font-size:12px; color:#64748b; margin-top:3px;">🏢 ${step.dept}</div>` : ''}
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
+                                        <span class="career-item-date">📅 ${step.date}</span>
+                                        <span class="career-item-badge promo" style="background:${typeColors[step.type] || '#f0fdf4'}; color:${typeBorderColors[step.type] || '#059669'}; border-color:${typeBorderColors[step.type] || '#059669'};">${step.type}</span>
+                                    </div>
+                                </div>
+                                ${step.notes ? `<div style="font-size:12px; color:#94a3b8; margin-top:6px; padding-top:6px; border-top:1px solid #f1f5f9;">📝 ${step.notes}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // عرض تدرج الراتب
+        let salaryHtml = '';
+        if(emp.salary_history && emp.salary_history.length > 0) {
+            salaryHtml = `
+                <div class="view-section">
+                    <h4>💵 تدرج الراتب</h4>
+                    ${emp.salary_history.map((step, idx) => {
+                        const prev = emp.salary_history[idx - 1];
+                        let changeHtml = '';
+                        if(prev && prev.salary) {
+                            const diff = step.salary - prev.salary;
+                            const pct = prev.salary > 0 ? ((diff / prev.salary) * 100).toFixed(1) : 0;
+                            changeHtml = diff >= 0
+                                ? `<div class="salary-item-change">▲ زيادة: +${diff.toLocaleString('ar-SA')} ريال (${pct}%)</div>`
+                                : `<div class="salary-item-change decrease">▼ تعديل: ${diff.toLocaleString('ar-SA')} ريال (${pct}%)</div>`;
+                        }
+                        const total = step.salary + (step.housing || 0) + (step.transport || 0);
+                        return `
+                            <div class="salary-item">
+                                <div class="salary-item-arrow">${idx === 0 ? '💰' : '📈'}</div>
+                                <div class="salary-item-info">
+                                    <div class="salary-item-date">📅 ${step.date} &nbsp;|&nbsp; <span style="background:#f0fdf4; color:#059669; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700;">${step.reason}</span></div>
+                                    <div class="salary-item-amount">${step.salary.toLocaleString('ar-SA')} ريال</div>
+                                    ${step.housing || step.transport ? `<div style="font-size:12px; color:#64748b; margin-top:3px;">سكن: ${(step.housing||0).toLocaleString('ar-SA')} | إنتقال: ${(step.transport||0).toLocaleString('ar-SA')} | الإجمالي: <strong>${total.toLocaleString('ar-SA')}</strong> ريال</div>` : ''}
+                                    ${changeHtml}
+                                    ${step.notes ? `<div class="salary-item-reason">📝 ${step.notes}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
         
-        area.innerHTML = `<div class="profile-container">${mainContent}${evaluationsHtml}</div>`;
+        area.innerHTML = `<div class="profile-container">${mainContent}${evaluationsHtml}${careerHtml}${salaryHtml}</div>`;
 
         document.getElementById('edit-action').onclick = () => {
             const form = document.getElementById('hrForm');
@@ -1049,6 +1377,24 @@
                     }
                 } else if (k === "evaluations") {
                     loadEvaluations(emp[k]);
+                } else if (k === "career_ladder") {
+                    loadCareerLadder(emp[k]);
+                } else if (k === "salary_history") {
+                    loadSalaryHistory(emp[k]);
+                } else if (k === "dept" || k === "division") {
+                    // تحديث الإدارة والقسم
+                    if(k === "dept") {
+                        const deptSelect = form.elements["dept"];
+                        if(deptSelect) {
+                            deptSelect.value = emp[k] || '';
+                            updateDepartmentInfo();
+                        }
+                    } else {
+                        const divSelect = form.elements["division"];
+                        if(divSelect) {
+                            divSelect.value = emp[k] || '';
+                        }
+                    }
                 } else if(form.elements[k]) {
                     form.elements[k].value = emp[k];
                 }
@@ -1056,6 +1402,10 @@
             document.getElementById('edit-id').value = i;
             document.getElementById('main-title').innerText = "تعديل ملف: " + emp.emp_name;
             document.getElementById('submit-btn').innerText = "✅ تحديث البيانات";
+            loadJobTitles();
+            const jobSel = document.getElementById('company_job');
+            if(jobSel && emp.company_job){ jobSel.value = emp.company_job; }
+            calcTotalSalary();
             closeProfile();
             switchTab(null, 'form-tab');
             document.querySelectorAll('.tab-link')[0].classList.add('active');
@@ -1109,6 +1459,14 @@
             alert(`✅ تم حذف الموظف: ${emp.emp_name}`);
             closeProfile();
         }
+    }
+    
+    function getDivisionInfo(divisionId) {
+        if (!divisionId) return '';
+        const div = divisions.find(d => d.id === divisionId);
+        if(!div) return '';
+        const dept = departments.find(d => d.id === div.parent_dept);
+        return div ? `${div.name} (${dept ? dept.name : ''})` : divisionId;
     }
 
     loadDB();
