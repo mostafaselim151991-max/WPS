@@ -53,6 +53,33 @@
         .btn { padding: 12px 25px; border-radius: 8px; border: none; font-family: 'Tajawal'; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
+
+        /* ====== Staff Cards ====== */
+        .employees-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        .emp-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 20px; min-height: 220px; cursor: pointer; transition: 0.3s; }
+        .emp-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+        .emp-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .emp-card-pic { width: 75px; height: 75px; border-radius: 18px; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0; }
+        .emp-card-placeholder { width: 75px; height: 75px; border-radius: 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 30px; }
+        .emp-card-title { font-size: 18px; font-weight: 700; margin: 0; }
+        .emp-card-role { font-size: 13px; color: #0284c7; margin-top: 4px; font-weight: 600; }
+        .emp-card-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: #555; margin: 5px 0 0; padding-top: 8px; border-top: 1px solid #e2e8f0; }
+        .emp-card-meta span { display: inline-flex; align-items: center; gap: 6px; }
+        .emp-card-contacts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center; }
+        .emp-card-contact { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; text-decoration: none; color: #334155; font-size: 12px; }
+        .emp-card-contact:hover { background: #eff6ff; border-color: #bde0ff; }
+        .emp-card-contact.disabled { opacity: 0.5; pointer-events: none; cursor: default; }
+
+        /* ====== Profile Overlay ====== */
+        #profile-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; overflow-y:auto; padding:20px; box-sizing: border-box; }
+        .view-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        .view-section h4 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .data-label { font-size: 11px; color: #94a3b8; }
+        .data-value { font-weight: bold; font-size: 14px; color: var(--navy); }
+        .profile-pic-container { text-align: center; margin-bottom: 20px; }
+        .profile-pic { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
+        .profile-pic-placeholder { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 50px; margin: 0 auto; }
         
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -149,7 +176,10 @@
         </div>
 
         <div id="projects" class="tab-content"><h4>مشروعات الفرع الميدانية</h4><div class="form-row"><input type="text" placeholder="اسم المشروع"> <button class="btn btn-primary">إضافة</button></div></div>
-        <div id="staff" class="tab-content"><h4>سجل القوى العاملة بالفرع</h4></div>
+        <div id="staff" class="tab-content">
+            <h4>سجل القوى العاملة بالفرع (متزامن مع HRMS)</h4>
+            <div id="staff-grid" class="employees-grid"></div>
+        </div>
         <div id="targets" class="tab-content"><h4>المشروعات المستهدفة والمناقصات</h4></div>
         <div id="rating" class="tab-content"><h4>تقييم الأداء الشهري للفريق</h4></div>
         <div id="debt" class="tab-content"><h4>متابعة مديونيات الفرع والتحصيل</h4></div>
@@ -248,6 +278,34 @@
     </div>
 </div>
 
+<!-- Profile Overlay -->
+<div id="profile-overlay">
+    <div style="max-width:1000px; margin:auto;">
+        <button onclick="closeProfile()" class="btn" style="margin-bottom:20px; background:var(--navy); color:white;">⬅️ العودة للقائمة</button>
+        <div class="profile-pic-container" id="p-photo"></div>
+        <div class="view-section">
+            <h4>🆔 البيانات الأساسية</h4>
+            <div class="data-grid" id="p-basic"></div>
+        </div>
+        <div class="view-section">
+            <h4>📋 بيانات التوظيف</h4>
+            <div class="data-grid" id="p-employment"></div>
+        </div>
+        <div class="view-section">
+            <h4>💰 بيانات الرواتب والبنك</h4>
+            <div class="data-grid" id="p-salary"></div>
+        </div>
+        <div class="view-section">
+            <h4>👤 بيانات الاتصال والعنوان</h4>
+            <div class="data-grid" id="p-contact"></div>
+        </div>
+        <div class="view-section">
+            <h4>📁 الوثائق</h4>
+            <div class="data-grid" id="p-docs"></div>
+        </div>
+    </div>
+</div>
+
 <script>
     const STORAGE_KEY = 'saden_branches_mgmt';
     const CRM_KEY = 'saden_db_v4';
@@ -275,6 +333,123 @@
 
     function getCRMData() {
         return JSON.parse(localStorage.getItem(CRM_KEY) || '[]');
+    }
+
+    // ==========================
+    // HRMS Data Helpers
+    // ==========================
+    function getHRMSData() {
+        const employees = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+        const depts = JSON.parse(localStorage.getItem('saden_depts') || '[]');
+        const divisions = JSON.parse(localStorage.getItem('saden_divisions') || '[]');
+        return { employees, depts, divisions };
+    }
+
+    function getDepartmentName(deptId, depts) {
+        if (!deptId || !depts) return '-';
+        const dept = depts.find(d => String(d.id) === String(deptId));
+        return dept ? dept.name : '-';
+    }
+
+    function getDivisionName(divId, divisions) {
+        if (!divId || !divisions) return '-';
+        const div = divisions.find(d => String(d.id) === String(divId));
+        return div ? div.name : '-';
+    }
+
+    function getDivisionInfo(divId, divisions) {
+        if (!divId || !divisions) return null;
+        return divisions.find(d => String(d.id) === String(divId)) || null;
+    }
+
+    function getBranchStaff(branchName) {
+        const { employees } = getHRMSData();
+        return employees.map((emp, idx) => ({ ...emp, _originalIndex: idx })).filter(emp => {
+            const workLocation = (emp.workLocation || emp.branch || '').trim();
+            return workLocation === branchName;
+        });
+    }
+
+    // ==========================
+    // Profile Overlay Functions
+    // ==========================
+    function openProfile(originalIndex) {
+        const { employees, depts, divisions } = getHRMSData();
+        const emp = employees[originalIndex];
+        if (!emp) return;
+
+        const division = getDivisionInfo(emp.division, divisions);
+        const deptName = getDepartmentName(emp.department, depts);
+        const divName = getDivisionName(emp.division, divisions);
+
+        // Photo
+        const photoContainer = document.getElementById('p-photo');
+        if (emp.photo) {
+            photoContainer.innerHTML = `<img src="${emp.photo}" class="profile-pic" alt="صورة الموظف">`;
+        } else {
+            const initial = (emp.name || '?').charAt(0).toUpperCase();
+            photoContainer.innerHTML = `<div class="profile-pic-placeholder">${initial}</div>`;
+        }
+
+        // Basic Info
+        document.getElementById('p-basic').innerHTML = `
+            <div><div class="data-label">الاسم الكامل</div><div class="data-value">${emp.name || '-'}</div></div>
+            <div><div class="data-label">رقم الهوية</div><div class="data-value">${emp.idNumber || '-'}</div></div>
+            <div><div class="data-label">تاريخ الميلاد</div><div class="data-value">${emp.dob || '-'}</div></div>
+            <div><div class="data-label">الجنسية</div><div class="data-value">${emp.nationality || '-'}</div></div>
+            <div><div class="data-label">الحالة الاجتماعية</div><div class="data-value">${emp.maritalStatus || '-'}</div></div>
+            <div><div class="data-label">الجنس</div><div class="data-value">${emp.gender || '-'}</div></div>
+        `;
+
+        // Employment Info
+        document.getElementById('p-employment').innerHTML = `
+            <div><div class="data-label">رقم الموظف</div><div class="data-value">${emp.empId || '-'}</div></div>
+            <div><div class="data-label">المسمى الوظيفي</div><div class="data-value">${emp.jobTitle || '-'}</div></div>
+            <div><div class="data-label">القسم / الإدارة</div><div class="data-value">${deptName}</div></div>
+            <div><div class="data-label">الشعبة / الفرع</div><div class="data-value">${divName}</div></div>
+            <div><div class="data-label">موقع العمل</div><div class="data-value">${emp.workLocation || '-'}</div></div>
+            <div><div class="data-label">تاريخ التعيين</div><div class="data-value">${emp.hireDate || '-'}</div></div>
+            <div><div class="data-label">نوع التوظيف</div><div class="data-value">${emp.employmentType || '-'}</div></div>
+            <div><div class="data-label">حالة الموظف</div><div class="data-value">${emp.status || 'نشط'}</div></div>
+        `;
+
+        // Salary & Bank
+        document.getElementById('p-salary').innerHTML = `
+            <div><div class="data-label">الراتب الأساسي</div><div class="data-value">${emp.basicSalary || '0'} ر.س</div></div>
+            <div><div class="data-label">بدل السكن</div><div class="data-value">${emp.housingAllowance || '0'} ر.س</div></div>
+            <div><div class="data-label">بدل النقل</div><div class="data-value">${emp.transportAllowance || '0'} ر.س</div></div>
+            <div><div class="data-label">بدل الاتصالات</div><div class="data-value">${emp.phoneAllowance || '0'} ر.س</div></div>
+            <div><div class="data-label">إجمالي الراتب</div><div class="data-value">${emp.totalSalary || '0'} ر.س</div></div>
+            <div><div class="data-label">اسم البنك</div><div class="data-value">${emp.bankName || '-'}</div></div>
+            <div><div class="data-label">رقم الحساب</div><div class="data-value">${emp.bankAccount || '-'}</div></div>
+            <div><div class="data-label">الإيبان</div><div class="data-value">${emp.iban || '-'}</div></div>
+        `;
+
+        // Contact Info
+        document.getElementById('p-contact').innerHTML = `
+            <div><div class="data-label">رقم الجوال</div><div class="data-value">${emp.phone || '-'}</div></div>
+            <div><div class="data-label">البريد الإلكتروني</div><div class="data-value">${emp.email || '-'}</div></div>
+            <div><div class="data-label">العنوان</div><div class="data-value">${emp.address || '-'}</div></div>
+            <div><div class="data-label">المدينة</div><div class="data-value">${emp.city || '-'}</div></div>
+            <div><div class="data-label">رقم الطوارئ</div><div class="data-value">${emp.emergencyPhone || '-'}</div></div>
+        `;
+
+        // Documents
+        document.getElementById('p-docs').innerHTML = `
+            <div><div class="data-label">رقم الإقامة</div><div class="data-value">${emp.iqamaNumber || '-'}</div></div>
+            <div><div class="data-label">تاريخ انتهاء الإقامة</div><div class="data-value">${emp.iqamaExpiry || '-'}</div></div>
+            <div><div class="data-label">رقم الجواز</div><div class="data-value">${emp.passportNumber || '-'}</div></div>
+            <div><div class="data-label">تاريخ انتهاء الجواز</div><div class="data-value">${emp.passportExpiry || '-'}</div></div>
+            <div><div class="data-label">رخصة القيادة</div><div class="data-value">${emp.drivingLicense || '-'}</div></div>
+            <div><div class="data-label">تاريخ انتهاء الرخصة</div><div class="data-value">${emp.licenseExpiry || '-'}</div></div>
+        `;
+
+        document.getElementById('profile-overlay').style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+
+    function closeProfile() {
+        document.getElementById('profile-overlay').style.display = 'none';
     }
 
     function saveCRMData(data) {
@@ -481,6 +656,46 @@
         document.getElementById('in_rev').value = activeBranch.rev;
         document.getElementById('in_exp').value = activeBranch.exp;
         document.getElementById('res_profit').innerText = (activeBranch.rev - activeBranch.exp).toLocaleString() + " ر.س";
+
+        // تحديث القوى العاملة من HRMS
+        const staffGrid = document.getElementById('staff-grid');
+        const staff = getBranchStaff(activeBranch.name);
+        if (staff.length === 0) {
+            staffGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:40px;">لا يوجد موظفين مسجلين لهذا الفرع في نظام HRMS</div>';
+        } else {
+            const { depts, divisions } = getHRMSData();
+            staffGrid.innerHTML = '';
+            staff.forEach(emp => {
+                const card = document.createElement('div');
+                card.className = 'emp-card';
+                const deptName = getDepartmentName(emp.department, depts);
+                const divName = getDivisionName(emp.division, divisions);
+                const photoHtml = emp.photo
+                    ? `<img src="${emp.photo}" class="emp-card-pic" alt="صورة">`
+                    : `<div class="emp-card-placeholder">${(emp.name || '?').charAt(0).toUpperCase()}</div>`;
+                card.innerHTML = `
+                    <div class="emp-card-header">
+                        ${photoHtml}
+                        <div>
+                            <div class="emp-card-title">${emp.name || 'بدون اسم'}</div>
+                            <div class="emp-card-role">${emp.jobTitle || '-'}</div>
+                        </div>
+                    </div>
+                    <div class="emp-card-meta">
+                        <span>📋 ${emp.empId || '-'}</span>
+                        <span>🏢 ${deptName}</span>
+                        <span>📍 ${divName}</span>
+                        <span>📱 ${emp.phone || '-'}</span>
+                    </div>
+                    <div class="emp-card-contacts">
+                        <a class="emp-card-contact ${emp.phone ? '' : 'disabled'}" href="${emp.phone ? 'tel:' + emp.phone : '#'}">📞 اتصال</a>
+                        <a class="emp-card-contact ${emp.email ? '' : 'disabled'}" href="${emp.email ? 'mailto:' + emp.email : '#'}">✉️ بريد</a>
+                    </div>
+                `;
+                card.onclick = () => openProfile(emp._originalIndex);
+                staffGrid.appendChild(card);
+            });
+        }
     }
 
     // ==========================

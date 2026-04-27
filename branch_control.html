@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -67,12 +68,39 @@
         .btn-delete:hover { background: #dc2626; }
 
         .btn-save { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* ====== Staff Cards (مستنسخ بالكامل من HRMS) ====== */
+        .employees-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        .emp-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 20px; min-height: 220px; cursor: pointer; transition: 0.3s; }
+        .emp-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+        .emp-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .emp-card-pic { width: 75px; height: 75px; border-radius: 18px; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0; }
+        .emp-card-placeholder { width: 75px; height: 75px; border-radius: 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 30px; }
+        .emp-card-title { font-size: 18px; font-weight: 700; margin: 0; }
+        .emp-card-role { font-size: 13px; color: #0284c7; margin-top: 4px; font-weight: 600; }
+        .emp-card-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: #555; margin: 5px 0 0; padding-top: 8px; border-top: 1px solid #e2e8f0; }
+        .emp-card-meta span { display: inline-flex; align-items: center; gap: 6px; }
+        .emp-card-contacts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center; }
+        .emp-card-contact { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; text-decoration: none; color: #334155; font-size: 12px; }
+        .emp-card-contact:hover { background: #eff6ff; border-color: #bde0ff; }
+        .emp-card-contact.disabled { opacity: 0.5; pointer-events: none; cursor: default; }
         .btn-add-record { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
         .btn-back { background: #64748b; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-family: 'Tajawal'; }
 
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: right; border-bottom: 1px solid #f1f5f9; }
         th { background: #f8fafc; color: #64748b; font-size: 13px; }
+
+        /* ====== Profile Overlay (من HRMS) ====== */
+        #profile-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; overflow-y:auto; padding:20px; box-sizing: border-box; }
+        .view-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .view-section h4 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .data-label { font-size: 11px; color: #94a3b8; }
+        .data-value { font-weight: bold; font-size: 14px; color: var(--navy-dark); }
+        .profile-pic-container { text-align: center; margin-bottom: 20px; }
+        .profile-pic { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
+        .profile-pic-placeholder { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 50px; margin: 0 auto; }
 
         @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
@@ -168,25 +196,7 @@
 
         <div id="staff" class="tab-content">
             <div class="tab-action-bar"><h3 style="margin:0">القوى العاملة (متزامن مع HRMS)</h3></div>
-            <div class="table-container">
-                <table class="crm-table" id="tbl_staff">
-                    <thead>
-                        <tr>
-                            <th>م</th>
-                            <th>الرقم الوظيفي</th>
-                            <th>اسم الموظف</th>
-                            <th>المسمى الوظيفي</th>
-                            <th>الإدارة</th>
-                            <th>القسم</th>
-                            <th>المدير المباشر</th>
-                            <th>رقم الجوال</th>
-                            <th>البريد الإلكتروني</th>
-                            <th>تاريخ الالتحاق</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+            <div id="staff-grid" class="employees-grid"></div>
         </div>
 
         <div id="finance" class="tab-content">
@@ -207,6 +217,16 @@
         
         <div id="other" class="tab-content"><div class="tab-action-bar"><h3>ملاحظات</h3><button class="btn-add-record" onclick="toggleAddForm('other')">➕ ملاحظة</button></div><div id="form_other" class="add-form-inline"><input type="text" id="in_other_1" placeholder="نص الملاحظة" style="grid-column: span 2;"><button class="btn-save" onclick="handleSave('other')">حفظ</button></div><table id="tbl_other"><thead><tr><th>الملاحظة</th><th>التاريخ</th></tr></thead><tbody></tbody></table></div>
 
+    </div>
+</div>
+
+<div id="profile-overlay">
+    <div style="max-width:900px; margin:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; background:white; padding:15px; border-radius:12px;">
+            <h2 id="view-name" style="margin:0; color:var(--navy-dark)"></h2>
+            <button class="btn-save" style="background:#ef4444; color:white;" onclick="closeProfile()">✖ إغلاق</button>
+        </div>
+        <div id="full-details-area"></div>
     </div>
 </div>
 
@@ -303,19 +323,14 @@
         const divisions = JSON.parse(localStorage.getItem('saden_divisions') || '[]');
         const depts = JSON.parse(localStorage.getItem('saden_depts') || '[]');
         
-        return hrmsData.filter(emp => {
-            // مطابقة مباشرة باسم الفرع
+        return hrmsData.map((emp, index) => ({...emp, _originalIndex: index})).filter(emp => {
             if(emp.branch_name === branchName) return true;
-            
-            // مطابقة باسم القسم/الشعبة إذا كان اسم الفرع يطابق اسم قسم الموظف
             if(emp.division) {
                 const div = divisions.find(d => d.id === emp.division);
                 if(div && div.name === branchName) return true;
-                // أيضاً التحقق من اسم الإدارة
                 const dept = depts.find(d => d.id === (div ? div.deptId : emp.dept));
                 if(dept && dept.name === branchName) return true;
             }
-            
             return false;
         });
     }
@@ -332,6 +347,28 @@
         const divs = JSON.parse(localStorage.getItem('saden_divisions') || '[]');
         const div = divs.find(d => d.id === divisionId);
         return div ? div.name : divisionId;
+    }
+
+    function getDivisionInfo(divisionId) {
+        if(!divisionId) return '';
+        const divisions = JSON.parse(localStorage.getItem('saden_divisions') || '[]');
+        const departments = JSON.parse(localStorage.getItem('saden_depts') || '[]');
+        const div = divisions.find(d => d.id === divisionId);
+        if(!div) return divisionId;
+        const dept = departments.find(d => d.id === (div.deptId || div.parent_dept));
+        return `${div.name}${dept ? ' (' + dept.name + ')' : ''}`;
+    }
+
+    function normalizePhoneNumber(phone) {
+        if(!phone) return '';
+        const arabicDigits = {
+            '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'
+        };
+        return phone
+            .split('')
+            .map(ch => arabicDigits[ch] ?? ch)
+            .join('')
+            .replace(/[^0-9]/g, '');
     }
 
     function initApp() { loadBranchesFromSettings(); fillDateControls(); renderBranches(); }
@@ -451,30 +488,50 @@
             }
         });
 
-        // عرض الموظفين من قاعدة بيانات HRMS (متزامن تلقائياً)
-        const staffTbody = document.querySelector('#tbl_staff tbody');
-        if(staffTbody) {
-            staffTbody.innerHTML = '';
+        // عرض الموظفين من قاعدة بيانات HRMS (كروت مطابقة لـ hrms.html)
+        const staffGrid = document.getElementById('staff-grid');
+        if(staffGrid) {
+            staffGrid.innerHTML = '';
             const branchStaff = getBranchStaff(activeBranch.name);
             if(branchStaff.length > 0) {
-                branchStaff.forEach((emp, idx) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${idx + 1}</td>
-                        <td>${emp.emp_number || '-'}</td>
-                        <td style="font-weight:bold">${emp.emp_name || '-'}</td>
-                        <td>${emp.company_job || '-'}</td>
-                        <td>${getDepartmentName(emp.dept)}</td>
-                        <td>${getDivisionName(emp.division)}</td>
-                        <td>${emp.direct_manager || '-'}</td>
-                        <td>${emp.phone_number || '-'}</td>
-                        <td>${emp.email || '-'}</td>
-                        <td>${emp.join_date || '-'}</td>
+                branchStaff.forEach(emp => {
+                    const waNumber = normalizePhoneNumber(emp.phone_number);
+                    const waHref = waNumber ? `https://wa.me/${waNumber}` : '#';
+                    const waClass = waNumber ? 'emp-card-contact' : 'emp-card-contact disabled';
+                    const emailHref = emp.email ? `mailto:${emp.email}` : '#';
+                    const emailClass = emp.email ? 'emp-card-contact' : 'emp-card-contact disabled';
+
+                    const card = document.createElement('div');
+                    card.className = 'emp-card';
+                    card.onclick = () => openProfile(emp._originalIndex);
+                    card.innerHTML = `
+                        <div class="emp-card-header">
+                            ${emp.profile_pic ? `<img src="${emp.profile_pic}" class="emp-card-pic" alt="صورة">` : `<div class="emp-card-placeholder">👤</div>`}
+                            <div>
+                                <div class="emp-card-title">${emp.emp_name || '-'}</div>
+                                <div class="emp-card-role">💼 ${emp.company_job || 'بدون مسمى'}</div>
+                            </div>
+                        </div>
+                        <div class="emp-card-meta">
+                            <span>🆔 ${emp.emp_number || '-'}</span>
+                            <span>🪪 ${emp.id_number || '-'}</span>
+                            <span>🏢 ${getDivisionInfo(emp.division) || 'بدون قسم'}</span>
+                        </div>
+                        ${emp.direct_manager ? `<div class="emp-card-meta" style="border-top: 1px solid #e2e8f0; margin-top: 10px; padding-top: 10px;"><span>👔 مدير: ${emp.direct_manager}</span></div>` : ''}
+                        ${emp.vacation_balance ? `<div style="background: #ecfdf5; padding: 10px; border-radius: 8px; text-align: center; margin-top: 10px; border: 1px solid #86efac;"><span style="font-size: 12px; color: #059669; font-weight: bold;">✓ إجازة متاحة: ${emp.vacation_balance} أيام</span></div>` : ''}
+                        <div class="emp-card-contacts">
+                            <a class="${waClass}" href="${waHref}" target="_blank" onclick="event.stopPropagation();">
+                                <span>🟢</span><span>WhatsApp</span>
+                            </a>
+                            <a class="${emailClass}" href="${emailHref}" target="_blank" onclick="event.stopPropagation();">
+                                <span>📧</span><span>Email</span>
+                            </a>
+                        </div>
                     `;
-                    staffTbody.appendChild(row);
+                    staffGrid.appendChild(card);
                 });
             } else {
-                staffTbody.innerHTML = `<tr><td colspan="10" style="padding:40px; color:gray">لا يوجد موظفين مسجلين في HRMS لهذا الفرع</td></tr>`;
+                staffGrid.innerHTML = `<div style="padding:40px; color:gray; text-align:center; grid-column:1/-1;">لا يوجد موظفين مسجلين في HRMS لهذا الفرع</div>`;
             }
         }
     }
@@ -637,6 +694,153 @@
         document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
         document.getElementById(tabName).classList.add('active');
         evt.currentTarget.classList.add('active');
+    }
+
+    function openProfile(originalIndex) {
+        const db = getHRMSData();
+        const emp = db[originalIndex];
+        if(!emp) return;
+        document.getElementById('view-name').innerText = emp.emp_name;
+        const area = document.getElementById('full-details-area');
+
+        const sections = [
+            {
+                t: "البيانات الأساسية",
+                f: {
+                    emp_number: "الرقم الوظيفي",
+                    emp_name: "اسم الموظف",
+                    id_number: "رقم الهوية",
+                    pass_number: "رقم الجواز",
+                    emp_national: "الجنسية",
+                    gender: "الجنس",
+                    date_birth: "تاريخ الميلاد",
+                    age: "العمر",
+                    id_job: "المهنة في الإقامة",
+                    company_name: "الكفالة",
+                    drive_lic: "رخصة القيادة",
+                    religion: "الديانة",
+                    social_status: "الحالة الاجتماعية",
+                    phone_number: "رقم الجوال",
+                    email:"البريد الإلكتروني",
+                    address:"العنوان",
+                }
+            },
+            {
+                t: "بيانات الدراسة",
+                f: {
+                    edu_degree: "الدرجة العلمية",
+                    university: "الجامعة",
+                    college: "الكلية",
+                    grad_year: "سنة التخرج",
+                    grade: "التقدير",
+                    diploma: "دبلومة",
+                    master: "ماجستير",
+                    phd: "دكتوراه"
+                }
+            },
+            {
+                t: "البيانات الوظيفية",
+                f: {
+                    company_job: "المسمى الوظيفي",
+                    join_date: "تاريخ الالتحاق",
+                    rejoin_date: "تاريخ المباشرة",
+                    dept: "الإدارة",
+                    division: "القسم / الفرع",
+                    branch_name: "الفرع التشغيلي",
+                    direct_manager: "المدير المباشر"
+                }
+            },
+            {
+                t: "البيانات المالية",
+                f: {
+                    base_salary: "الراتب الأساسي",
+                    housing_allowance: "بدل السكن",
+                    transport_allowance: "بدل الإنتقال",
+                    communication_allowance: "بدل الإتصال",
+                    location_allowance: "بدل موقع",
+                    other_allowances: "بدلات أخرى",
+                    total_salary: "إجمالي الراتب",
+                    iban: "رقم الآيبان"
+                }
+            },
+            {
+                t: "الحضور والإجازات",
+                f: {
+                    work_type: "نظام الدوام",
+                    last_return_date: "تاريخ آخر عودة من إجازة",
+                    vacation_balance: "رصيد الإجازات السنوي"
+                }
+            },
+            {
+                t: "العقود",
+                f: {
+                    contract_type: "نوع العقد",
+                    contract_start: "بداية العقد",
+                    contract_end: "نهاية العقد"
+                }
+            }
+        ];
+
+        const profilePicSection = `
+            <div class="profile-pic-container">
+                ${emp.profile_pic ? `<img src="${emp.profile_pic}" class="profile-pic" alt="صورة الملف">` : `<div class="profile-pic-placeholder">👤</div>`}
+            </div>
+        `;
+
+        const mainContent = profilePicSection + sections.map(s => `
+            <div class="view-section">
+                <h4>${s.t}</h4>
+                <div class="data-grid">
+                    ${Object.entries(s.f).map(([key, label]) => {
+                        let displayValue = '-';
+                        if(emp[key]) {
+                            if(['base_salary','housing_allowance','transport_allowance','communication_allowance','location_allowance','other_allowances','total_salary'].includes(key)) {
+                                displayValue = (parseFloat(emp[key])||0).toLocaleString('ar-SA') + ' ريال';
+                            } else if(key === 'dept') {
+                                displayValue = getDepartmentName(emp[key]);
+                            } else if(key === 'division') {
+                                displayValue = getDivisionInfo(emp[key]) || emp[key];
+                            } else {
+                                displayValue = emp[key];
+                            }
+                        }
+                        return `
+                        <div ${key === 'total_salary' ? 'style="background:#f0fdf4; border-radius:8px; padding:10px; border:1px solid #86efac;"' : ''}>
+                            <div class="data-label" ${key === 'total_salary' ? 'style="color:#059669; font-weight:800;"' : ''}>${label}</div>
+                            <div class="data-value" ${key === 'total_salary' ? 'style="color:#059669; font-size:18px;"' : ''}>${displayValue}</div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `).join('');
+
+        // عرض التقييمات
+        let evaluationsHtml = '';
+        if(emp.evaluations && emp.evaluations.length > 0) {
+            evaluationsHtml = `
+                <div class="view-section">
+                    <h4>التقييمات</h4>
+                    ${emp.evaluations.map(evaluation => `
+                        <div style="background: #f0f9ff; padding: 15px; border-right: 3px solid #0284c7; margin-bottom: 10px; border-radius: 8px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                                <div><strong>الفترة:</strong> ${evaluation.from} إلى ${evaluation.to}</div>
+                                <div><strong>النوع:</strong> ${evaluation.period_type}</div>
+                                <div><strong>التقييم:</strong> <span style="background: #dbeafe; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #0284c7;">${evaluation.rating}%</span></div>
+                            </div>
+                            ${evaluation.notes ? `<div><strong>الملاحظات:</strong> ${evaluation.notes}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        area.innerHTML = mainContent + evaluationsHtml;
+        document.getElementById('profile-overlay').style.display = 'block';
+    }
+
+    function closeProfile() {
+        document.getElementById('profile-overlay').style.display = 'none';
     }
 
     window.onload = initApp;
