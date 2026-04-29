@@ -531,22 +531,37 @@
             const found = accounts.find(a => a.username === u && a.password === p && a.status === 'active');
 
             if (found) {
+                const sessionData = {
+                    isLoggedIn: true,
+                    userRole: found.role,
+                    userId: found.id,
+                    userPerms: found.permissions || {}
+                };
+                localStorage.setItem('saden_session', JSON.stringify(sessionData));
                 sessionStorage.setItem('isLoggedIn', 'true');
-                sessionStorage.setItem('userRole', found.role);
-                sessionStorage.setItem('userId', found.id);
-                sessionStorage.setItem('userPerms', JSON.stringify(found.permissions || {}));
                 location.reload();
             } else {
                 document.getElementById('loginError').style.display = 'block';
             }
         }
 
-        function logout() { sessionStorage.clear(); location.reload(); }
+        function logout() { 
+            localStorage.removeItem('saden_session');
+            sessionStorage.clear(); 
+            location.reload(); 
+        }
 
         window.onload = function() {
-            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+            const sessionData = JSON.parse(localStorage.getItem('saden_session') || '{}');
+            if (sessionData.isLoggedIn === true) {
+                // Sync to sessionStorage for compatibility
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('userRole', sessionData.userRole);
+                sessionStorage.setItem('userId', sessionData.userId);
+                sessionStorage.setItem('userPerms', JSON.stringify(sessionData.userPerms));
+                
                 document.getElementById('loginOverlay').style.display = 'none';
-                const role = sessionStorage.getItem('userRole');
+                const role = sessionData.userRole;
                 if (role === 'admin') document.getElementById('adminTools').style.display = 'block';
                 applyPermissions(role);
             }
