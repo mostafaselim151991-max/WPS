@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المشروعات — مجموعة سادن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #0284c7;
+            --navy: #1e293b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --purple: #8b5cf6;
+            --shadow: 0 4px 20px rgba(0,0,0,.07);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background: var(--bg); color: var(--navy); min-height: 100vh; padding: 24px; }
+        .container { max-width: 1400px; margin: auto; }
+
+        /* Header */
+        .page-header { background: linear-gradient(135deg, var(--primary), var(--navy)); color: white; padding: 24px 30px; border-radius: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        .page-header h1 { font-size: 22px; font-weight: 900; }
+        .page-header p { color: #94a3b8; font-size: 13px; margin-top: 4px; }
+        .btn { padding: 10px 22px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-family: 'Tajawal'; font-size: 13px; transition: .2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #0369a1; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-gray { background: #94a3b8; color: white; }
+        .btn-outline { background: white; color: var(--primary); border: 1px solid var(--border); }
+
+        /* Tiles */
+        .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .project-tile { background: var(--card); border-radius: 16px; padding: 22px; box-shadow: var(--shadow); cursor: pointer; transition: .3s; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .project-tile:hover { transform: translateY(-5px); box-shadow: 0 12px 35px rgba(0,0,0,.12); border-color: var(--accent); }
+        .project-tile::before { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 100%; }
+        .tile-status-active::before { background: var(--success); }
+        .tile-status-pending::before { background: var(--warning); }
+        .tile-status-completed::before { background: var(--accent); }
+        .tile-status-hold::before { background: var(--danger); }
+        .tile-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+        .tile-title { font-size: 17px; font-weight: 900; color: var(--navy); }
+        .tile-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .badge-active { background: #d1fae5; color: #065f46; }
+        .badge-pending { background: #fef9c3; color: #92400e; }
+        .badge-completed { background: #dbeafe; color: #1d4ed8; }
+        .badge-hold { background: #fee2e2; color: #991b1b; }
+        .tile-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: #64748b; margin-bottom: 14px; }
+        .tile-meta span { display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; }
+        .tile-progress { margin-bottom: 14px; }
+        .tile-progress-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+        .progress-bar { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 4px; transition: width .8s ease; }
+        .tile-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border); }
+        .tile-stat { text-align: center; }
+        .tile-stat-value { font-size: 18px; font-weight: 900; color: var(--navy); }
+        .tile-stat-label { font-size: 11px; color: #64748b; }
+
+        /* Dashboard */
+        #dashboardView { display: none; }
+        .dashboard-header { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; }
+        .dashboard-title h2 { margin: 0; font-size: 20px; color: var(--navy); }
+        .dashboard-title span { color: #64748b; font-size: 13px; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--card); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); text-align: center; border-top: 4px solid var(--accent); }
+        .stat-card.expense { border-top-color: var(--danger); }
+        .stat-card.revenue { border-top-color: var(--success); }
+        .stat-card.profit { border-top-color: var(--success); }
+        .stat-card.loss { border-top-color: var(--danger); }
+        .stat-icon { font-size: 28px; margin-bottom: 8px; }
+        .stat-value { font-size: 24px; font-weight: 900; color: var(--navy); }
+        .stat-label { font-size: 12px; color: #64748b; font-weight: 600; }
+
+        /* Tabs */
+        .tabs-header { display: flex; gap: 8px; background: white; border-radius: 12px 12px 0 0; padding: 10px 20px 0; border: 1px solid var(--border); border-bottom: none; }
+        .tab-btn { padding: 12px 24px; border: none; background: #f1f5f9; color: #64748b; cursor: pointer; border-radius: 10px 10px 0 0; font-weight: 700; font-size: 13px; font-family: 'Tajawal'; transition: .2s; }
+        .tab-btn.active { background: white; color: var(--accent); border: 1px solid var(--border); border-bottom: none; }
+        .tab-btn:hover:not(.active) { background: #e2e8f0; }
+        .tab-content { background: white; border: 1px solid var(--border); border-radius: 0 0 12px 12px; padding: 24px; display: none; }
+        .tab-content.active { display: block; }
+
+        /* Forms & Tables */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px; }
+        .field { display: flex; flex-direction: column; }
+        .field label { font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #64748b; }
+        .field input, .field select, .field textarea, .field input[type="month"] { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Tajawal'; font-size: 13px; transition: .2s; }
+        .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(2,132,199,.1); }
+        .field textarea { min-height: 80px; resize: vertical; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        .data-table th { background: var(--navy); color: white; padding: 12px 14px; font-size: 12px; text-align: right; font-weight: 700; }
+        .data-table td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border); }
+        .data-table tr:hover td { background: #f8fafc; }
+        .monthly-total { background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid #86efac; border-radius: 10px; padding: 16px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .monthly-total span { font-size: 14px; color: #065f46; font-weight: 700; }
+        .monthly-total .amount { font-size: 20px; font-weight: 900; color: #059669; }
+
+        /* Toolbar */
+        .toolbar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: end; }
+        .toolbar .field { flex: 1; min-width: 160px; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(2px); }
+        .modal-overlay.active { display: flex; }
+        body.modal-open { overflow: hidden; }
+        .modal { background: white; border-radius: 16px; width: 90vw; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,.25); animation: modalSlideIn .3s ease; }
+        @keyframes modalSlideIn { from { opacity: 0; transform: translateY(-50px) scale(.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-header { background: var(--navy); color: white; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-radius: 16px 16px 0 0; }
+        .modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
+        .modal-close { background: none; border: none; color: white; font-size: 22px; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: .2s; }
+        .modal-close:hover { background: rgba(255,255,255,.1); }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--border); }
+
+        .empty-msg { text-align: center; padding: 40px; color: #94a3b8; font-size: 14px; }
+        @media (max-width: 700px) { .tiles-grid, .stats-row, .form-grid { grid-template-columns: 1fr; } .toolbar { flex-direction: column; } }
+    </style>
+</head>
+<body>
+<div class="container" id="tilesView">
+    <!-- Add Project Form -->
+    <div class="page-header">
+        <div>
+            <h1>🏗️ إدارة المشروعات</h1>
+            <p>تتبع المشاريع والمصروفات والإيرادات مع إحصائيات شهرية</p>
+        </div>
+        <button class="btn btn-primary" id="addProjectBtn">➕ مشروع جديد</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="field">
+            <label>البحث</label>
+            <input type="text" id="searchInput" placeholder="اسم المشروع أو الفرع..." oninput="renderTiles()">
+        </div>
+        <div class="field">
+            <label>الحالة</label>
+            <select id="statusFilter" onchange="renderTiles()">
+                <option value="">الكل</option>
+                <option value="نشط">نشط</option>
+                <option value="معلق">معلق</option>
+                <option value="مكتمل">مكتمل</option>
+                <option value="متوقف">متوقف</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Tiles Grid -->
+    <div id="tilesGrid" class="tiles-grid"></div>
+
+    <!-- Dashboard View -->
+    <div id="dashboardView">
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <h2 id="dashTitle">لوحة تحكم المشروع</h2>
+                <span id="dashBranch"></span>
+            </div>
+            <div>
+                <button class="btn btn-primary" onclick="showBackButton()">⬅️ العودة للقائمة</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row" id="projectStats"></div>
+
+        <!-- Tabs -->
+        <div class="tabs-header">
+            <button class="tab-btn active" data-tab="overview">📊 نظرة عامة</button>
+            <button class="tab-btn" data-tab="expenses">💸 المصروفات</button>
+            <button class="tab-btn" data-tab="revenues">💰 الإيرادات</button>
+        </div>
+        <div id="overviewTab" class="tab-content active"></div>
+        <div id="expensesTab" class="tab-content"></div>
+        <div id="revenuesTab" class="tab-content"></div>
+    </div>
+</div>
+
+<!-- Project Modal -->
+<div id="projectModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalProjectTitle">مشروع جديد</h3>
+            <button class="modal-close" id="closeProjectModalBtn">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="projectForm">
+                <input type="hidden" id="editProjectId">
+<div class="form-grid">
+                    <div class="field">
+                        <label>• نوع المشروع *</label>
+                        <select id="projectType" required>
+                            <option value="">-- اختر نوع المشروع --</option>
+                            <option value="بناء">بناء</option>
+                            <option value="تشييد">تشييد</option>
+                            <option value="صيانة">صيانة</option>
+                            <option value="توسعة">توسعة</option>
+                            <option value="ترميم">ترميم</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+<div class="field">
+                        <label>• اسم المشروع *</label>
+                        <input type="text" id="projectName" required>
+                    </div>
+<div class="field">
+                        <label>• المنطقة / الفرع *</label>
+                        <select id="projectBranch" required>
+                            <option value="">-- اختر المنطقة / الفرع --</option>
+                            <option value="الرياض الرئيسي">الرياض الرئيسي</option>
+                            <option value="الدمام">الدمام</option>
+                            <option value="الجبيل">الجبيل</option>
+                            <option value="الأحساء">الأحساء</option>
+                            <option value="القطيف">القطيف</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>مدة المشروع (أشهر)</label>
+<input type="number" id="projectDuration" min="1" max="120" value="6" required>
+                    </div>
+<div class="field">
+                        <label>• الشركة المنفذة *</label>
+                        <select id="projectCompany" required>
+                            <option value="">-- اختر الشركة --</option>
+                            <option value="سادن للمقاولات">سادن للمقاولات</option>
+                            <option value="شركة أخرى">شركة أخرى</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>نسبة الإنجاز (%)</label>
+<input type="number" id="projectProgress" min="0" max="100" value="0" required>
+
+                    </div>
+<div class="field">
+                        <label>الحالة</label>
+                        <select id="projectStatus" required>
+                            <option value="معلق">معلق</option>
+                            <option value="نشط">نشط</option>
+                            <option value="مكتمل">مكتمل</option>
+                            <option value="متوقف">متوقف</option>
+                        </select>
+                    </div>
+                    <div class="field" style="grid-column: 1/-1;">
+                        <label>ملاحظات</label>
+                        <textarea id="projectNotes"></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-gray" type="button" onclick="closeProjectModal()">إلغاء</button>
+            <button class="btn btn-primary" type="button" onclick="saveProject()">حفظ</button>
+        </div>
+        </div>
+</div>
+
+<!-- Transaction Modal -->
+<div id="transactionModal" class="modal-overlay">
+
+<!-- Project Notes Modal -->
+<div id="projectNotesModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="notesModalTitle">📝 ملاحظات المشروع</h3>
+            <button class="modal-close" id="closeNotesModalBtn">×</button>
+        </div>
+        <div class="modal-body">
+            <div id="notesSearch" style="margin-bottom: 20px;">
+                <input type="text" id="notesFilter" placeholder="🔍 ابحث في الملاحظات..." oninput="renderProjectNotes()">
+            </div>
+            <div id="notesList" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;"></div>
+            <div class="form-grid">
+                <div class="field" style="grid-column: 1/-1;">
+                    <label>إضافة ملاحظة جديدة</label>
+                    <textarea id="newNoteText" rows="4" placeholder="اكتب ملاحظتك هنا..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="addProjectNote()">➕ حفظ الملاحظة</button>
+            <button class="btn btn-gray" onclick="closeProjectNotesModal()">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalTransTitle">مصروف جديد</h3>
+            <button class="modal-close" onclick="closeTransModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="transForm">
+                <input type="hidden" id="editTransId">
+                <input type="hidden" id="transType">
+                <div class="form-grid">
+                    <div class="field">
+                        <label>الشهر/السنة</label>
+                        <input type="month" id="transMonth" required>
+                    </div>
+                    <div class="field">
+                        <label>النوع</label>
+                        <select id="transTypeSelect" required>
+                            <option value="مواد">مواد</option>
+                            <option value="عمالة">عمالة</option>
+                            <option value="نقل">نقل</option>
+                            <option value="معدات">معدات</option>
+                            <option value="إيجار">إيجار</option>
+                            <option value="صيانة">صيانة</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>المبلغ (ريال)</label>
+                        <input type="number" id="transAmount" min="0" step="0.01" required>
+                    </div>
+                    <div class="field" style="grid-column: 1/-1;">
+                        <label>ملاحظات</label>
+                        <textarea id="transNotes"></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-gray" type="button" onclick="closeTransModal()">إلغاء</button>
+            <button class="btn btn-primary" type="button" onclick="saveTransaction()">حفظ</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const PROJECTS_KEY = 'saden_projects';
+let projects = [];
+let currentProjectId = null;
+let currentTab = 'overview';
+
+function init() {
+    loadProjects();
+    setupEventListeners();
+}
+
+function loadProjects() {
+    projects = JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]');
+    renderTiles();
+}
+
+function saveProjects() {
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+}
+
+function renderTiles() {
+    const grid = document.getElementById('tilesGrid');
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+
+    let filtered = projects.filter(p => 
+        (!search || p.name.toLowerCase().includes(search) || p.branch?.toLowerCase().includes(search)) &&
+        (!status || p.status === status)
+    );
+
+    if (!filtered.length) {
+        grid.innerHTML = '<div class="empty-msg">لا توجد مشاريع مسجلة <br> <button class="btn btn-primary" onclick="showProjectModal()">ابدأ بإضافة مشروع</button></div>';
+        return;
+    }
+
+        grid.innerHTML = filtered.map(p => {
+        const statusClass = `tile-status-${p.status === 'نشط' ? 'active' : p.status === 'معلق' ? 'pending' : p.status === 'مكتمل' ? 'completed' : 'hold'}`;
+        const badgeClass = `badge-${p.status === 'نشط' ? 'active' : p.status === 'معلق' ? 'pending' : p.status === 'مكتمل' ? 'completed' : 'hold'}`;
+        const progress = p.progress || 0;
+        const expenses = (p.expenses || []).reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+        const revenues = (p.revenues || []).reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
+        const notesCount = (p.projectNotes || []).length;
+
+        return `
+        <div class="project-tile ${statusClass}" onclick="openDashboard('${p.id}')">
+            <div class="tile-header">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="tile-title">${p.name}</div>
+                        ${notesCount > 0 ? `<span style="background: #dbeafe; color: var(--accent); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;">📝 ${notesCount}</span>` : ''}
+                    </div>
+                    <button class="btn btn-outline btn-primary" onclick="showProjectNotesModal('${p.id}'); event.stopPropagation();" style="font-size: 12px; padding: 4px 12px; width: fit-content; align-self: flex-start;">📝 الملاحظات</button>
+                </div>
+                <span class="tile-badge ${badgeClass}">${p.status}</span>
+            </div>
+            <div class="tile-meta">
+                ${p.branch ? `<span>🏢 ${p.branch}</span>` : ''}
+                <span>📊 ${progress}%</span>
+            </div>
+            <div class="tile-progress">
+                <div class="tile-progress-label">
+                    <span>الإنجاز</span>
+                    <span>${progress}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progress}%"></div>
+                </div>
+            </div>
+            <div class="tile-footer">
+                <div class="tile-stat">
+                    <div class="tile-stat-value">${Math.round(expenses).toLocaleString()}</div>
+                    <div class="tile-stat-label">مصروفات ريال</div>
+                </div>
+                <div class="tile-stat">
+                    <div class="tile-stat-value">${Math.round(revenues).toLocaleString()}</div>
+                    <div class="tile-stat-label">إيرادات ريال</div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+}
+
+function showProjectModal(editId = null) {
+    const modal = document.getElementById('projectModal');
+    document.body.classList.add('modal-open');
+    modal.classList.add('active');
+    document.getElementById('modalProjectTitle').textContent = editId ? 'تعديل المشروع' : 'مشروع جديد';
+    
+if (editId) {
+        const project = projects.find(p => p.id === editId);
+        if (project) {
+            document.getElementById('editProjectId').value = project.id;
+            document.getElementById('projectType').value = project.type || '';
+            document.getElementById('projectName').value = project.name;
+            document.getElementById('projectBranch').value = project.branch || '';
+            document.getElementById('projectDuration').value = project.duration || 6;
+            document.getElementById('projectCompany').value = project.company || '';
+            document.getElementById('projectProgress').value = project.progress || 0;
+            document.getElementById('projectStatus').value = project.status || 'معلق';
+            document.getElementById('projectNotes').value = project.notes || '';
+        }
+    } else {
+        document.getElementById('projectForm').reset();
+        document.getElementById('editProjectId').value = '';
+        document.getElementById('projectMonth').value = new Date().toISOString().slice(0, 7);
+    }
+}
+
+function closeProjectModal() {
+    document.getElementById('projectModal').classList.remove('active');
+    document.body.classList.remove('modal-open');
+    document.getElementById('projectForm').reset();
+    document.getElementById('editProjectId').value = '';
+}
+
+function saveProject() {
+    const id = document.getElementById('editProjectId').value || 'p_' + Date.now();
+    const name = document.getElementById('projectName').value.trim();
+    if (!name) {
+        alert('اسم المشروع مطلوب');
+        return;
+    }
+
+    const projectIndex = projects.findIndex(p => p.id === id);
+    const project = {
+        id,
+        type: document.getElementById('projectType').value,
+        name: document.getElementById('projectName').value,
+        branch: document.getElementById('projectBranch').value,
+        duration: parseInt(document.getElementById('projectDuration').value) || 6,
+        company: document.getElementById('projectCompany').value,
+        progress: parseInt(document.getElementById('projectProgress').value) || 0,
+        status: document.getElementById('projectStatus').value,
+        notes: document.getElementById('projectNotes').value,
+        projectNotes: projectIndex > -1 ? projects[projectIndex].projectNotes || [] : [],
+        expenses: projectIndex > -1 ? projects[projectIndex].expenses || [] : [],
+        revenues: projectIndex > -1 ? projects[projectIndex].revenues || [] : [],
+        createdAt: new Date().toISOString()
+    };
+
+
+    if (projectIndex > -1) {
+        projects[projectIndex] = project;
+    } else {
+        projects.push(project);
+    }
+
+    saveProjects();
+    renderTiles();
+    closeProjectModal();
+    alert('✅ تم حفظ المشروع بنجاح');
+}
+
+function openDashboard(id) {
+    currentProjectId = id;
+    document.getElementById('tilesView').style.display = 'none';
+    document.getElementById('dashboardView').style.display = 'block';
+    renderDashboard();
+}
+
+function showBackButton() {
+    document.getElementById('tilesView').style.display = 'block';
+    document.getElementById('dashboardView').style.display = 'none';
+    currentProjectId = null;
+}
+
+function renderDashboard() {
+    const project = projects.find(p => p.id === currentProjectId);
+    if (!project) return showBackButton();
+
+document.getElementById('dashTitle').textContent = project.name;
+    document.getElementById('dashBranch').textContent = `${project.branch || 'غير محدد'} | ${project.company || 'غير محدد'} | ${project.type || 'غير محدد'} | مدة: ${project.duration || 0} أشهر`;
+
+    const expenses = (project.expenses || []).reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+    const revenues = (project.revenues || []).reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
+    const profit = revenues - expenses;
+    const profitClass = profit >= 0 ? 'profit' : 'loss';
+    const profitIcon = profit >= 0 ? '📈' : '📉';
+
+    document.getElementById('projectStats').innerHTML = `
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value">${project.progress || 0}%</div>
+            <div class="stat-label">الإنجاز</div>
+        </div>
+        <div class="stat-card expense">
+            <div class="stat-icon">💸</div>
+            <div class="stat-value">${Math.round(expenses).toLocaleString()}</div>
+            <div class="stat-label">إجمالي المصروفات</div>
+        </div>
+        <div class="stat-card revenue">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value">${Math.round(revenues).toLocaleString()}</div>
+            <div class="stat-label">إجمالي الإيرادات</div>
+        </div>
+        <div class="stat-card ${profitClass}">
+            <div class="stat-icon">${profitIcon}</div>
+            <div class="stat-value">${Math.round(profit).toLocaleString()}</div>
+            <div class="stat-label">الربح/الخسارة</div>
+        </div>
+    `;
+
+    switchTab('overview');
+}
+
+function switchTab(e, tabName) {
+    currentTab = tabName;
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById(tabName + 'Tab').classList.add('active');
+    renderTabContent();
+}
+
+function renderTabContent() {
+    const project = projects.find(p => p.id === currentProjectId);
+    if (!project) return;
+
+    const now = new Date();
+    const currentMonth = now.toISOString().slice(0, 7);
+
+    if (currentTab === 'overview') {
+        const tasksKey = 'saden_project_tasks';
+        const tasks = JSON.parse(localStorage.getItem(tasksKey) || '[]');
+        const projectTasks = tasks.filter(t => t.project_id === project.id);
+        const pendingTasks = projectTasks.filter(t => t.status === 'معلقة').length;
+        const totalTasks = projectTasks.length;
+
+        const notesCount = (project.projectNotes || []).length;
+        const latestNote = notesCount > 0 ? project.projectNotes[0].text.substring(0, 50) + (project.projectNotes[0].text.length > 50 ? '...' : '') : 'لا توجد';
+        document.getElementById('overviewTab').innerHTML = `
+            <h3>ملخص المشروع</h3>
+            <p><strong>الحالة:</strong> ${project.status}</p>
+            <p><strong>النوع:</strong> ${project.type || 'غير محدد'}</p>
+            <p><strong>الفرع:</strong> ${project.branch || 'غير محدد'}</p>
+            <p><strong>الشركة:</strong> ${project.company || 'غير محدد'}</p>
+            <p><strong>المدة:</strong> ${project.duration || 0} أشهر</p>
+            <div style="background: #eff6ff; padding: 12px; border-radius: 8px; border-right: 4px solid var(--accent); margin: 12px 0;">
+                <strong>📝 الملاحظات (${notesCount})</strong><br>
+                <small style="color: #0284c7;">${latestNote}</small>
+                <button class="btn btn-primary" onclick="showProjectNotesModal('${project.id}')" style="font-size: 12px; padding: 4px 12px; margin-top: 6px;">عرض الكل</button>
+            </div>
+            <div style="margin-top: 24px;">
+                <h4>المهام المرتبطة (${totalTasks})</h4>
+                <p>معلقة: <strong>${pendingTasks}</strong> | مكتملة: <strong>${totalTasks - pendingTasks}</strong></p>
+            </div>
+        `;
+
+    } else {
+        const transactions = currentTab === 'expenses' ? (project.expenses || []) : (project.revenues || []);
+        const typeLabel = currentTab === 'expenses' ? 'مصروف' : 'إيراد';
+
+        let filtered = transactions;
+        const monthFilter = document.getElementById('tabMonthFilter');
+        const monthValue = monthFilter ? monthFilter.value : '';
+        if (monthValue) filtered = filtered.filter(t => t.month === monthValue);
+
+        const monthTotal = filtered.reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+
+        document.getElementById(currentTab + 'Tab').innerHTML = `
+            <div style="display: flex; gap: 12px; align-items: end; margin-bottom: 20px;">
+                <div class="field" style="flex: 1;">
+                    <label>الشهر</label>
+                    <input type="month" id="tabMonthFilter" onchange="renderTabContent()">
+                </div>
+                <button class="btn btn-primary" onclick="showTransModal('${currentTab}')"">${typeLabel} جديد</button>
+            </div>
+            <div class="monthly-total">
+                <span>${monthValue || 'الكل'} — إجمالي ${typeLabel}</span>
+                <span class="amount">${Math.round(monthTotal).toLocaleString()} ريال</span>
+            </div>
+            ${filtered.length ? `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>الشهر</th>
+                        <th>النوع</th>
+                        <th>المبلغ</th>
+                        <th>الملاحظات</th>
+                        <th>التاريخ</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filtered.map(t => `
+                    <tr>
+                        <td>${t.month || ''}</td>
+                        <td>${t.type}</td>
+                        <td>${Math.round(parseFloat(t.amount || 0)).toLocaleString()} ريال</td>
+                        <td>${t.notes || ''}</td>
+                        <td>${t.createdAt ? new Date(t.createdAt).toLocaleDateString('ar-SA') : ''}</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="editTransaction('${t.id}')" style="padding:6px 12px;font-size:12px;">✏️</button>
+                            <button class="btn btn-danger" onclick="deleteTransaction('${t.id}')" style="padding:6px 12px;font-size:12px;">🗑️</button>
+                        </td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>` : '<div class="empty-msg">لا توجد معاملات</div>'}
+        `;
+        if (monthFilter) monthFilter.value = monthValue;
+    }
+}
+
+function showTransModal(type) {
+    const modal = document.getElementById('transactionModal');
+    modal.classList.add('active');
+    document.body.classList.add('modal-open');
+    document.getElementById('modalTransTitle').textContent = type === 'expenses' ? 'مصروف جديد' : 'إيراد جديد';
+    document.getElementById('transType').value = type;
+    document.getElementById('transForm').reset();
+    document.getElementById('editTransId').value = '';
+    document.getElementById('transMonth').value = new Date().toISOString().slice(0, 7);
+}
+
+function closeTransModal() {
+    document.getElementById('transactionModal').classList.remove('active');
+    document.body.classList.remove('modal-open');
+}
+
+function saveTransaction() {
+    const id = document.getElementById('editTransId').value || 't_' + Date.now();
+    const type = document.getElementById('transType').value;
+    const project = projects.find(p => p.id === currentProjectId);
+    if (!project) return;
+
+    const trans = {
+        id,
+        month: document.getElementById('transMonth').value,
+        type: document.getElementById('transTypeSelect').value,
+        amount: parseFloat(document.getElementById('transAmount').value) || 0,
+        notes: document.getElementById('transNotes').value,
+        createdAt: new Date().toISOString()
+    };
+
+    if (!trans.month || !trans.amount) {
+        alert('الشهر والمبلغ مطلوبان');
+        return;
+    }
+
+    const list = type === 'expenses' ? project.expenses : project.revenues;
+    const index = list.findIndex(t => t.id === id);
+    if (index > -1) {
+        list[index] = trans;
+    } else {
+        list.push(trans);
+    }
+
+    saveProjects();
+    renderTabContent();
+    closeTransModal();
+    alert('✅ تم حفظ المعاملة بنجاح');
+}
+
+function editTransaction(id) {
+    const type = document.getElementById('transType').value;
+    const project = projects.find(p => p.id === currentProjectId);
+    const list = type === 'expenses' ? project.expenses : project.revenues;
+    const trans = list.find(t => t.id === id);
+
+    if (trans) {
+        document.getElementById('editTransId').value = trans.id;
+        document.getElementById('transMonth').value = trans.month || '';
+        document.getElementById('transTypeSelect').value = trans.type || '';
+        document.getElementById('transAmount').value = trans.amount || '';
+        document.getElementById('transNotes').value = trans.notes || '';
+        showTransModal(type);
+    }
+}
+
+function deleteTransaction(id) {
+    if (!confirm('هل تريد حذف هذه المعاملة؟')) return;
+    const type = document.getElementById('transType').value;
+    const project = projects.find(p => p.id === currentProjectId);
+    const list = type === 'expenses' ? project.expenses : project.revenues;
+    project[type === 'expenses' ? 'expenses' : 'revenues'] = list.filter(t => t.id !== id);
+    saveProjects();
+    renderTabContent();
+}
+
+let currentNotesProjectId = null;
+
+// Notes Modal Functions
+function showProjectNotesModal(projectId) {
+    currentNotesProjectId = projectId;
+    const project = projects.find(p => p.id === projectId);
+    document.getElementById('notesModalTitle').textContent = `📝 ملاحظات: ${project ? project.name : 'غير معروف'}`;
+    document.getElementById('projectNotesModal').classList.add('active');
+    document.body.classList.add('modal-open');
+    renderProjectNotes();
+}
+
+function closeProjectNotesModal() {
+    document.getElementById('projectNotesModal').classList.remove('active');
+    document.body.classList.remove('modal-open');
+    document.getElementById('newNoteText').value = '';
+    document.getElementById('notesFilter').value = '';
+    currentNotesProjectId = null;
+}
+
+function addProjectNote() {
+    const text = document.getElementById('newNoteText').value.trim();
+    if (!text || !currentNotesProjectId) {
+        alert('الملاحظة مطلوبة');
+        return;
+    }
+    const project = projects.find(p => p.id === currentNotesProjectId);
+    if (!project) return;
+
+    // Init notes array if not exists
+    if (!project.projectNotes) project.projectNotes = [];
+    project.projectNotes.unshift({
+        id: 'n_' + Date.now(),
+        text: text,
+        date: new Date().toLocaleString('ar-SA'),
+        author: sessionStorage.getItem('userRole') || 'مستخدم'
+    });
+
+    saveProjects();
+    renderProjectNotes();
+    document.getElementById('newNoteText').value = '';
+    alert('✅ تم إضافة الملاحظة');
+}
+
+function deleteProjectNote(noteId) {
+    if (!confirm('هل تريد حذف هذه الملاحظة؟')) return;
+    const project = projects.find(p => p.id === currentNotesProjectId);
+    if (project && project.projectNotes) {
+        project.projectNotes = project.projectNotes.filter(n => n.id !== noteId);
+        saveProjects();
+        renderProjectNotes();
+    }
+}
+
+function renderProjectNotes() {
+    const project = projects.find(p => p.id === currentNotesProjectId);
+    if (!project || !project.projectNotes || project.projectNotes.length === 0) {
+        document.getElementById('notesList').innerHTML = '<div class="empty-msg" style="padding: 40px 20px;">لا توجد ملاحظات بعد<span style="display: block; margin-top: 10px;">ابدأ بإضافة ملاحظة أولى 👆</span></div>';
+        return;
+    }
+
+    const filter = document.getElementById('notesFilter').value.toLowerCase();
+    const filteredNotes = project.projectNotes.filter(n => !filter || n.text.toLowerCase().includes(filter));
+
+    document.getElementById('notesList').innerHTML = filteredNotes.map(note => `
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 12px; position: relative;">
+            <div style="font-size: 13px; color: #64748b; margin-bottom: 8px;">${note.date} ${note.author ? '👤 ' + note.author : ''}</div>
+            <div style="font-size: 14px; line-height: 1.5; white-space: pre-wrap;">${note.text}</div>
+            <button class="btn btn-danger" onclick="deleteProjectNote('${note.id}')" style="position: absolute; top: 12px; left: 12px; padding: 6px 10px; font-size: 12px;">🗑️</button>
+        </div>
+    `).join('');
+}
+
+// Notes Modal Event Listeners
+document.getElementById('closeNotesModalBtn').onclick = closeProjectNotesModal;
+    document.getElementById('projectNotesModal').onclick = (e) => {
+        if (e.target.id === 'projectNotesModal') closeProjectNotesModal();
+    };
+
+function setupEventListeners() {
+    // Add project button
+    document.getElementById('addProjectBtn').onclick = () => showProjectModal();
+
+    // Project modal close
+    document.getElementById('closeProjectModalBtn').onclick = closeProjectModal;
+    document.getElementById('projectModal').onclick = (e) => {
+        if (e.target.id === 'projectModal') closeProjectModal();
+    };
+
+    // Tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = (e) => switchTab(e, btn.dataset.tab);
+        });
+
+    // Storage sync
+    window.addEventListener('storage', e => {
+        if (e.key === PROJECTS_KEY) loadProjects();
+    });
+}
+
+
+init();
+</script>
+</body>
+</html>
+   <h2 id="dashTitle">اسم المشروع</h2>
+                <p id="dashMeta" style="color: #64748b; font-size: 13px;"></p>
+            </div>
+            <button class="btn btn-gray" onclick="hideDashboard()">⬅️ عودة للمشاريع</button>
+        </div>
+
+        <div class="stats-row" id="dashStats"></div>
+
+        <div class="tabs-header">
+            <button class="tab-btn active" onclick="switchTab('overview', this)">📊 ملخص</button>
+            <button class="tab-btn" onclick="switchTab('expenses', this)">💸 المصروفات</button>
+            <button class="tab-btn" onclick="switchTab('revenues', this)">💰 الإيرادات</button>
+        </div>
+
+        <div id="overviewTab" class="tab-content active"></div>
+        <div id="expensesTab" class="tab-content"></div>
+        <div id="revenuesTab" class="tab-content"></div>
+    </div>
+</div>
+
+<div id="projectModal" class="modal-overlay">
+    <div class="modal">
+        <h3>بيانات المشروع</h3><br>
+        <form id="projectForm">
+            <div class="form-grid">
+                <div class="field" style="grid-column: 1/-1;">
+                    <label>اسم المشروع</label>
+                    <input type="text" id="p_name" required>
+                </div>
+                <div class="field">
+                    <label>الفرع</label>
+                    <input type="text" id="p_branch">
+                </div>
+                <div class="field">
+                    <label>الحالة</label>
+                    <select id="p_status">
+                        <option>نشط</option>
+                        <option>مكتمل</option>
+                        <option>معلق</option>
+                    </select>
+                </div>
+                <div class="field" style="grid-column: 1/-1;">
+                    <label>ملاحظات المشروع</label>
+                    <textarea id="p_notes" rows="3"></textarea>
+                </div>
+            </div>
+            <br>
+            <div style="text-align: left;">
+                <button type="button" class="btn btn-gray" onclick="closeModal('projectModal')">إلغاء</button>
+                <button type="submit" class="btn btn-primary">حفظ المشروع</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="transModal" class="modal-overlay">
+    <div class="modal">
+        <h3 id="transModalTitle">إضافة عملية</h3><br>
+        <form id="transForm">
+            <input type="hidden" id="t_category">
+            <div class="form-grid">
+                <div class="field">
+                    <label>التاريخ (الشهر)</label>
+                    <input type="month" id="t_date" required>
+                </div>
+                <div class="field">
+                    <label>المبلغ</label>
+                    <input type="number" id="t_amount" step="0.01" required>
+                </div>
+                <div class="field" style="grid-column: 1/-1;">
+                    <label>الوصف / الملاحظات</label>
+                    <input type="text" id="t_desc" placeholder="مثلاً: مستخلص رقم 1 أو شراء مواد">
+                </div>
+            </div>
+            <br>
+            <div style="text-align: left;">
+                <button type="button" class="btn btn-gray" onclick="closeModal('transModal')">إلغاء</button>
+                <button type="submit" class="btn btn-primary">إضافة</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+
+
+    // --- Core Functions ---
+    function save() {
+        localStorage.setItem('saden_data', JSON.stringify(projects));
+        renderTiles();
+    }
+
+    function showProjectModal() { document.getElementById('projectModal').classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    document.getElementById('projectForm').onsubmit = (e) => {
+        e.preventDefault();
+        const newProject = {
+            id: Date.now(),
+            name: document.getElementById('p_name').value,
+            branch: document.getElementById('p_branch').value,
+            status: document.getElementById('p_status').value,
+            notes: document.getElementById('p_notes').value,
+            expenses: [],
+            revenues: []
+        };
+        projects.push(newProject);
+        save();
+        closeModal('projectModal');
+        e.target.reset();
+    };
+
+    function renderTiles() {
+        const grid = document.getElementById('tilesGrid');
+        grid.innerHTML = projects.map(p => {
+            const totalExp = p.expenses.reduce((s, i) => s + parseFloat(i.amount), 0);
+            const totalRev = p.revenues.reduce((s, i) => s + parseFloat(i.amount), 0);
+            return `
+                <div class="project-tile" onclick="openDashboard(${p.id})">
+                    <div class="tile-header">
+                        <span class="tile-title">${p.name}</span>
+                        <span class="tile-badge">${p.status}</span>
+                    </div>
+                    <div style="font-size:12px; color:#64748b; margin-bottom:15px;">📍 ${p.branch || 'بدون فرع'}</div>
+                    <div style="display:flex; justify-content:space-between; border-top:1px solid #eee; pt:10px;">
+                        <div style="color:var(--danger); font-size:13px;"><b>${totalExp.toLocaleString()}</b> <small>مصروف</small></div>
+                        <div style="color:var(--success); font-size:13px;"><b>${totalRev.toLocaleString()}</b> <small>إيراد</small></div>
+                    </div>
+                </div>
+            `;
+        }).join('') || '<p style="text-align:center; grid-column:1/-1; padding:50px; color:#94a3b8;">لا توجد مشاريع مضافة</p>';
+    }
+
+    // --- Dashboard Logic ---
+    function openDashboard(id) {
+        currentId = id;
+        const p = projects.find(x => x.id === id);
+        document.getElementById('tilesView').style.display = 'none';
+        document.getElementById('dashboardView').style.display = 'block';
+        document.getElementById('dashTitle').innerText = p.name;
+        document.getElementById('dashMeta').innerText = `الفرع: ${p.branch} | الحالة: ${p.status}`;
+        updateDashStats();
+        switchTab('overview', document.querySelector('.tab-btn'));
+    }
+
+    function hideDashboard() {
+        document.getElementById('tilesView').style.display = 'block';
+        document.getElementById('dashboardView').style.display = 'none';
+    }
+
+    function updateDashStats() {
+        const p = projects.find(x => x.id === currentId);
+        const totalExp = p.expenses.reduce((s, i) => s + parseFloat(i.amount), 0);
+        const totalRev = p.revenues.reduce((s, i) => s + parseFloat(i.amount), 0);
+        const profit = totalRev - totalExp;
+
+        document.getElementById('dashStats').innerHTML = `
+            <div class="stat-card expense">
+                <div class="stat-label">إجمالي المصروفات</div>
+                <div class="stat-value">${totalExp.toLocaleString()}</div>
+                <div class="stat-label">ريال سعودي</div>
+            </div>
+            <div class="stat-card revenue">
+                <div class="stat-label">إجمالي الإيرادات</div>
+                <div class="stat-value">${totalRev.toLocaleString()}</div>
+                <div class="stat-label">ريال سعودي</div>
+            </div>
+            <div class="stat-card" style="border-top-color: ${profit >= 0 ? 'var(--success)' : 'var(--danger)'}">
+                <div class="stat-label">مجمع (الربح/الخسارة)</div>
+                <div class="stat-value" style="color: ${profit >= 0 ? 'var(--success)' : 'var(--danger)'}">${profit.toLocaleString()}</div>
+                <div class="stat-label">ريال سعودي</div>
+            </div>
+        `;
+    }
+
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tab + 'Tab').classList.add('active');
+        renderTabContent(tab);
+    }
+
+    function renderTabContent(tab) {
+        const p = projects.find(x => x.id === currentId);
+        const container = document.getElementById(tab + 'Tab');
+
+        if (tab === 'overview') {
+            container.innerHTML = `
+                <h4>📝 ملاحظات المشروع</h4>
+                <div style="background:#f8fafc; padding:15px; border-radius:10px; margin-top:10px; border:1px solid #e2e8f0;">
+                    ${p.notes || 'لا توجد ملاحظات مسجلة لهذا المشروع.'}
+                </div>
+            `;
+        } else {
+            const list = tab === 'expenses' ? p.expenses : p.revenues;
+            const title = tab === 'expenses' ? 'مصروف' : 'إيراد/مستخلص';
+            const total = list.reduce((s, i) => s + parseFloat(i.amount), 0);
+            
+            container.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div class="monthly-total" style="margin:0; flex:1; margin-left:15px;">
+                        <span>إجمالي ${tab === 'expenses' ? 'المصروفات' : 'الإيرادات'}</span>
+                        <b style="font-size:18px;">${total.toLocaleString()} ريال</b>
+                    </div>
+                    <button class="btn btn-primary" onclick="showTransModal('${tab}')">➕ إضافة ${title}</button>
+                </div>
+                <table class="data-table">
+                    <thead><tr><th>التاريخ</th><th>الوصف</th><th>المبلغ</th></tr></thead>
+                    <tbody>
+                        ${list.map(t => `<tr><td>${t.date}</td><td>${t.desc}</td><td>${parseFloat(t.amount).toLocaleString()}</td></tr>`).join('')}
+                    </tbody>
+                </table>
+                ${list.length === 0 ? '<p style="text-align:center; padding:20px; color:#94a3b8;">لا توجد سجلات</p>' : ''}
+            `;
+        }
+    }
+
+    function showTransModal(cat) {
+        document.getElementById('t_category').value = cat;
+        document.getElementById('transModalTitle').innerText = cat === 'expenses' ? 'إضافة مصروف جديد' : 'إضافة إيراد/مستخلص جديد';
+        document.getElementById('transModal').classList.add('active');
+    }
+
+    document.getElementById('transForm').onsubmit = (e) => {
+        e.preventDefault();
+        const p = projects.find(x => x.id === currentId);
+        const cat = document.getElementById('t_category').value;
+        const entry = {
+            id: Date.now(),
+            date: document.getElementById('t_date').value,
+            amount: document.getElementById('t_amount').value,
+            desc: document.getElementById('t_desc').value
+        };
+        
+        if(cat === 'expenses') p.expenses.push(entry);
+        else p.revenues.push(entry);
+        
+        save();
+        updateDashStats();
+        renderTabContent(cat);
+        closeModal('transModal');
+        e.target.reset();
+    };
+
+    // Initial Run
+    renderTiles();
+</script>
