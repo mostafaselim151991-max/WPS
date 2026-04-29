@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام سادن المتكامل | Sadin ERP Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a; --accent: #0284c7; --navy: #1e293b; --bg: #f8fafc;
+            --card: #ffffff; --border: #e2e8f0; --danger: #ef4444; --success: #10b981;
+            --warning: #f59e0b; --shadow: 0 4px 20px rgba(0,0,0,.07);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background: var(--bg); color: var(--navy); padding: 24px; min-height: 100vh; }
+        .container { max-width: 1400px; margin: auto; }
+
+        /* Header */
+        .page-header { background: linear-gradient(135deg, var(--primary), var(--navy)); color: white; padding: 24px 30px; border-radius: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Buttons */
+        .btn { padding: 10px 22px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 13px; transition: .2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-outline { background: white; color: var(--primary); border: 1px solid var(--border); }
+        .btn-icon { background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; transition: 0.2s; }
+        .btn-icon:hover { background: #f1f5f9; }
+
+        /* Tiles Grid */
+        .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .project-tile { background: var(--card); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); transition: .3s; cursor: pointer; position: relative; }
+        .project-tile:hover { transform: translateY(-5px); border-color: var(--accent); }
+        
+        /* Countdown Area */
+        .countdown-timer { background: #f0f9ff; color: var(--accent); font-size: 11px; font-weight: 900; padding: 8px; border-radius: 8px; margin-top: 12px; border: 1px solid #bae6fd; text-align: center; }
+        .countdown-expired { background: #fef2f2; color: var(--danger); border-color: #fecaca; }
+
+        /* Dashboard Stats */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 14px; text-align: center; box-shadow: var(--shadow); border-top: 4px solid var(--accent); }
+        .stat-val { font-size: 20px; font-weight: 900; margin-top: 5px; }
+
+        /* Modal Layout */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(3px); }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 20px; width: 95%; max-width: 1000px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        .modal-tabs { display: flex; background: #f1f5f9; overflow-x: auto; border-bottom: 1px solid var(--border); }
+        .m-tab { padding: 15px 20px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; color: #64748b; }
+        .m-tab.active { border-bottom-color: var(--accent); color: var(--accent); background: white; }
+
+        .modal-body { padding: 25px; overflow-y: auto; flex: 1; }
+        .grid-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .field { display: flex; flex-direction: column; margin-bottom: 15px; }
+        .field label { font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #475569; }
+        .field input, .field select, .field textarea { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'Tajawal'; }
+        .full-row { grid-column: 1 / -1; }
+
+        /* Tabs inside Dashboard */
+        .tab-nav { display: flex; gap: 5px; margin-top: 20px; }
+        .tab-btn { padding: 12px 20px; border: none; background: #e2e8f0; color: #64748b; cursor: pointer; border-radius: 8px 8px 0 0; font-weight: 700; }
+        .tab-btn.active { background: white; color: var(--accent); border: 1px solid var(--border); border-bottom: none; }
+        .content-area { background: white; border: 1px solid var(--border); padding: 24px; border-radius: 0 12px 12px 12px; }
+        .tab-pane-view { display: none; }
+        .tab-pane-view.active { display: block; }
+
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { background: var(--navy); color: white; padding: 12px; text-align: right; font-size: 12px; }
+        .data-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+
+        .note-item { background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-right: 4px solid var(--accent); position: relative; }
+        .note-item small { font-size: 10px; color: #64748b; display: block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="tilesView">
+        <div class="page-header">
+            <div>
+                <h1>🏗️ سادن | إدارة المشاريع</h1>
+                <p>مركز المشاريع</p>
+            </div>
+            <button class="btn btn-primary" onclick="openProjectModal()">➕ مشروع جديد</button>
+        </div>
+        <div class="tiles-grid" id="tilesGrid"></div>
+    </div>
+
+    <div id="dashboardView" style="display:none">
+        <div class="page-header" style="background:white; color:var(--navy); border:1px solid var(--border)">
+            <div>
+                <h2 id="dashProjectName">--</h2>
+                <p id="dashProjectMeta" style="color:#64748b; font-size:13px"></p>
+            </div>
+            <button class="btn btn-outline" onclick="backToList()">⬅️ عودة للقائمة</button>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card"><div>قيمة العقد</div><div class="stat-val" id="stVal">0</div></div>
+            <div class="stat-card" style="border-top-color:var(--danger)"><div>المصروفات</div><div class="stat-val" id="stExp">0</div></div>
+            <div class="stat-card" style="border-top-color:var(--success)"><div>الإيرادات</div><div class="stat-val" id="stRev">0</div></div>
+            <div class="stat-card" style="border-top-color:var(--warning)"><div>صافي الربح</div><div class="stat-val" id="stNet">0</div></div>
+        </div>
+
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchMainTab(event, 'sumTab')">📊 التفاصيل</button>
+            <button class="tab-btn" onclick="switchMainTab(event, 'expTab')">💸 المصروفات</button>
+            <button class="tab-btn" onclick="switchMainTab(event, 'revTab')">💰 الإيرادات</button>
+            <button class="tab-btn" onclick="switchMainTab(event, 'notesTab')">📝 الملاحظات</button>
+        </div>
+
+        <div class="content-area">
+            <div id="sumTab" class="tab-pane-view active">
+                <div id="summaryContent" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;"></div>
+            </div>
+            
+            <div id="expTab" class="tab-pane-view">
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px">
+                    <h3>سجل المصروفات</h3>
+                    <button class="btn btn-primary" style="background:var(--danger)" onclick="openTransModal('expense')">➕ إضافة مصروف</button>
+                </div>
+                <table class="data-table">
+                    <thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead>
+                    <tbody id="expTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="revTab" class="tab-pane-view">
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px">
+                    <h3>سجل الإيرادات</h3>
+                    <button class="btn btn-primary" style="background:var(--success)" onclick="openTransModal('revenue')">➕ إضافة إيراد</button>
+                </div>
+                <table class="data-table">
+                    <thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead>
+                    <tbody id="revTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="notesTab" class="tab-pane-view">
+                <div style="display:flex; gap:10px; margin-bottom:20px">
+                    <input type="text" id="noteInput" style="flex:1; padding:10px; border:1px solid var(--border); border-radius:8px" placeholder="أضف ملاحظة جديدة...">
+                    <button class="btn btn-primary" onclick="addNote()">حفظ</button>
+                </div>
+                <div id="notesList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="projectModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header" style="background:var(--navy); color:white; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+            <h3>بيانات المشروع الشاملة</h3>
+            <button onclick="closeModal('projectModal')" style="color:white; background:none; border:none; font-size:24px; cursor:pointer">&times;</button>
+        </div>
+        <div class="modal-tabs">
+            <div class="m-tab active" onclick="switchModalTab(0)">1. الأساسيات</div>
+            <div class="m-tab" onclick="switchModalTab(1)">2. العميل</div>
+            <div class="m-tab" onclick="switchModalTab(2)">3. الزمن</div>
+            <div class="m-tab" onclick="switchModalTab(3)">4. المالية</div>
+            <div class="m-tab" onclick="switchModalTab(4)">5. الفريق</div>
+            <div class="m-tab" onclick="switchModalTab(5)">6. الأداء</div>
+            <div class="m-tab" onclick="switchModalTab(6)">7. التشغيل</div>
+            <div class="m-tab" onclick="switchModalTab(7)">8. المرفقات</div>
+        </div>
+        <div class="modal-body">
+            <form id="projectForm">
+                <div class="m-pane active" id="mp0"><div class="grid-fields">
+                    <div class="field"><label>اسم المشروع</label><input type="text" id="pName"></div>
+                    <div class="field"><label>كود المشروع</label><input type="text" id="pCode"></div>
+                    <div class="field"><label>النوع</label><select id="pType"><option>استشاري</option><option>تنفيذي</option><option>داخلي</option></select></div>
+                    <div class="field"><label>الحالة</label><select id="pStatus"><option>جديد</option><option>جاري</option><option>متوقف</option><option>منتهي</option></select></div>
+                    <div class="field full-row"><label>وصف المشروع</label><textarea id="pDesc" rows="3"></textarea></div>
+                </div></div>
+                <div class="m-pane" style="display:none" id="mp1"><div class="grid-fields">
+                    <div class="field"><label>اسم العميل</label><input type="text" id="pClient"></div>
+                    <div class="field"><label>جهة الاتصال</label><input type="text" id="pContact"></div>
+                    <div class="field"><label>رقم الجوال</label><input type="text" id="pPhone"></div>
+                    <div class="field full-row"><label>العنوان</label><input type="text" id="pAddress"></div>
+                </div></div>
+                <div class="m-pane" style="display:none" id="mp2"><div class="grid-fields">
+                    <div class="field"><label>تاريخ البدء</label><input type="date" id="pStart"></div>
+                    <div class="field"><label>تاريخ الانتهاء</label><input type="date" id="pEnd"></div>
+                    <div class="field full-row"><label>المراحل الرئيسية</label><textarea id="pMilestones"></textarea></div>
+                </div></div>
+                <div class="m-pane" style="display:none" id="mp3"><div class="grid-fields">
+                    <div class="field"><label>قيمة العقد</label><input type="number" id="pVal"></div>
+                    <div class="field"><label>الميزانية التقديرية</label><input type="number" id="pBud"></div>
+                    <div class="field"><label>مركز التكلفة</label><input type="text" id="pCC"></div>
+                </div></div>
+                <div class="m-pane" style="display:none" id="mp4"><div class="grid-fields">
+                    <div class="field"><label>مدير المشروع</label><input type="text" id="pMgr"></div>
+                    <div class="field full-row"><label>فريق العمل</label><textarea id="pTeam"></textarea></div>
+                </div></div>
+                <div class="m-pane" style="display:none" id="mp5"><div class="grid-fields">
+                    <div class="field"><label>نسبة الإنجاز %</label><input type="number" id="pProg"></div>
+                    <div class="field"><label>دورة التقرير</label><select id="pEval"><option>أسبوعي</option><option>شهري</option></select></div>
+                </div></div>
+                <div class="m-pane" style="display:none" id="mp6"><div class="grid-fields">
+                    <div class="field"><label>نوع الخدمة</label><input type="text" id="pServ"></div>
+                    <div class="field full-row"><label>المخاطر المحتملة</label><textarea id="pRisks"></textarea></div>
+                </div></div>
+                <div class="m-pane" style="display:none" id="mp7"><div class="field full-row">
+                    <label>المستندات / المرفقات</label><textarea id="pDocs" rows="5"></textarea>
+                </div></div>
+            </form>
+        </div>
+        <div style="padding:20px; border-top:1px solid var(--border); display:flex; gap:10px">
+            <button class="btn btn-primary" style="flex:1" onclick="saveProject()">حفظ البيانات</button>
+            <button class="btn btn-outline" onclick="closeModal('projectModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<div id="transModal" class="modal-overlay">
+    <div class="modal" style="max-width:400px">
+        <div class="modal-header" style="background:var(--navy); color:white; padding:15px"><h3 id="transTitle">إضافة حركة</h3></div>
+        <div class="modal-body">
+            <input type="hidden" id="tType">
+            <input type="hidden" id="tIdx">
+            <div class="field"><label>المبلغ</label><input type="number" id="tAmt"></div>
+            <div class="field"><label>البيان</label><input type="text" id="tCat"></div>
+        </div>
+        <div style="padding:15px; display:flex; gap:10px">
+            <button class="btn btn-primary" style="flex:1" onclick="saveTrans()">حفظ الحركة</button>
+            <button class="btn btn-outline" onclick="closeModal('transModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let projects = JSON.parse(localStorage.getItem('saden_ultra_v10')) || [];
+    let curProjectIdx = null;
+
+    // --- RENDER FUNCTIONS ---
+    function renderProjects() {
+        const grid = document.getElementById('tilesGrid');
+        grid.innerHTML = projects.map((p, i) => `
+            <div class="project-tile" onclick="openDash(${i})">
+                <div style="display:flex; justify-content:space-between">
+                    <strong>${p.name}</strong>
+                    <span style="font-size:11px; background:#f1f5f9; padding:2px 8px; border-radius:10px">${p.status}</span>
+                </div>
+                <div style="font-size:12px; color:#64748b; margin-top:10px">
+                    <p>🆔 كود: ${p.code}</p>
+                    <p>💰 القيمة: ${Number(p.val).toLocaleString()} ريال</p>
+                </div>
+                
+                <div class="countdown-timer" data-end="${p.end}">تحميل العداد...</div>
+
+                <div style="display:flex; gap:8px; margin-top:15px; padding-top:12px; border-top:1px dashed #e2e8f0">
+                    <button class="btn btn-outline btn-sm" style="flex:1; padding:5px" onclick="event.stopPropagation(); editProject(${i})">✏️ تعديل</button>
+                    <button class="btn btn-outline btn-sm" style="color:var(--danger); padding:5px" onclick="event.stopPropagation(); deleteProject(${i})">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+        updateCountdowns();
+    }
+
+    function updateCountdowns() {
+        document.querySelectorAll('.countdown-timer').forEach(el => {
+            if(!el.dataset.end) {
+                el.innerHTML = "تاريخ النهاية غير محدد";
+                return;
+            }
+            const end = new Date(el.dataset.end).getTime();
+            const now = new Date().getTime();
+            const diff = end - now;
+
+            if(diff < 0) {
+                el.innerHTML = "🏁 المشروع منتهي زمنياً";
+                el.classList.add('countdown-expired');
+            } else {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                el.innerHTML = `⏳ متبقي: ${days} يوم و ${hours} ساعة`;
+            }
+        });
+    }
+    setInterval(updateCountdowns, 60000); // تحديث كل دقيقة
+
+    // --- DASHBOARD FUNCTIONS ---
+    function openDash(i) {
+        curProjectIdx = i;
+        const p = projects[i];
+        document.getElementById('tilesView').style.display = 'none';
+        document.getElementById('dashboardView').style.display = 'block';
+        document.getElementById('dashProjectName').innerText = p.name;
+        document.getElementById('dashProjectMeta').innerText = `كود: ${p.code} | العميل: ${p.client}`;
+        updateDashFinance();
+        renderNotes();
+    }
+
+    function updateDashFinance() {
+        const p = projects[curProjectIdx];
+        const exTotal = p.expenses.reduce((s, e) => s + Number(e.amount), 0);
+        const revTotal = p.revenues.reduce((s, r) => s + Number(r.amount), 0);
+
+        document.getElementById('stVal').innerText = Number(p.val).toLocaleString();
+        document.getElementById('stExp').innerText = exTotal.toLocaleString();
+        document.getElementById('stRev').innerText = revTotal.toLocaleString();
+        document.getElementById('stNet').innerText = (revTotal - exTotal).toLocaleString();
+
+        document.getElementById('expTableBody').innerHTML = p.expenses.map((e, idx) => `
+            <tr>
+                <td>${e.date}</td><td>${e.category}</td><td>${Number(e.amount).toLocaleString()}</td>
+                <td>
+                    <button class="btn-icon" onclick="openTransModal('expense', ${idx})">✏️</button>
+                    <button class="btn-icon" style="color:red" onclick="deleteTrans('expense', ${idx})">🗑️</button>
+                </td>
+            </tr>`).join('');
+
+        document.getElementById('revTableBody').innerHTML = p.revenues.map((r, idx) => `
+            <tr>
+                <td>${r.date}</td><td>${r.category}</td><td>${Number(r.amount).toLocaleString()}</td>
+                <td>
+                    <button class="btn-icon" onclick="openTransModal('revenue', ${idx})">✏️</button>
+                    <button class="btn-icon" style="color:red" onclick="deleteTrans('revenue', ${idx})">🗑️</button>
+                </td>
+            </tr>`).join('');
+
+        document.getElementById('summaryContent').innerHTML = `
+            <div style="background:#fff; padding:15px; border-radius:10px; border:1px solid #e2e8f0">
+                <h4 style="color:var(--accent); margin-bottom:10px">📋 بيانات التشغيل</h4>
+                <p><b>مدير المشروع:</b> ${p.mgr || 'غير محدد'}</p>
+                <p><b>نوع الخدمة:</b> ${p.serv || 'غير محدد'}</p>
+                <p><b>نسبة الإنجاز:</b> ${p.prog || 0}%</p>
+                <p><b>الحالة:</b> ${p.status}</p>
+            </div>
+            <div style="background:#fff; padding:15px; border-radius:10px; border:1px solid #e2e8f0">
+                <h4 style="color:var(--accent); margin-bottom:10px">📅 المخطط الزمني</h4>
+                <p><b>تاريخ البدء:</b> ${p.start || '--'}</p>
+                <p><b>تاريخ الانتهاء:</b> ${p.end || '--'}</p>
+                <p><b>المخاطر:</b> ${p.risks || 'لا يوجد'}</p>
+            </div>
+        `;
+    }
+
+    // --- PROJECT ACTIONS ---
+    function openProjectModal() {
+        curProjectIdx = null;
+        document.getElementById('projectForm').reset();
+        switchModalTab(0);
+        document.getElementById('projectModal').classList.add('active');
+    }
+
+    function editProject(i) {
+        curProjectIdx = i;
+        const p = projects[i];
+        document.getElementById('pName').value = p.name;
+        document.getElementById('pCode').value = p.code;
+        document.getElementById('pType').value = p.type;
+        document.getElementById('pStatus').value = p.status;
+        document.getElementById('pDesc').value = p.desc;
+        document.getElementById('pClient').value = p.client;
+        document.getElementById('pContact').value = p.contact;
+        document.getElementById('pPhone').value = p.phone;
+        document.getElementById('pAddress').value = p.address;
+        document.getElementById('pStart').value = p.start;
+        document.getElementById('pEnd').value = p.end;
+        document.getElementById('pMilestones').value = p.milestones;
+        document.getElementById('pVal').value = p.val;
+        document.getElementById('pBud').value = p.bud;
+        document.getElementById('pCC').value = p.cc;
+        document.getElementById('pMgr').value = p.mgr;
+        document.getElementById('pTeam').value = p.team;
+        document.getElementById('pProg').value = p.prog;
+        document.getElementById('pEval').value = p.eval;
+        document.getElementById('pServ').value = p.serv;
+        document.getElementById('pRisks').value = p.risks;
+        document.getElementById('pDocs').value = p.docs;
+        switchModalTab(0);
+        document.getElementById('projectModal').classList.add('active');
+    }
+
+    function saveProject() {
+        const pData = {
+            name: document.getElementById('pName').value,
+            code: document.getElementById('pCode').value,
+            type: document.getElementById('pType').value,
+            status: document.getElementById('pStatus').value,
+            desc: document.getElementById('pDesc').value,
+            client: document.getElementById('pClient').value,
+            contact: document.getElementById('pContact').value,
+            phone: document.getElementById('pPhone').value,
+            address: document.getElementById('pAddress').value,
+            start: document.getElementById('pStart').value,
+            end: document.getElementById('pEnd').value,
+            milestones: document.getElementById('pMilestones').value,
+            val: document.getElementById('pVal').value || 0,
+            bud: document.getElementById('pBud').value || 0,
+            cc: document.getElementById('pCC').value,
+            mgr: document.getElementById('pMgr').value,
+            team: document.getElementById('pTeam').value,
+            prog: document.getElementById('pProg').value || 0,
+            eval: document.getElementById('pEval').value,
+            serv: document.getElementById('pServ').value,
+            risks: document.getElementById('pRisks').value,
+            docs: document.getElementById('pDocs').value,
+            expenses: curProjectIdx !== null ? projects[curProjectIdx].expenses : [],
+            revenues: curProjectIdx !== null ? projects[curProjectIdx].revenues : [],
+            notes: curProjectIdx !== null ? projects[curProjectIdx].notes : []
+        };
+
+        if(!pData.name || !pData.code) return alert('يرجى إدخال اسم وكود المشروع');
+
+        if(curProjectIdx !== null) projects[curProjectIdx] = pData;
+        else projects.push(pData);
+
+        localStorage.setItem('saden_ultra_v10', JSON.stringify(projects));
+        renderProjects();
+        closeModal('projectModal');
+    }
+
+    function deleteProject(i) {
+        if(confirm('هل أنت متأكد من حذف المشروع نهائياً؟')) {
+            projects.splice(i, 1);
+            localStorage.setItem('saden_ultra_v10', JSON.stringify(projects));
+            renderProjects();
+        }
+    }
+
+    // --- TRANSACTION ACTIONS ---
+    function openTransModal(type, idx = null) {
+        document.getElementById('tType').value = type;
+        document.getElementById('tIdx').value = idx;
+        document.getElementById('transTitle').innerText = (type === 'expense' ? 'إضافة مصروف' : 'إضافة إيراد');
+        
+        if(idx !== null) {
+            const data = (type === 'expense' ? projects[curProjectIdx].expenses[idx] : projects[curProjectIdx].revenues[idx]);
+            document.getElementById('tAmt').value = data.amount;
+            document.getElementById('tCat').value = data.category;
+        } else {
+            document.getElementById('tAmt').value = '';
+            document.getElementById('tCat').value = '';
+        }
+        document.getElementById('transModal').classList.add('active');
+    }
+
+    function saveTrans() {
+        const type = document.getElementById('tType').value;
+        const idx = document.getElementById('tIdx').value;
+        const entry = {
+            date: new Date().toLocaleDateString('ar-EG'),
+            amount: document.getElementById('tAmt').value,
+            category: document.getElementById('tCat').value
+        };
+
+        if(!entry.amount) return alert('يرجى إدخال المبلغ');
+
+        if(idx !== "") {
+            if(type === 'expense') projects[curProjectIdx].expenses[idx] = entry;
+            else projects[curProjectIdx].revenues[idx] = entry;
+        } else {
+            if(type === 'expense') projects[curProjectIdx].expenses.push(entry);
+            else projects[curProjectIdx].revenues.push(entry);
+        }
+
+        localStorage.setItem('saden_ultra_v10', JSON.stringify(projects));
+        updateDashFinance();
+        closeModal('transModal');
+    }
+
+    function deleteTrans(type, idx) {
+        if(confirm('هل تريد حذف هذه العملية؟')) {
+            if(type === 'expense') projects[curProjectIdx].expenses.splice(idx, 1);
+            else projects[curProjectIdx].revenues.splice(idx, 1);
+            localStorage.setItem('saden_ultra_v10', JSON.stringify(projects));
+            updateDashFinance();
+        }
+    }
+
+    // --- NOTES FUNCTIONS ---
+    function addNote() {
+        const txt = document.getElementById('noteInput').value;
+        if(!txt) return;
+        if(!projects[curProjectIdx].notes) projects[curProjectIdx].notes = [];
+        projects[curProjectIdx].notes.push({ date: new Date().toLocaleString('ar-EG'), text: txt });
+        document.getElementById('noteInput').value = '';
+        localStorage.setItem('saden_ultra_v10', JSON.stringify(projects));
+        renderNotes();
+    }
+
+    function renderNotes() {
+        const list = document.getElementById('notesList');
+        const notes = projects[curProjectIdx].notes || [];
+        list.innerHTML = notes.map((n, idx) => `
+            <div class="note-item">
+                <small>${n.date}</small>
+                <p>${n.text}</p>
+                <button onclick="deleteNote(${idx})" style="position:absolute; left:10px; top:10px; border:none; color:red; background:none; cursor:pointer">🗑️</button>
+            </div>`).reverse().join('');
+    }
+
+    function deleteNote(idx) {
+        projects[curProjectIdx].notes.splice(idx, 1);
+        localStorage.setItem('saden_ultra_v10', JSON.stringify(projects));
+        renderNotes();
+    }
+
+    // --- UI HELPERS ---
+    function switchModalTab(idx) {
+        document.querySelectorAll('.m-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+        document.querySelectorAll('.m-pane').forEach((p, i) => p.style.display = (i === idx ? 'block' : 'none'));
+    }
+
+    function switchMainTab(e, id) {
+        document.querySelectorAll('.tab-pane-view').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        e.currentTarget.classList.add('active');
+    }
+
+    function backToList() {
+        document.getElementById('tilesView').style.display = 'block';
+        document.getElementById('dashboardView').style.display = 'none';
+        renderProjects();
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    // Initial Render
+    renderProjects();
+</script>
+</body>
+</html>
