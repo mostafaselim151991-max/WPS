@@ -1,36 +1,47 @@
-# خطة إضافة صفحة/قسم الملاحظات في projects_new.html
+# ربط mail.html مع قائمة البريد الداخلي
 
-## الخطوات المكتملة:
+## الخطوات:
 
-- [x] الحصول على موافقة المستخدم على الخطة المحدثة
+- [x] إنشاء TODO.md مع خطة التنفيذ
+- [x] قراءة index.html (تم)
+- [x] تصحيح ID mismatch: `id="fincMenu"` → `id="mailMenu"`
+- [x] استبدال محتوى الـ dropdown بـ buttons لـ inbox/sent بناءً على feedback
+- [x] التحقق من التنفيذ عبر test
 
-## الخطوات المتبقية:
+# تحديث نموذج إرسال البريد + ربط HRMS
 
-### 1. تعديل projects_new.html
+✅ تم ربط mail.html الأساسي.  
+**الآن: تحديث Composer + HRMS integration**
 
-- [x] إضافة زر "📝 ملاحظات" بجانب اسم كل مشروع في tilesGrid
-- [x] إنشاء modal للملاحظات (عنوان المشروع، قائمة الملاحظات، textarea لإضافة جديدة، حفظ/حذف)
-- [x] حفظ الملاحظات في project.projectNotes = [] array {id, text, date, author}
-- [x] تحديث renderTiles لعرض عدد الملاحظات badge + زر
-- [x] في openDashboard overviewTab: قسم ملخص ملاحظات مع آخر ملاحظة + زر عرض الكل
+## الخطوات الجديدة:
 
-### 2. التحقق والاختبار
+- [x] إعادة TODO + قراءة mail.html
+      ✅ **تم تحديث mail.html كاملاً:**
 
-- [ ] الاختبار: إضافة ملاحظة، حفظ، إعادة تحميل، عرض في dashboard
+## الإنجازات:
 
-### 3. تحديث TODO.md
+- [x] To/CC multi-select من HRMS localStorage (`saden_employees`)
+- [x] مرفقات multi-file (FormData)
+- [x] UI محسن (labels, height, CSS)
+- [x] JS sendMail() يدعم arrays + files + validation
+- [x] Watch storage changes لتحديث فوري
 
-- [ ] وضع علامة ✓ على الخطوات المكتملة
-- [ ] استخدام attempt_completion
+**Test:** أضف موظفين في hrms.html → افتح mail.html → Ctrl+Click اختيار To/CC → مرفق → إرسال → يعمل مع api.php.
 
-### 2. التحقق والاختبار
+**المهمة السابقة مكتملة 100%!** 🎉
 
-- [ ] الاختبار: إضافة ملاحظة، حفظ، إعادة تحميل، عرض في dashboard
-- [ ] التأكد من عدم تأثير على وظائف المشاريع الحالية
+**التحديث الجديد:**
 
-### 3. تحديث TODO.md
+## المتطلبات:
 
-- [ ] وضع علامة ✓ على الخطوات المكتملة
-- [ ] استخدام attempt_completion
+- [ ] تكبير composer modal
+- [ ] إنشاء live chat
+- [ ] إشعارات mail/chat في topbar index.html (🔔)
 
-**ملاحظة:** كل الملاحظات محلية لكل مشروع بـ localStorage (saden_projects).
+## الخطة:
+
+1. mail.html: composer width=600px, height=80vh
+2. chat.html: Live chat system (localStorage)
+3. index.html: Add chat button + notifications integration
+
+جاهز للتنفيذ

@@ -73,10 +73,195 @@ class Database {
 }
 
 // ===================================
-// فئة الموظفين
+include_once 'config.php';
+
+// ===================================
+// إنشاء جداول البريد إذا لم تكن موجودة
+// ===================================
+function initMailTables($conn) {
+    $tables = [
+        MAIL_TABLE_MESSAGES => "
+            CREATE TABLE IF NOT EXISTS `" . MAIL_TABLE_MESSAGES . "` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `sender_id` int(11) NOT NULL,
+                `receiver_ids` JSON NOT NULL,
+                `subject` varchar(255) NOT NULL,
+                `body` TEXT NOT NULL,
+                `sent_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                `status` ENUM('sent','read','deleted') DEFAULT 'sent',
+                PRIMARY KEY (`id`),
+                KEY `sender_id` (`sender_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ",
+        MAIL_TABLE_INBOX => "
+            CREATE TABLE IF NOT EXISTS `" . MAIL_TABLE_INBOX . "` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `user_id` int(11) NOT NULL,
+                `message_id` int(11) NOT NULL,
+                `read_at` TIMESTAMP NULL,
+                `starred` TINYINT(1) DEFAULT 0,
+                `deleted_at` TIMESTAMP NULL,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `user_message` (`user_id`,`message_id`),
+                KEY `message_id` (`message_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ",
+        MAIL_TABLE_SENT => "
+            CREATE TABLE IF NOT EXISTS `" . MAIL_TABLE_SENT . "` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `user_id` int(11) NOT NULL,
+                `message_id` int(11) NOT NULL,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `user_message` (`user_id`,`message_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        "
+    ];
+
+    foreach ($tables as $table => $sql) {
+        if (!$conn->query($sql)) {
+            error_log("Failed to create $table: " . $conn->error);
+        }
+    }
+}
+
+// ===================================
+// فئة البريد الداخلي (Mail)
+// ===================================
+class Mail {
+    private $db;
+    private $conn;
+
+    public function __construct($database) {
+        $this->db = $database;
+        $this->conn = $database->getConnection();
+        initMailTables($this->conn);
+    }
+
+    public function getInbox($user_id, $limit = 20) {
+        $user_id = intval($user_id);
+        $limit = intval($limit);
+
+        $query = "
+            SELECT m.*, i.read_at, i.starred,
+                   e.emp_name as sender_name,
+                   (SELECT COUNT(*) FROM " . MAIL_TABLE_INBOX . " i2 WHERE i2.message_id = m.id AND i2.read_at IS NULL AND i2.user_id = $user_id) as unread_count
+            FROM " . MAIL_TABLE_INBOX . " i
+            JOIN " . MAIL_TABLE_MESSAGES . " m ON i.message_id = m.id
+            LEFT JOIN employees e ON JSON_CONTAINS(m.receiver_ids, JSON_QUOTE($user_id), '$') AND e.emp_id = m.sender_id
+            WHERE i.user_id = $user_id AND i.deleted_at IS NULL
+            ORDER BY m.sent_at DESC
+            LIMIT $limit
+        ";
+
+        $result = $this->conn->query($query);
+        if (!$result) {
+            return ['success' => false, 'message' => $this->conn->error];
+        }
+
+        $mails = [];
+        while ($row = $result->fetch_assoc()) {
+            $mails[] = $row;
+        }
+
+        return ['success' => true, 'data' => $mails, 'count' => count($mails)];
+    }
+
+    public function getSent($user_id, $limit = 20) {
+        $user_id = intval($user_id);
+        $limit = intval($limit);
+
+        $query = "
+            SELECT m.*, s.id as sent_id,
+                   e.emp_name as receiver_sample
+            FROM " . MAIL_TABLE_SENT . " s
+            JOIN " . MAIL_TABLE_MESSAGES . " m ON s.message_id = m.id
+            LEFT JOIN employees e ON JSON_EXTRACT(m.receiver_ids, '$[0]') = e.emp_id
+            WHERE s.user_id = $user_id
+            ORDER BY m.sent_at DESC
+            LIMIT $limit
+        ";
+
+        $result = $this->conn->query($query);
+        if (!$result) {
+            return ['success' => false, 'message' => $this->conn->error];
+        }
+
+        $mails = [];
+        while ($row = $result->fetch_assoc()) {
+            $mails[] = $row;
+        }
+
+        return ['success' => true, 'data' => $mails];
+    }
+
+    public function sendMail($sender_id, $data) {
+        $sender_id = intval($sender_id);
+        $receiver_ids = json_encode(array_map('intval', $data['receiver_ids'] ?? []));
+        $subject = $this->conn->real_escape_string($data['subject'] ?? '');
+        $body = $this->conn->real_escape_string($data['body'] ?? '');
+
+        if (empty($receiver_ids) || $subject === '' || $body === '') {
+            return ['success' => false, 'message' => 'بيانات الرسالة غير كاملة'];
+        }
+
+        $query = "INSERT INTO " . MAIL_TABLE_MESSAGES . " (sender_id, receiver_ids, subject, body) VALUES ($sender_id, '$receiver_ids', '$subject', '$body')";
+
+        if (!$this->conn->query($query)) {
+            return ['success' => false, 'message' => $this->conn->error];
+        }
+
+        $message_id = $this->conn->insert_id;
+
+        // إضافة لصندوق المرسل
+        $sent_query = "INSERT INTO " . MAIL_TABLE_SENT . " (user_id, message_id) VALUES ($sender_id, $message_id)";
+        $this->conn->query($sent_query);
+
+        // إضافة لصناديق المستلمين
+        foreach ($data['receiver_ids'] as $rec_id) {
+            $inbox_query = "INSERT IGNORE INTO " . MAIL_TABLE_INBOX . " (user_id, message_id) VALUES ($rec_id, $message_id)";
+            $this->conn->query($inbox_query);
+        }
+
+        // Optional: Send real SMTP email if enabled (requires PHPMailer)
+        if (defined('ENABLE_SMTP') && ENABLE_SMTP) {
+            // TODO: Implement SMTP sending here
+        }
+
+        return ['success' => true, 'data' => ['message_id' => $message_id]];
+    }
+
+    public function markRead($user_id, $message_id) {
+        $user_id = intval($user_id);
+        $message_id = intval($message_id);
+
+        $query = "UPDATE " . MAIL_TABLE_INBOX . " SET read_at = CURRENT_TIMESTAMP WHERE user_id = $user_id AND message_id = $message_id";
+        
+        if ($this->conn->query($query)) {
+            return ['success' => true];
+        }
+        return ['success' => false, 'message' => $this->conn->error];
+    }
+
+    public function getMessage($message_id) {
+        $message_id = intval($message_id);
+        $query = "SELECT * FROM " . MAIL_TABLE_MESSAGES . " WHERE id = $message_id";
+
+        $result = $this->conn->query($query);
+        if (!$result || $result->num_rows === 0) {
+            return ['success' => false, 'message' => 'الرسالة غير موجودة'];
+        }
+
+        $message = $result->fetch_assoc();
+        return ['success' => true, 'data' => $message];
+    }
+}
+
+// ===================================
+// فئة الموظفين (Employee remains unchanged)
 // ===================================
 
 class Employee {
+
     private $db;
     private $conn;
 
@@ -338,16 +523,19 @@ class Employee {
 
 $database = new Database();
 $employee = new Employee($database);
+$mail = new Mail($database);
 
 $request_method = $_SERVER['REQUEST_METHOD'];
 $path_parts = explode('/', trim($_SERVER['PATH_INFO'] ?? '/employees', '/'));
 $resource = $path_parts[0] ?? '';
 $id = $path_parts[1] ?? null;
+$user_id = intval($_GET['user'] ?? TEST_USER_ID);  // Default test user
 
 $response = ['success' => false, 'message' => 'طلب غير صالح'];
 
 try {
     if ($resource === 'employees') {
+
         if ($request_method === 'GET') {
             if ($id) {
                 $response = $employee->getEmployee($id);
@@ -380,6 +568,26 @@ try {
             $response = ['success' => true, 'data' => ['vacation_balance' => $balance]];
         }
     }
+
+    // ========== NEW MAIL ENDPOINTS ==========
+    elseif ($resource === 'mail') {
+        if ($request_method === 'GET') {
+            if ($id === 'inbox') {
+                $response = $mail->getInbox($user_id);
+            } elseif ($id === 'sent') {
+                $response = $mail->getSent($user_id);
+            } elseif (preg_match('/^message\/(\d+)$/', $id ?? '', $matches)) {
+                $response = $mail->getMessage($matches[1]);
+            }
+        } elseif ($request_method === 'POST') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $data['user_id'] = $user_id;  // Sender
+            $response = $mail->sendMail($user_id, $data);
+        }
+    } elseif ($resource === 'mail' && $id && strpos($id, 'read/') === 0) {
+        $msg_id = substr($id, 5);
+        $response = $mail->markRead($user_id, $msg_id);
+    }
 } catch (Exception $e) {
     $response = ['success' => false, 'message' => $e->getMessage()];
 }
@@ -387,3 +595,4 @@ try {
 echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 $database->close();
 ?>
+

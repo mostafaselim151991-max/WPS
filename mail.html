@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>بريد سادن الداخلي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --saden-red: #d32f2f; --saden-dark: #2c3e50; --bg: #f4f7f6; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; }
+
+        /* القائمة الجانبية */
+        .sidebar { width: 250px; background: var(--saden-dark); color: white; padding: 20px; display: flex; flex-direction: column; }
+        .sidebar h2 { font-size: 18px; text-align: center; border-bottom: 1px solid #444; padding-bottom: 15px; }
+        .btn-compose { background: var(--saden-red); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; font-family: 'Tajawal'; }
+        .nav-link { padding: 12px; cursor: pointer; border-radius: 5px; transition: 0.3s; margin-bottom: 5px; }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: var(--saden-red); }
+
+        /* منطقة المحتوى */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .mail-header { background: white; padding: 20px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        
+        .mail-list { flex: 1; overflow-y: auto; padding: 20px; }
+        .mail-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; cursor: pointer; border-right: 4px solid transparent; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .mail-item:hover { border-right-color: var(--saden-red); transform: translateX(-5px); }
+        .mail-item.unread { font-weight: bold; background: #fff8f8; }
+        
+        .sender-img { width: 40px; height: 40px; background: #ddd; border-radius: 50%; margin-left: 15px; display: flex; align-items: center; justify-content: center; color: #666; }
+        .mail-info { flex: 1; }
+        .mail-date { font-size: 12px; color: #888; }
+
+        /* نموذج كتابة رسالة */
+        .composer-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 650px; max-height: 85vh; max-width: 90vw; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); border: 1px solid #ddd; }
+        .composer-header { background: var(--saden-dark); color: white; padding: 10px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; }
+        .composer-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .composer-body .field { margin-bottom: 12px; }
+        .composer-body .field label { font-weight: bold; font-size: 13px; color: var(--saden-dark); margin-bottom: 4px; display: block; }
+        .composer-body input, .composer-body select, .composer-body textarea { 
+            padding: 10px; border: 1px solid #eee; border-radius: 5px; font-family: 'Tajawal'; 
+            width: 100%; box-sizing: border-box;
+        }
+        .composer-body select[multiple] { resize: vertical; }
+        #attachments-input { padding: 8px; }
+        .btn-send { background: var(--saden-red); color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>بريد سادن الداخلي</h2>
+        <button class="btn-compose" onclick="toggleComposer()">+ رسالة جديدة</button>
+        <div class="nav-link active">📥 صندوق الوارد (3)</div>
+        <div class="nav-link">📤 الرسائل المرسلة</div>
+        <div class="nav-link">⭐ المميزة بنجمة</div>
+        <div class="nav-link">🗑️ المهملات</div>
+    </div>
+
+    <div class="main-content">
+        <div class="mail-header">
+            <h3 id="viewTitle">صندوق الوارد</h3>
+            <input type="text" placeholder="بحث في الرسائل..." style="padding: 8px; border-radius: 20px; border: 1px solid #ddd; width: 300px;">
+        </div>
+
+        <div class="mail-list" id="mailList">
+            <div class="mail-item unread">
+                <div class="sender-img">ع</div>
+                <div class="mail-info">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>م. علي أحمد (إدارة المشروعات)</span>
+                        <span class="mail-date">10:30 ص</span>
+                    </div>
+                    <div style="color:var(--saden-red); font-size: 14px;">تحديث مصروفات مشروع الرياض</div>
+                    <div style="font-size: 12px; color:#777;">تم تحديث مستخلصات الشهر الحالي، يرجى المراجعة...</div>
+                </div>
+            </div>
+
+            <div class="mail-item">
+                <div class="sender-img">س</div>
+                <div class="mail-info">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>سارة محمد (إدارة الجودة)</span>
+                        <span class="mail-date">أمس</span>
+                    </div>
+                    <div style="font-size: 14px;">تقرير KPI الموظفين الجديد</div>
+                    <div style="font-size: 12px; color:#777;">تم اعتماد معايير الإنتاجية الجديدة للفروع...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="composer-modal" id="composer">
+        <div class="composer-header">
+            <span>رسالة جديدة</span>
+            <span style="cursor:pointer" onclick="toggleComposer()">×</span>
+        </div>
+        <div class="composer-body">
+            <div class="field">
+                <label for="to-input">المرسل إليهم (To) *</label>
+                <input type="text" id="to-input" placeholder="اكتب اسم/رقم وظيفي للبحث... (اضغط Enter للإضافة)" style="width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 5px;">
+                <div id="to-selected" style="margin-top: 5px; display: flex; flex-wrap: wrap; gap: 5px;"></div>
+            </div>
+            <div class="field">
+                <label for="cc-input">نسخة (CC)</label>
+                <input type="text" id="cc-input" placeholder="اكتب اسم/رقم وظيفي للبحث... (اختياري)" style="width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 5px;">
+                <div id="cc-selected" style="margin-top: 5px; display: flex; flex-wrap: wrap; gap: 5px;"></div>
+            </div>
+            <div class="field">
+                <label for="subject-input">الموضوع *</label>
+                <input id="subject-input" type="text" placeholder="الموضوع">
+            </div>
+            <div class="field">
+                <label for="attachments-input">مرفقات</label>
+                <input type="file" id="attachments-input" multiple accept=".pdf,.doc,.docx,.jpg,.png">
+            </div>
+            <div class="field">
+                <label for="body-input">الرسالة</label>
+                <textarea id="body-input" rows="6" placeholder="اكتب رسالتك هنا..."></textarea>
+            </div>
+            <button class="btn-send">إرسال الرسالة 🚀</button>
+        </div>
+
+    </div>
+
+<script>
+        // Global state
+        let currentUserId = new URLSearchParams(window.location.search).get('user') || 1;
+        let employees = [];
+        let mails = [];
+        let currentView = 'inbox';  // inbox, sent
+
+        // API Base
+        const API_BASE = 'api.php/';
+
+        function loadEmployees() {
+            // أولوية HRMS localStorage، fallback للـ API
+            let hrmsData = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+            
+            if (hrmsData.length > 0) {
+                employees = hrmsData.map(emp => ({
+                    emp_id: emp.emp_number || Date.now() + Math.random(),
+                    emp_name: emp.emp_name || 'غير محدد',
+                    emp_number: emp.emp_number || ''
+                })).filter(emp => emp.emp_name); // فلترة صالحة فقط
+            } else {
+                // Fallback للـ API القديم
+                fetch(API_BASE + 'employees?status=active')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) employees = data.data;
+                    })
+                    .catch(e => console.error('Fallback API failed:', e));
+            }
+            
+            populateDropdowns();
+        }
+
+        function setupSearchRecipients(type = 'to') {
+            const inputId = type === 'to' ? 'to-input' : 'cc-input';
+            const selectedId = type === 'to' ? 'to-selected' : 'cc-selected';
+            const input = document.getElementById(inputId);
+            const selectedDiv = document.getElementById(selectedId);
+            
+            let selectedIds = JSON.parse(localStorage.getItem(`mail_${type}_selected`) || '[]');
+            
+            // Display selected
+            selectedDiv.innerHTML = selectedIds.map(id => {
+                const emp = employees.find(e => e.emp_id === id);
+                if (!emp) return '';
+                return `
+                    <span style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                        ${emp.emp_name}
+                        <button onclick="removeRecipient('${type}', '${id}', this)" style="background: none; border: none; color: white; font-size: 14px; cursor: pointer; padding: 0; line-height: 1;">×</button>
+                    </span>
+                `;
+            }).join('');
+            
+            input.oninput = (e) => searchAndSuggest(e.target.value, type);
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const value = e.target.value.trim();
+                    if (value) addRecipientFromSearch(value, type);
+                }
+            };
+        }
+
+        function searchAndSuggest(query, type) {
+            if (query.length < 1) return;
+            const matches = employees.filter(emp => 
+                emp.emp_name.toLowerCase().includes(query.toLowerCase()) ||
+                emp.emp_number.includes(query) ||
+                emp.emp_number.toString().includes(query)
+            ).slice(0, 5);
+            
+            // Show dropdown suggestions (simple list below input)
+            let suggDiv = document.getElementById(`${type}-suggestions`);
+            if (!suggDiv) {
+                suggDiv = document.createElement('div');
+                suggDiv.id = `${type}-suggestions`;
+                suggDiv.style.cssText = 'position: absolute; background: white; border: 1px solid #ddd; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 10; width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+                document.getElementById(type === 'to' ? 'to-input' : 'cc-input').parentNode.appendChild(suggDiv);
+            }
+            
+            suggDiv.innerHTML = matches.map(emp => 
+                `<div style="padding: 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0;" onclick="addRecipient('${emp.emp_id}', '${emp.emp_name} (${emp.emp_number})', '${type}'); document.getElementById('${type}-input').value = '';">
+                    ${emp.emp_name} <small style="opacity: 0.7;">${emp.emp_number}</small>
+                </div>`
+            ).join('');
+            
+            suggDiv.style.display = matches.length ? 'block' : 'none';
+        }
+
+        function addRecipient(empId, displayName, type) {
+            let selectedIds = JSON.parse(localStorage.getItem(`mail_${type}_selected`) || '[]');
+            if (!selectedIds.includes(empId)) {
+                selectedIds.push(empId);
+                localStorage.setItem(`mail_${type}_selected`, JSON.stringify(selectedIds));
+                setupSearchRecipients(type);
+            }
+        }
+
+        function addRecipientFromSearch(query, type) {
+            const match = employees.find(emp => 
+                emp.emp_name.toLowerCase().includes(query.toLowerCase()) ||
+                emp.emp_number.toLowerCase().includes(query.toLowerCase())
+            );
+            if (match) {
+                addRecipient(match.emp_id, `${match.emp_name} (${match.emp_number})`, type);
+            }
+        }
+
+        function removeRecipient(type, empId, btn) {
+            let selectedIds = JSON.parse(localStorage.getItem(`mail_${type}_selected`) || '[]');
+            selectedIds = selectedIds.filter(id => id !== empId);
+            localStorage.setItem(`mail_${type}_selected`, JSON.stringify(selectedIds));
+            setupSearchRecipients(type);
+            btn.parentElement.remove();
+        }
+
+        function getSelectedRecipientIds(type = 'to') {
+            return JSON.parse(localStorage.getItem(`mail_${type}_selected`) || '[]');
+        }
+
+        async function loadMails(view = 'inbox') {
+            currentView = view;
+            document.querySelectorAll('.nav-link')[0].classList.remove('active');
+            document.querySelectorAll('.nav-link')[1].classList.remove('active');
+            document.querySelectorAll('.nav-link')[view === 'inbox' ? 0 : 1].classList.add('active');
+            document.getElementById('viewTitle').textContent = view === 'inbox' ? 'صندوق الوارد' : 'الرسائل المرسلة';
+
+            try {
+                const endpoint = view === 'inbox' ? 'mail/inbox' : 'mail/sent';
+                const res = await fetch(`${API_BASE}${endpoint}?user=${currentUserId}`);
+                const data = await res.json();
+                if (data.success) {
+                    mails = data.data;
+                    renderMailList();
+                }
+            } catch (e) {
+                console.error('Load mails failed:', e);
+                document.getElementById('mailList').innerHTML = '<div style="padding:20px;color:#999;">خطأ في تحميل الرسائل</div>';
+            }
+        }
+
+        function renderMailList() {
+            const list = document.getElementById('mailList');
+            if (mails.length === 0) {
+                list.innerHTML = '<div style="padding:20px;color:#999;">لا توجد رسائل</div>';
+                return;
+            }
+
+            list.innerHTML = mails.map(mail => {
+                const unread = !mail.read_at;
+                const initials = mail.sender_name ? mail.sender_name[0] : '?';
+                const time = new Date(mail.sent_at).toLocaleTimeString('ar-SA', {hour: 'numeric', minute: '2-digit'});
+                return `
+                    <div class="mail-item ${unread ? 'unread' : ''}" onclick="openMail(${mail.id})">
+                        <div class="sender-img">${initials}</div>
+                        <div class="mail-info">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span>${mail.sender_name || 'غير معروف'}</span>
+                                <span class="mail-date">${time}</span>
+                            </div>
+                            <div style="color:var(--saden-red); font-size: 14px;">${mail.subject}</div>
+                            <div style="font-size: 12px; color:#777;">${mail.body.substring(0, 100)}...</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function sendMail() {
+            const toIds = getSelectedRecipientIds('to');
+            const ccIds = getSelectedRecipientIds('cc');
+            const subject = document.getElementById('subject-input').value.trim();
+            const body = document.getElementById('body-input').value.trim();
+            const filesInput = document.getElementById('attachments-input');
+
+            if (toIds.length === 0 || !subject || !body) {
+                alert('❌ يجب اختيار مستلم واحد على الأقل + الموضوع + الرسالة');
+                return;
+            }
+
+            // FormData للمرفقات
+            const formData = new FormData();
+            formData.append('to_ids', JSON.stringify(toIds));
+            formData.append('cc_ids', JSON.stringify(ccIds));
+            formData.append('subject', subject);
+            formData.append('body', body);
+
+            Array.from(filesInput.files).forEach((file, idx) => {
+                formData.append(`attachment_${idx}`, file);
+            });
+
+            try {
+                const res = await fetch(API_BASE + 'mail', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success || res.ok) {
+                    alert(`✅ تم إرسال الرسالة إلى ${toIds.length} مستلم${ccIds.length ? ` + ${ccIds.length} نسخة` : ''}${filesInput.files.length ? ` + ${filesInput.files.length} مرفق${filesInput.files.length > 1 ? 'ات' : ''}` : ''}`);
+                    // Reset form
+                    localStorage.removeItem('mail_to_selected');
+                    localStorage.removeItem('mail_cc_selected');
+                    document.getElementById('to-selected').innerHTML = '';
+                    document.getElementById('cc-selected').innerHTML = '';
+                    document.getElementById('subject-input').value = '';
+                    document.getElementById('body-input').value = '';
+                    filesInput.value = '';
+                    toggleComposer();
+                    loadMails(currentView);
+                } else {
+                    alert('❌ خطأ: ' + (data.message || 'فشل الإرسال'));
+                }
+            } catch (e) {
+                console.error('Send error:', e);
+                alert('❌ خطأ في الإرسال: تحقق من الاتصال أو api.php');
+            }
+        }
+
+        async function openMail(id) {
+            try {
+                const res = await fetch(API_BASE + `mail/message/${id}`);
+                const data = await res.json();
+                if (data.success) {
+                    // Mark as read
+                    fetch(API_BASE + `mail/read/${id}?user=${currentUserId}`);
+                    
+                    // Show full mail (simple alert for demo)
+                    const mail = data.data;
+                    alert(`من: ${mail.sender_name || '؟'}\nالموضوع: ${mail.subject}\n\n${mail.body}`);
+                    loadMails(currentView);
+                }
+            } catch (e) {
+                alert('خطأ في تحميل الرسالة');
+            }
+        }
+
+        function toggleComposer() {
+            const modal = document.getElementById('composer');
+            modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
+        }
+
+        // Init on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            loadEmployees();  
+            setupSearchRecipients('to');
+            setupSearchRecipients('cc');
+            await loadMails('inbox');
+            
+            // Nav clicks
+            document.querySelectorAll('.nav-link')[0].onclick = () => loadMails('inbox');
+            document.querySelectorAll('.nav-link')[1].onclick = () => loadMails('sent');
+            
+            // Send button
+            document.querySelector('.btn-send').onclick = sendMail;
+            
+            // Auto refresh mails + watch HRMS changes
+            setInterval(() => loadMails(currentView), 30000);
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'saden_employees') {
+                    loadEmployees();
+                    setupSearchRecipients('to');
+                    setupSearchRecipients('cc');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

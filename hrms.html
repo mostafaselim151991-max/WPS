@@ -1064,7 +1064,7 @@
         document.getElementById('male-count').innerText = stats.male;
     }
 
-    function renderList() {
+function renderList() {
         const cont = document.getElementById('list-container');
         calculateStats();
 
@@ -1130,6 +1130,9 @@
                     <a class="${emailClass}" href="${emailHref}" target="_blank" onclick="event.stopPropagation();">
                         <span>📧</span><span>Email</span>
                     </a>
+                    <button class="emp-card-contact" onclick="openMiniChat('${emp.emp_number}', '${emp.emp_name}'); event.stopPropagation();" title="دردشة حية">
+                        <span>💬</span><span>دردشة</span>
+                    </button>
                     <button class="emp-card-delete" onclick="deleteEmployee(${i}); event.stopPropagation();" title="حذف الموظف">
                         <span>🗑️</span><span>حذف</span>
                     </button>
@@ -1138,6 +1141,89 @@
         `;
         }).join('');
     }
+    
+    function openMiniChat(empNumber, empName) {
+        // Mini chat popup
+        const popup = document.createElement('div');
+        popup.style.cssText = `
+            position: fixed; top: 20%; left: 50%; transform: translateX(-50%); 
+            width: 400px; height: 500px; background: white; border-radius: 12px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4); z-index: 10000; display: flex; flex-direction: column;
+            border: 1px solid #ddd; font-family: 'Tajawal', sans-serif;
+        `;
+        popup.innerHTML = `
+            <div style="background: #1e293b; color: white; padding: 15px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong style="font-size: 16px;">💬 دردشة مع ${empName}</strong>
+                    <div style="font-size: 12px; opacity: 0.9;">${empNumber}</div>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">×</button>
+            </div>
+            <div id="mini-messages" style="flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc;"></div>
+            <div style="padding: 15px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px;">
+                <input id="mini-input" placeholder="اكتب رسالتك..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none;">
+                <button onclick="sendMiniMessage('${empNumber}')" style="background: #3b82f6; color: white; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-weight: bold;">إرسال</button>
+            </div>
+        `;
+        document.body.appendChild(popup);
+        document.getElementById('mini-input').focus();
+    }
+
+    function sendMiniMessage(empNumber) {
+        const input = document.getElementById('mini-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        // Use same chat system as chat.html
+        const myId = sessionStorage.getItem('userId') || 'guest';
+        const myName = sessionStorage.getItem('userName') || 'أنت';
+        const message = {
+            from: myId,
+            to: empNumber,
+            text: text,
+            timestamp: Date.now()
+        };
+
+        // Save to histories
+        const ownKey = `saden_live_chat_${myId}_${empNumber}`;
+        const partnerKey = `saden_live_chat_${empNumber}_${myId}`;
+        
+        const ownHistory = JSON.parse(localStorage.getItem(ownKey) || '[]');
+        ownHistory.push(message);
+        localStorage.setItem(ownKey, JSON.stringify(ownHistory.slice(-50)));
+
+        const partnerHistory = JSON.parse(localStorage.getItem(partnerKey) || '[]');
+        partnerHistory.push(message);
+        localStorage.setItem(partnerKey, JSON.stringify(partnerHistory.slice(-50)));
+
+        input.value = '';
+        // Refresh mini chat (simple reload messages)
+        loadMiniMessages(empNumber);
+    }
+
+    function loadMiniMessages(empNumber) {
+        const messagesEl = document.getElementById('mini-messages');
+        const myId = sessionStorage.getItem('userId') || 'guest';
+        const ownKey = `saden_live_chat_${myId}_${empNumber}`;
+        const history = JSON.parse(localStorage.getItem(ownKey) || '[]');
+        
+        messagesEl.innerHTML = history.map(msg => {
+            const isOwn = msg.from === myId;
+            const time = new Date(msg.timestamp).toLocaleTimeString('ar-SA', {hour: '2-digit', minute: '2-digit'});
+            return `
+                <div style="margin-bottom: 12px; ${isOwn ? 'text-align: right;' : ''}">
+                    <div style="display: inline-block; max-width: 80%; padding: 8px 12px; border-radius: 16px; word-wrap: break-word; 
+                        ${isOwn ? 'background: #3b82f6; color: white; border-bottom-right-radius: 4px;' : 'background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 4px;'}">
+                        ${msg.text}
+                    </div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 3px;">${time}</div>
+                </div>
+            `;
+        }).join('');
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+loadDB();
 
     function previewProfilePic(event) {
         const file = event.target.files[0];

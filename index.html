@@ -265,6 +265,14 @@
     <i class="arrow-icon"></i>
 </button>
             <div class="dropdown">
+                <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'mailMenu')">✉️ البريد الداخلي</button>
+                <div id="mailMenu" class="dropdown-content">
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'mail.html')">📥 صندوق الوارد</button>
+                    <button class="nav-btn sub-btn" onclick="loadPage(this, 'mail.html?view=sent')">📤 الرسائل المرسلة</button>
+                </div>
+            </div>
+</button>
+            <div class="dropdown">
                 <button class="nav-btn has-submenu" onclick="toggleMenu(this, 'fincMenu')">💰 الإدارة المالية</button>
                 <div id="fincMenu" class="dropdown-content">
                     <button class="nav-btn sub-btn" onclick="loadPage(this, 'finance.html')">⬅️ برنامج الحسابات</button>
@@ -405,6 +413,13 @@
                         <div class="td-head"><span>✉️ البريد الداخلي</span></div>
                         <div id="mail-list" class="td-body"></div>
                     </div>
+                </div>
+                <!-- الدردشة الحية -->
+                <div style="position:relative;">
+                    <button class="topbar-btn" onclick="loadPage(this, 'chat.html')" title="دردشة حية">
+                        💬
+                        <span id="chat-badge" class="topbar-badge"></span>
+                    </button>
                 </div>
                 <!-- المستخدم -->
                 <div id="user-chip">

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>دردشة سادن الحية | Live Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #3b82f6; --bg: #f8fafc; --sidebar: #1e293b; --chat-bg: #ffffff; }
+        * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { margin: 0; height: 100vh; background: var(--bg); display: flex; }
+
+        .sidebar { width: 300px; background: var(--sidebar); color: white; padding: 20px; overflow-y: auto; }
+        .sidebar h2 { margin-top: 0; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+        .user-list { list-style: none; padding: 0; margin: 0; }
+        .user-item { padding: 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
+        .user-item:hover, .user-item.active { background: rgba(255,255,255,0.1); }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .user-info h3 { margin: 0; font-size: 14px; }
+        .user-info p { margin: 2px 0 0; font-size: 12px; opacity: 0.8; }
+
+        .main-chat { flex: 1; display: flex; flex-direction: column; }
+        .chat-header { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 20px; background: var(--chat-bg); }
+        .message { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .message.own { align-items: flex-end; }
+        .message-bubble { max-width: 70%; padding: 10px 14px; border-radius: 18px; word-wrap: break-word; }
+        .message.own .message-bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .message.other .message-bubble { background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 4px; }
+        .message-time { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+        .chat-input { padding: 15px 20px; background: var(--chat-bg); border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
+        #messageInput { flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 25px; outline: none; }
+        #sendBtn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+        #sendBtn:hover { background: #2563eb; }
+        #sendBtn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .online-status { position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: #10b981; border-radius: 50%; border: 2px solid var(--sidebar); }
+        .offline-status { background: #94a3b8; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; }
+            .main-chat { order: -1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="userList">
+        <h2>👥 المستخدمين المتاحين</h2>
+        <ul class="user-list" id="userListContainer"></ul>
+        <div style="margin-top: auto; padding-top: 20px; text-align: center;">
+            <div style="font-size: 12px; opacity: 0.7;">حالة الاتصال: <span id="connectionStatus">غير متصل</span></div>
+        </div>
+    </div>
+
+    <div class="main-chat">
+        <div class="chat-header">
+            <div>
+                <div id="chatPartner" style="font-weight: bold; font-size: 16px;">اختر مستخدم</div>
+                <div id="partnerStatus" style="font-size: 12px; opacity: 0.9;"></div>
+            </div>
+            <button onclick="clearChat()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer;">🗑️ مسح الدردشة</button>
+        </div>
+        <div class="chat-messages" id="messages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="اكتب رسالتك... (Enter للإرسال)" maxlength="1000">
+            <button id="sendBtn" disabled>إرسال 💬</button>
+        </div>
+    </div>
+
+    <script>
+        const CHAT_KEY = 'saden_live_chat';
+        const USER_ID = sessionStorage.getItem('userId') || 'guest_' + Date.now();
+        const USER_NAME = sessionStorage.getItem('userName') || 'مستخدم';
+        let currentChatPartner = null;
+        let users = JSON.parse(localStorage.getItem('saden_accounts') || '[]').map(u => ({
+            id: u.id,
+            name: u.fullname || u.username,
+            role: u.role,
+            online: false,
+            lastSeen: null
+        }));
+
+        // Online status
+        const statusInterval = setInterval(() => {
+            const status = { id: USER_ID, name: USER_NAME, online: true, timestamp: Date.now() };
+            localStorage.setItem(`${CHAT_KEY}_status_${USER_ID}`, JSON.stringify(status));
+            document.getElementById('connectionStatus').textContent = 'متصل';
+            document.getElementById('connectionStatus').style.color = '#10b981';
+        }, 30000);
+
+        // Cleanup old statuses
+        setTimeout(() => {
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith(CHAT_KEY + '_status_')) {
+                    const data = JSON.parse(localStorage.getItem(key) || '{}');
+                    if (Date.now() - data.timestamp > 60000) { // 1 min offline
+                        localStorage.removeItem(key);
+                    }
+                }
+            });
+            updateUserList();
+        }, 1000);
+
+        function updateUserList() {
+            const container = document.getElementById('userListContainer');
+            container.innerHTML = users.map(user => {
+                const statusKey = CHAT_KEY + '_status_' + user.id;
+                const status = JSON.parse(localStorage.getItem(statusKey) || '{}');
+                const isOnline = Date.now() - (status.timestamp || 0) < 60000;
+                const lastSeen = !isOnline ? new Date(status.timestamp).toLocaleTimeString('ar-SA') : '';
+                
+                return `
+                    <li class="user-item ${currentChatPartner === user.id ? 'active' : ''}" onclick="selectUser('${user.id}', '${user.name}')">
+                        <div class="user-avatar">${user.name.charAt(0)}</div>
+                        <div class="user-info">
+                            <h3>${user.name}</h3>
+                            <p>${user.role || 'مستخدم'}</p>
+                        </div>
+                        <div class="${isOnline ? 'online-status' : 'offline-status'}"></div>
+                        ${!isOnline ? `<small style="opacity: 0.6;">${lastSeen}</small>` : ''}
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function selectUser(id, name) {
+            currentChatPartner = id;
+            document.getElementById('chatPartner').textContent = name;
+            document.getElementById('partnerStatus').textContent = 'متصل';
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('messageInput').focus();
+            loadChatHistory(id);
+            updateUserList();
+        }
+
+        function loadChatHistory(partnerId) {
+            const history = JSON.parse(localStorage.getItem(`${CHAT_KEY}_${USER_ID}_${partnerId}`) || '[]');
+            const messagesEl = document.getElementById('messages');
+            messagesEl.innerHTML = history.map(msg => createMessageHTML(msg)).join('');
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function createMessageHTML(msg) {
+            const isOwn = msg.from === USER_ID;
+            const time = new Date(msg.timestamp).toLocaleTimeString('ar-SA', {hour: '2-digit', minute: '2-digit'});
+            return `
+                <div class="message ${isOwn ? 'own' : 'other'}">
+                    <div class="message-bubble">${msg.text}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+        }
+
+        function clearChat() {
+            if (confirm('مسح تاريخ الدردشة مع هذا المستخدم؟')) {
+                localStorage.removeItem(`${CHAT_KEY}_${USER_ID}_${currentChatPartner}`);
+                localStorage.removeItem(`${CHAT_KEY}_${currentChatPartner}_${USER_ID}`);
+                document.getElementById('messages').innerHTML = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUserList();
+            document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            document.getElementById('sendBtn').onclick = sendMessage;
+
+            // Listen for new messages
+            window.addEventListener('storage', (e) => {
+                if (e.key && e.key.startsWith(CHAT_KEY + '_' + USER_ID + '_') && currentChatPartner) {
+                    loadChatHistory(currentChatPartner);
+                }
+            });
+
+            // Auto-update users
+            setInterval(updateUserList, 5000);
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text || !currentChatPartner) return;
+
+            const message = {
+                from: USER_ID,
+                to: currentChatPartner,
+                text: text,
+                timestamp: Date.now()
+            };
+
+            // Save to own history
+            const ownHistoryKey = `${CHAT_KEY}_${USER_ID}_${currentChatPartner}`;
+            const ownHistory = JSON.parse(localStorage.getItem(ownHistoryKey) || '[]');
+            ownHistory.push(message);
+            localStorage.setItem(ownHistoryKey, JSON.stringify(ownHistory.slice(-100))); // Keep last 100
+
+            // Notify partner
+            const partnerHistoryKey = `${CHAT_KEY}_${currentChatPartner}_${USER_ID}`;
+            const partnerHistory = JSON.parse(localStorage.getItem(partnerHistoryKey) || '[]');
+            partnerHistory.push(message);
+            localStorage.setItem(partnerHistoryKey, JSON.stringify(partnerHistory.slice(-100)));
+
+            input.value = '';
+            loadChatHistory(currentChatPartner);
+        }
+    </script>
+</body>
+</html>

@@ -181,7 +181,7 @@
 
 <script>
     const SK_TASKS = 'saden_project_tasks';
-    const SK_PROJECTS = 'saden_projects';
+const SK_PROJECTS = 'saden_ultra_v10';
     const SK_EMPLOYEES = 'saden_employees';
 
     let tasks = [];
@@ -203,7 +203,7 @@
         const employeeSelect = document.getElementById('employee_id');
 
         // Projects
-        const projectOptions = projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        const projectOptions = projects.map(p => `<option value="${p.id || p.code || ''}">${p.name}</option>`).join('');
         if(projectSelect) {
             projectSelect.innerHTML = '<option value="">-- اختر المشروع --</option>' + projectOptions;
         }
@@ -218,9 +218,9 @@
         }
     }
 
-    function getProjectName(id) {
-        const p = projects.find(x => x.id == id);
-        return p ? p.name : '—';
+function getProjectName(id) {
+        const p = projects.find(x => x.id == id || x.code == id);
+        return p ? p.name : 'مشروع غير معروف';
     }
 
     function getEmployeeName(id) {
