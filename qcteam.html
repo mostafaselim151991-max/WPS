@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فريق الجودة | Sadin ERP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0f172a; --accent: #0284c7; --navy: #1e293b; --bg: #f8fafc;
+            --card: #ffffff; --border: #e2e8f0; --danger: #ef4444; --success: #10b981;
+            --warning: #f59e0b; --shadow: 0 4px 20px rgba(0,0,0,.07);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background: var(--bg); color: var(--navy); padding: 24px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: auto; }
+
+        /* Header */
+        .page-header { background: linear-gradient(135deg, var(--primary), var(--navy)); color: white; padding: 24px 30px; border-radius: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Search Bar */
+        .toolbar { background: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: var(--shadow); display: flex; gap: 15px; align-items: center; }
+        .toolbar input { flex: 1; padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-size: 14px; }
+
+        /* Team Grid */
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .member-card { background: var(--card); border-radius: 20px; padding: 30px 20px; text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border); transition: .3s; position: relative; }
+        .member-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        
+        .member-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 15px; border: 3px solid var(--accent); padding: 4px; background: white; }
+        .member-name { font-size: 18px; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
+        .member-role { font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 12px; }
+        
+        .badge { font-size: 11px; padding: 5px 15px; border-radius: 20px; font-weight: 700; display: inline-block; }
+        .badge-active { background: #d1fae5; color: #065f46; }
+        .badge-review { background: #fef3c7; color: #92400e; }
+
+        .stats-mini { display: flex; justify-content: space-around; margin-top: 25px; padding-top: 15px; border-top: 1px dashed var(--border); }
+        .stat-box { display: flex; flex-direction: column; gap: 2px; }
+        .stat-box span { font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase; }
+        .stat-box strong { font-size: 16px; color: var(--navy); font-weight: 800; }
+
+        /* Buttons */
+        .btn { padding: 10px 22px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 13px; transition: .2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #0369a1; }
+        .btn-danger { background: none; color: var(--danger); font-size: 16px; position: absolute; top: 15px; left: 15px; padding: 5px; cursor: pointer; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(3px); }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 20px; width: 95%; max-width: 450px; padding: 25px; box-shadow: var(--shadow); }
+        .modal-header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .field { display: flex; flex-direction: column; margin-bottom: 15px; }
+        .field label { font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #475569; }
+        .field input, .field select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1>👥 فريق الجودة</h1>
+            <p>نظام إدارة الرقابة النوعية والمالية</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal()">
+            <i class="fas fa-plus"></i> إضافة عضو جديد
+        </button>
+    </div>
+
+    <div class="toolbar">
+        <i class="fas fa-search" style="color:#94a3b8"></i>
+        <input type="text" id="searchInput" placeholder="بحث عن عضو بالاسم أو التخصص..." onkeyup="filterTeam()">
+    </div>
+
+    <div class="team-grid" id="teamContainer"></div>
+</div>
+
+<!-- Modal -->
+<div id="memberModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalTitle">إضافة عضو جديد</h3>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="editIdx">
+            <div class="field"><label>الاسم الكامل</label><input type="text" id="mName"></div>
+            <div class="field"><label>المسمى الوظيفي</label><input type="text" id="mRole"></div>
+            <div class="field">
+                <label>الحالة</label>
+                <select id="mStatus">
+                    <option value="نشط">نشط</option>
+                    <option value="قيد المراجعة">قيد المراجعة</option>
+                </select>
+            </div>
+            <div class="field"><label>عدد المشاريع</label><input type="number" id="mProjects" value="0"></div>
+            <div class="field"><label>التقييم</label><input type="text" id="mRating" placeholder="4.5"></div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn btn-primary" style="flex:1" onclick="saveMember()">حفظ</button>
+            <button class="btn" style="background:#f1f5f9" onclick="closeModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // دالة لجلب الموظفين المعينين في إدارة الجودة من نظام HRMS
+    function syncWithHRMS() {
+        const hrmsEmployees = JSON.parse(localStorage.getItem('saden_employees') || '[]');
+        const departments = JSON.parse(localStorage.getItem('saden_departments') || '[]');
+        
+        // البحث عن معرف "إدارة الجودة"
+        const qcDept = departments.find(d => 
+            d.name === "إدارة الجودة" || 
+            d.name === "الجودة" || 
+            d.nameEn?.toLowerCase() === "quality control"
+        );
+
+        if (!qcDept) return [];
+
+        // فلترة الموظفين التابعين لهذه الإدارة وتحويل بياناتهم لتناسب كروت الفريق
+        return hrmsEmployees
+            .filter(emp => emp.dept === qcDept.id)
+            .map(emp => ({
+                name: emp.emp_name,
+                role: emp.company_job || "موظف جودة",
+                status: "نشط",
+                projects: emp.vacation_balance || 0, // مثال لاستخدام حقل موجود
+                rating: "جديد",
+                img: emp.profile_pic || "https://via.placeholder.com/100",
+                fromHRMS: true
+            }));
+    }
+
+    function loadTeamData() {
+        // جلب البيانات اليدوية السابقة
+        let manualTeam = JSON.parse(localStorage.getItem('saden_qc_team')) || [
+            { name: "أ/ إسلام عزت", role: "محلل نظم أول", status: "نشط", projects: 12, rating: 4.9, img: "https://via.placeholder.com/100" },
+            { name: "د/ محمد عبده سليم", role: "مشرف جودة", status: "نشط", projects: 8, rating: 5.0, img: "https://via.placeholder.com/100" }
+        ];
+
+        // جلب البيانات الديناميكية من HRMS
+        const hrmsTeam = syncWithHRMS();
+        
+        // دمج القائمتين مع التأكد من عدم تكرار الأسماء
+        const combined = [...manualTeam];
+        hrmsTeam.forEach(h => {
+            if (!combined.some(c => c.name === h.name)) combined.push(h);
+        });
+
+        return combined;
+    }
+
+    let teamMembers = loadTeamData();
+
+    function renderTeam(members = teamMembers) {
+        const container = document.getElementById('teamContainer');
+        container.innerHTML = members.map((m, i) => {
+            // Find original index for actions
+            const originalIdx = teamMembers.indexOf(m);
+            return `
+            <div class="member-card">
+                <button class="btn-danger btn" onclick="deleteMember(${originalIdx})" title="حذف">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <img src="${m.img}" class="member-img" alt="عضو الفريق">
+                <div class="member-name">${m.name}</div>
+                <div class="member-role">${m.role}</div>
+                <span class="badge ${m.status === 'نشط' ? 'badge-active' : 'badge-review'}">${m.status}</span>
+                <hr style="border:0; border-top:1px dashed #e2e8f0; margin:15px 0;">
+                <div style="display:flex; justify-content:space-around">
+                    <div class="stat-box"><span>المشاريع</span><strong>${m.projects}</strong></div>
+                    <div class="stat-box"><span>التقييم</span><strong>${m.rating}</strong></div>
+                </div>
+                <button class="btn btn-primary btn-sm" style="margin-top:20px; width:100%; justify-content:center" onclick="editMember(${originalIdx})">
+                    <i class="fas fa-edit"></i> تعديل البيانات
+                </button>
+            </div>
+        `}).join('');
+    }
+
+    function filterTeam() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = teamMembers.filter(m => 
+            m.name.toLowerCase().includes(query) || 
+            m.role.toLowerCase().includes(query)
+        );
+        renderTeam(filtered);
+    }
+
+    function openModal() {
+        document.getElementById('modalTitle').innerText = "إضافة عضو جديد";
+        document.getElementById('editIdx').value = "";
+        document.getElementById('mName').value = "";
+        document.getElementById('mRole').value = "";
+        document.getElementById('mStatus').value = "نشط";
+        document.getElementById('mProjects').value = "0";
+        document.getElementById('mRating').value = "";
+        document.getElementById('memberModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('memberModal').classList.remove('active');
+    }
+
+    function saveMember() {
+        const idx = document.getElementById('editIdx').value;
+        const newMember = {
+            name: document.getElementById('mName').value,
+            role: document.getElementById('mRole').value,
+            status: document.getElementById('mStatus').value,
+            projects: document.getElementById('mProjects').value,
+            rating: document.getElementById('mRating').value || "-",
+            img: "https://via.placeholder.com/100"
+        };
+
+        if(!newMember.name || !newMember.role) return alert("يرجى إكمال البيانات الأساسية");
+
+        if(idx === "") {
+            teamMembers.push(newMember);
+        } else {
+            teamMembers[idx] = newMember;
+        }
+
+        localStorage.setItem('saden_qc_team', JSON.stringify(teamMembers));
+        renderTeam();
+        closeModal();
+    }
+
+    function editMember(i) {
+        const m = teamMembers[i];
+        document.getElementById('modalTitle').innerText = "تعديل بيانات العضو";
+        document.getElementById('editIdx').value = i;
+        document.getElementById('mName').value = m.name;
+        document.getElementById('mRole').value = m.role;
+        document.getElementById('mStatus').value = m.status;
+        document.getElementById('mProjects').value = m.projects;
+        document.getElementById('mRating').value = m.rating === "-" ? "" : m.rating;
+        document.getElementById('memberModal').classList.add('active');
+    }
+
+    function deleteMember(i) {
+        if(confirm("هل أنت متأكد من إزالة هذا العضو من فريق الجودة؟")) {
+            teamMembers.splice(i, 1);
+            localStorage.setItem('saden_qc_team', JSON.stringify(teamMembers));
+            renderTeam();
+        }
+    }
+
+    // Initial render
+    renderTeam();
+</script>
+
+</body>
+</html>
