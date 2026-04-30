@@ -1,29 +1,45 @@
-# Dashboard Update TODO - COMPLETED
+# TODO: تحديث الداش بورد لإظهار الإدارات والأقسام
 
-## Task: Update dashboard to show all departments and divisions dynamically
+## الخطة المسبقة
 
-### Status: ✅ COMPLETED
+### المعلومات المجمعة:
 
-### Steps Completed:
+- ملف dash.html يحتوي على لوحة القيادة الرئيسية
+- ملف departments_divisions.html يحتوي على إدارة الإدارات والأقسام
+- localStorage keys:
+  - `saden_departments` - الإدارات الرئيسية
+  - `saden_divisions` - الأقسام التابعة
+  - `saden_depts` - نظام قديم (الاحتفاظ للتوافق)
 
-- [x] 1. Analyze current dashboard structure (dash.html)
-- [x] 2. Understand localStorage data structure
-- [x] 3. Get confirmation from user
-- [x] 4. Update renderCharts() - Show ALL departments (no filter)
-- [x] 5. Update renderDeptTable() - Show ALL departments
-- [x] 6. Update divisions - Show ALL divisions (no limit)
-- [x] 7. Performance = 0% for empty departments
-- [x] 8. Clear recommendations for empty departments
+### الخطة:
 
-### Files Modified:
+#### 1. إضافة بطاقات KPI جديدة ✅
 
-- dash.html
+- إضافة بطاقة "الإدارات النشطة"
+- إضافة بطاقة "الأقسام"
 
-### Key Changes:
+#### 2. إضافة Charts جديدة ✅
 
-1. ✅ Load ALL departments from localStorage (no status filter)
-2. ✅ Load ALL divisions from localStorage (no filter)
-3. ✅ Show 0% for empty departments
-4. ✅ Show ALL divisions without limit
-5. ✅ Same visualization style maintained
-6. ✅ Clear recommendations shown
+- مخطط doughnut chart لتوزيع الموظفين على الإدارات
+- مخطط bar chart الأقسام حسب الإدارة
+
+#### 3. تحديث الجدول ✅
+
+- عرض جميع الإدارات即使 空部门 也显示
+- عرض الأقسام مع إدارة الأم
+
+#### 4. التوافق ✅
+
+- الحفاظ على التوافق مع البيانات القديمة
+
+---
+
+## Steps completed:
+
+- [x] 1. إضافة بطاقات KPI للإدارات والأقسام في HTML
+- [x] 2. إضافة دوال JavaScript لتحميل البيانات
+- [x] 3. إضافة Charts للعرض المرئي
+- [x] 4. تحديث renderDeptTable() لعرض الجميع
+- [x] 5. عرض جميع الأقسام في الجدول
+
+---

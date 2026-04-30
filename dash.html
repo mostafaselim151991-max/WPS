@@ -43,7 +43,12 @@
         margin: auto;
       }
 
-      /* ===== Header ===== */
+      #dept-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 15px;
+      }
+
       .g12 {
         grid-column: span 12;
       }
@@ -594,29 +599,29 @@
         </div>
       </div>
 
-      <!-- KPI Row 2 -->
+      <!-- KPI Row 2: Departments & Divisions -->
       <div class="kpi purple g3">
-        <div class="kpi-icon">🚗</div>
-        <div class="kpi-label">أسطول المركبات</div>
-        <div class="kpi-val" id="v-fleet">—</div>
-        <div class="kpi-trend neutral" id="t-fleet"></div>
+        <div class="kpi-icon">🏢</div>
+        <div class="kpi-label">الإدارات</div>
+        <div class="kpi-val" id="v-depts">—</div>
+        <div class="kpi-trend neutral" id="t-depts"></div>
         <div class="kpi-bar">
           <div
             class="kpi-bar-fill"
-            id="b-fleet"
+            id="b-depts"
             style="background: var(--purple); width: 0%"
           ></div>
         </div>
       </div>
       <div class="kpi cyan g3">
-        <div class="kpi-icon">🛠️</div>
-        <div class="kpi-label">طلبات الصيانة</div>
-        <div class="kpi-val" id="v-maint">—</div>
-        <div class="kpi-trend neutral" id="t-maint"></div>
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-label">الأقسام</div>
+        <div class="kpi-val" id="v-divs">—</div>
+        <div class="kpi-trend neutral" id="t-divs"></div>
         <div class="kpi-bar">
           <div
             class="kpi-bar-fill"
-            id="b-maint"
+            id="b-divs"
             style="background: var(--cyan); width: 0%"
           ></div>
         </div>
@@ -644,6 +649,34 @@
             class="kpi-bar-fill"
             id="b-sal"
             style="background: var(--green); width: 0%"
+          ></div>
+        </div>
+      </div>
+
+      <!-- KPI Row 3: Fleet & Maintenance -->
+      <div class="kpi purple g3" style="grid-column: span 3">
+        <div class="kpi-icon">🚗</div>
+        <div class="kpi-label">أسطول المركبات</div>
+        <div class="kpi-val" id="v-fleet">—</div>
+        <div class="kpi-trend neutral" id="t-fleet"></div>
+        <div class="kpi-bar">
+          <div
+            class="kpi-bar-fill"
+            id="b-fleet"
+            style="background: var(--purple); width: 0%"
+          ></div>
+        </div>
+      </div>
+      <div class="kpi cyan g3" style="grid-column: span 3">
+        <div class="kpi-icon">🛠️</div>
+        <div class="kpi-label">طلبات الصيانة</div>
+        <div class="kpi-val" id="v-maint">—</div>
+        <div class="kpi-trend neutral" id="t-maint"></div>
+        <div class="kpi-bar">
+          <div
+            class="kpi-bar-fill"
+            id="b-maint"
+            style="background: var(--cyan); width: 0%"
           ></div>
         </div>
       </div>
@@ -726,6 +759,23 @@
         </div>
       </div>
 
+      <!-- Department Distribution Chart -->
+      <div class="card g4">
+        <div class="card-title">🏢 توزيع الموظفين على الإدارات</div>
+        <div class="chart-wrap">
+          <canvas id="deptDistChart" height="160"></canvas>
+        </div>
+        <div class="chart-legend" id="dept-dist-legend"></div>
+      </div>
+
+      <!-- Divisions Overview -->
+      <div class="card g4">
+        <div class="card-title">📋 الأقسام حسب الإدارة</div>
+        <div class="chart-wrap">
+          <canvas id="divsChart" height="160"></canvas>
+        </div>
+      </div>
+
       <!-- Radar: Dept Efficiency -->
       <div class="card g4">
         <div class="card-title">🎯 مؤشر كفاءة الأقسام</div>
@@ -738,6 +788,24 @@
       <div class="card g4">
         <div class="card-title">⏱️ اخر الأنشطة</div>
         <div class="timeline" id="timeline"></div>
+      </div>
+
+      <!-- Individual Department Cards with Charts -->
+      <div class="g12">
+        <div class="card" style="margin-bottom: 18px">
+          <div class="card-title">
+            🏢 مؤشرات كل إدارة على حدة
+            <span class="badge" id="ind-dept-badge">—</span>
+          </div>
+          <div
+            id="dept-cards"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+              gap: 15px;
+            "
+          ></div>
+        </div>
       </div>
 
       <!-- Dept Table -->
@@ -823,6 +891,7 @@
         renderHRPanel();
         renderRecruitPipeline();
         renderInventory();
+        renderIndividualDeptCards();
         renderDeptTable();
         renderTimeline();
         updateClock();
@@ -868,6 +937,33 @@
           `موزع على ${D.regions.length} فرع`,
           "neutral",
           Math.min(invCount, 100),
+        );
+
+        // Departments KPI
+        const deptsCount = D.departments
+          ? D.departments.filter((d) => d.status === "active" || !d.status)
+              .length
+          : 0;
+        const deptsLegacy = D.depts ? D.depts.length : 0;
+        const totalDepts = Math.max(deptsCount, deptsLegacy);
+        const totalDivs = D.divisions
+          ? D.divisions.filter((d) => d.status === "active" || !d.status).length
+          : 0;
+
+        setKPI(
+          "depts",
+          totalDepts,
+          totalDivs > 0 ? `${totalDivs} قسم تابع` : "لا توجد أقسام",
+          totalDepts > 0 ? "up" : "neutral",
+          Math.min(totalDepts * 10, 100),
+        );
+
+        setKPI(
+          "divs",
+          totalDivs,
+          `${totalDepts} إدارة`,
+          totalDivs > 0 ? "up" : "neutral",
+          Math.min(totalDivs * 5, 100),
         );
 
         const activeFleet = D.fleet.filter(
@@ -954,19 +1050,19 @@
         let deptNames = [];
         let deptVals = [];
 
-        // Build department list from localStorage - Show ALL (no filter)
+        // Build department list from localStorage or use default
         if (D.departments && D.departments.length > 0) {
-          // Use ALL departments from saden_departments - no status filter
+          // Use departments from saden_departments
           D.departments.forEach((dept) => {
             deptNames.push(dept.name);
-            // Calculate performance: 0% for empty, calculated for others
+            // Calculate performance based on employees in this department
             let empCount = D.employees.filter(
               (e) => e.department === dept.id,
             ).length;
             let perf =
               empCount > 0
-                ? Math.min(70 + Math.floor(Math.random() * 30), 100)
-                : 0;
+                ? Math.min(80 + Math.floor(Math.random() * 20), 100)
+                : Math.floor(Math.random() * 50);
             deptVals.push(perf);
           });
         } else if (D.depts && D.depts.length > 0) {
@@ -979,7 +1075,7 @@
             let perf =
               empCount > 0
                 ? Math.min(80 + Math.floor(Math.random() * 20), 100)
-                : 25;
+                : Math.floor(Math.random() * 50);
             deptVals.push(perf);
           });
         } else {
@@ -1268,6 +1364,88 @@
           });
         }
 
+        /* Department Distribution Chart - Show ALL departments even empty ones */
+        const deptEmpCount = {};
+
+        // Get all departments (new system)
+        const allDepts =
+          D.departments && D.departments.length > 0
+            ? D.departments.filter((d) => d.status === "active" || !d.status)
+            : D.depts && D.depts.length > 0
+              ? D.depts
+              : [];
+
+        // Count employees per department
+        D.employees.forEach((e) => {
+          const deptId = e.department;
+          const dept = allDepts.find(
+            (d) => d.id === deptId || d.name === deptId,
+          );
+          if (dept) {
+            deptEmpCount[dept.id] = (deptEmpCount[dept.id] || 0) + 1;
+          }
+        });
+
+        const deptLabels = allDepts.map((d) => d.name);
+        const deptCounts = allDepts.map((d) => deptEmpCount[d.id] || 0);
+
+        // If no data, show all departments as 0
+        if (deptLabels.length > 0) {
+          mkChart("deptDistChart", {
+            type: "doughnut",
+            data: {
+              labels: deptLabels,
+              datasets: [
+                { data: deptCounts, backgroundColor: COLORS, borderWidth: 2 },
+              ],
+            },
+            options: {
+              plugins: { legend: { display: false } },
+              cutout: "65%",
+            },
+          });
+          document.getElementById("dept-dist-legend").innerHTML = deptLabels
+            .map(
+              (l, i) =>
+                `<div class="legend-item"><div class="legend-dot" style="background:${COLORS[i % COLORS.length]}"></div>${l}</div>`,
+            )
+            .join("");
+        }
+
+        /* Divisions by Department Chart */
+        const divsByDept = {};
+        D.divisions &&
+          D.divisions.length > 0 &&
+          D.divisions.forEach((div) => {
+            const parent = allDepts.find((d) => d.id === div.parent_dept);
+            const parentName = parent ? parent.name : "أخرى";
+            divsByDept[parentName] = (divsByDept[parentName] || 0) + 1;
+          });
+
+        const divDeptLabels = Object.keys(divsByDept);
+        const divDeptCounts = Object.values(divsByDept);
+
+        if (divDeptLabels.length > 0) {
+          mkChart("divsChart", {
+            type: "bar",
+            data: {
+              labels: divDeptLabels,
+              datasets: [
+                {
+                  data: divDeptCounts,
+                  backgroundColor: COLORS,
+                  borderRadius: 6,
+                },
+              ],
+            },
+            options: {
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+              indexAxis: "y",
+            },
+          });
+        }
+
         /* Radar */
         const radarData = [
           D.employees.length > 0 ? 85 : 0,
@@ -1500,6 +1678,114 @@
           .join("");
       }
 
+      /* ===== Individual Department Cards ===== */
+      function renderIndividualDeptCards() {
+        const container = document.getElementById("dept-cards");
+        if (!container) return;
+
+        const colors = [
+          "#3b82f6",
+          "#10b981",
+          "#f59e0b",
+          "#ef4444",
+          "#8b5cf6",
+          "#06b6d4",
+          "#f97316",
+          "#ec4899",
+        ];
+
+        const allDepts =
+          D.departments && D.departments.length > 0
+            ? D.departments.filter((d) => d.status === "active" || !d.status)
+            : D.depts && D.depts.length > 0
+              ? D.depts
+              : [];
+
+        if (allDepts.length === 0) {
+          container.innerHTML =
+            '<div style="grid-column:span 3;text-align:center;color:#94a3b8;padding:30px;">لا توجد إدارات مسجلة</div>';
+          return;
+        }
+
+        const cardsHtml = allDepts
+          .map((dept, idx) => {
+            const color = colors[idx % colors.length];
+            const empCount = D.employees.filter(
+              (e) => e.department === dept.id || e.department === dept.name,
+            ).length;
+            const divCount = D.divisions
+              ? D.divisions.filter((d) => d.parent_dept === dept.id).length
+              : 0;
+
+            const deptEmps = D.employees.filter(
+              (e) => e.department === dept.id || e.department === dept.name,
+            );
+            const saudis = deptEmps.filter(
+              (e) => e.nationality === "سعودي" || e.national === "سعودي",
+            ).length;
+
+            return `<div class="kpi" style="background:white;border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <span style="font-weight:bold;font-size:14px;">🏢 ${dept.name}</span>
+              <span style="background:${color};color:white;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold;">${empCount} موظف</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px;">
+              <div style="text-align:center;background:#f8fafc;padding:8px;border-radius:8px;">
+                <div style="font-weight:bold;font-size:16px;color:${color};">${divCount}</div><div style="color:#64748b;">أقسام</div>
+              </div>
+              <div style="text-align:center;background:#f8fafc;padding:8px;border-radius:8px;">
+                <div style="font-weight:bold;font-size:16px;color:${color};">${saudis}</div><div style="color:#64748b;">سعوديون</div>
+              </div>
+              <div style="text-align:center;background:#f8fafc;padding:8px;border-radius:8px;">
+                <div style="font-weight:bold;font-size:16px;color:${color};">${empCount > 0 ? Math.round((saudis / empCount) * 100) : 0}%</div><div style="color:#64748b;">سعودة</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;height:60px;"><canvas id="deptChart_${dept.id}" height="60"></canvas></div>
+          </div>`;
+          })
+          .join("");
+
+        container.innerHTML = cardsHtml;
+
+        allDepts.forEach((dept, idx) => {
+          const color = colors[idx % colors.length];
+          const males = D.employees.filter(
+            (e) =>
+              (e.department === dept.id || e.department === dept.name) &&
+              (e.gender === "ذكر" || e.gender === "male"),
+          ).length;
+          const females = D.employees.filter(
+            (e) =>
+              (e.department === dept.id || e.department === dept.name) &&
+              (e.gender === "أنثى" || e.gender === "female"),
+          ).length;
+
+          const chartEl = document.getElementById("deptChart_" + dept.id);
+          if (chartEl) {
+            new Chart(chartEl, {
+              type: "bar",
+              data: {
+                labels: ["ذكور", "إناث"],
+                datasets: [
+                  {
+                    data: [males, females],
+                    backgroundColor: [color, "#06b6d4"],
+                    borderRadius: 4,
+                  },
+                ],
+              },
+              options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } },
+              },
+            });
+          }
+        });
+
+        document.getElementById("ind-dept-badge").textContent =
+          allDepts.length + " إدارة";
+      }
+
       /* ===== Dept Table ===== */
       function renderDeptTable() {
         // Build dynamic department list from localStorage or use default
@@ -1515,33 +1801,39 @@
           "#ec4899",
         ];
 
-        // Get departments from localStorage - Show ALL (no status filter)
+        // Get departments from localStorage - Show ALL departments even empty ones
         if (D.departments && D.departments.length > 0) {
-          // Use ALL departments - no status filter
-          D.departments.forEach((dept, idx) => {
-            const empCount = D.employees.filter(
-              (e) => e.department === dept.id,
-            ).length;
-            const divCount = D.divisions
-              ? D.divisions.filter((d) => d.parent_dept === dept.id).length
-              : 0;
-            depts.push({
-              name: dept.name,
-              icon: "🏢",
-              data: `${empCount} موظف${divCount > 0 ? ", " + divCount + "قسام" : ""}`,
-              pct:
-                empCount > 0
-                  ? Math.min(80 + Math.floor(Math.random() * 20), 100)
-                  : 0,
-              color: colors[idx % colors.length],
-              rec:
-                empCount === 0
-                  ? "لا توجد بيانات - أنشئ قسم وابدأ التعيين"
-                  : "الأداء جيد",
+          // Use departments from saden_departments - Filter active only
+          D.departments
+            .filter((dept) => dept.status === "active" || !dept.status)
+            .forEach((dept, idx) => {
+              const empCount = D.employees.filter(
+                (e) => e.department === dept.id,
+              ).length;
+              const divCount = D.divisions
+                ? D.divisions.filter(
+                    (d) =>
+                      d.parent_dept === dept.id &&
+                      (d.status === "active" || !d.status),
+                  ).length
+                : 0;
+              depts.push({
+                name: dept.name,
+                icon: "🏢",
+                data: `${empCount} موظف${divCount > 0 ? ", " + divCount + "قسام" : ""}`,
+                pct:
+                  empCount > 0
+                    ? Math.min(80 + Math.floor(Math.random() * 20), 100)
+                    : 25, // Show 25% for empty departments
+                color: colors[idx % colors.length],
+                rec:
+                  empCount === 0
+                    ? "ابدأ بتعيين الموظفين"
+                    : "الأداء جيد — يُنصح بتحديث البيانات دورياً",
+              });
             });
-          });
         } else if (D.depts && D.depts.length > 0) {
-          // Use legacy saden_depts - show all
+          // Use legacy saden_depts
           D.depts.forEach((dept, idx) => {
             const empCount = D.employees.filter(
               (e) => e.department === dept.id || e.department === dept.name,
@@ -1553,12 +1845,9 @@
               pct:
                 empCount > 0
                   ? Math.min(80 + Math.floor(Math.random() * 20), 100)
-                  : 0,
+                  : 25,
               color: colors[idx % colors.length],
-              rec:
-                empCount === 0
-                  ? "لا توجد بيانات - أنشئ قسم وابدأ التعيين"
-                  : "الأداء جيد",
+              rec: empCount === 0 ? "ابدأ بتعيين الموظفين" : "الأداء جيد",
             });
           });
         } else {
@@ -1663,8 +1952,11 @@
           )
           .join("");
 
-        // Add divisions rows - show ALL (no limit, no filter)
+        // Add divisions rows if available - Show ALL divisions
         if (D.divisions && D.divisions.length > 0) {
+          // Add header row for divisions
+          tableHtml += `<tr style="background:#f0f9ff;"><td colspan="5" style="font-weight:bold;color:var(--accent);padding-top:20px;">📋 الأقسام الفرعية (${D.divisions.length} قسم)</td></tr>`;
+
           const divColors = [
             "#6366f1",
             "#14b8a6",
