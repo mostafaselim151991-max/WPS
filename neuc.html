@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>إدارة أجهزة الإشعاع - قسم الجودة</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --saac-blue: #0056b3;
+        --saac-gold: #b38e5d;
+        --danger: #e74c3c;
+        --success: #27ae60;
+        --bg: #f4f7f6;
+      }
+      body {
+        font-family: "Tajawal", sans-serif;
+        background-color: var(--bg);
+        margin: 0;
+        padding: 20px;
+        direction: rtl;
+      }
+
+      .page-header {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+        border-right: 8px solid var(--saac-gold);
+      }
+      .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+      .stat-card {
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .device-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+      }
+      .device-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        border: 1px solid #eee;
+        transition: 0.3s;
+        position: relative;
+      }
+      .device-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--saac-blue);
+      }
+
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        position: absolute;
+        left: 15px;
+        top: 15px;
+      }
+      .status-active {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .btn-add {
+        background: var(--saac-blue);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: "Tajawal";
+        font-weight: bold;
+      }
+
+      /* Modal Style */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
+      }
+      .modal-content {
+        background: white;
+        width: 90%;
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 25px;
+        border-radius: 15px;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-family: "Tajawal";
+      }
+
+      .stage-item {
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        border-right: 4px solid #ccc;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+      }
+      .stage-done {
+        border-right-color: var(--success);
+        background: #f0fdf4;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-header">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <div>
+          <h2 style="margin: 0; color: var(--saac-blue)">
+            أجهزة الإشعاع لقياس التربة (Nuclear Gauge)
+          </h2>
+          <p style="margin: 5px 0 0 0; color: #666">
+            إدارة الجودة - سجل الأجهزة والرقابة الإشعاعية
+          </p>
+        </div>
+        <button class="btn-add" onclick="openModal('addDeviceModal')">
+          <i class="fas fa-plus"></i> إضافة جهاز جديد
+        </button>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div
+          style="color: var(--saac-blue); font-size: 20px; font-weight: bold"
+          id="totalCount"
+        >
+          0
+        </div>
+        <div style="font-size: 13px; color: #777">إجمالي الأجهزة</div>
+      </div>
+      <div class="stat-card">
+        <div style="color: var(--danger); font-size: 20px; font-weight: bold">
+          يوليو 2026
+        </div>
+        <div style="font-size: 13px; color: #777">موعد المعايرة القادم</div>
+      </div>
+    </div>
+
+    <div class="device-grid" id="devicesContainer">
+      <!-- ستظهر الأجهزة هنا ديناميكياً -->
+    </div>
+
+    <!-- مودال إضافة جهاز -->
+    <div id="addDeviceModal" class="modal">
+      <div class="modal-content">
+        <h3>تسجيل جهاز إشعاع جديد</h3>
+        <input
+          type="text"
+          id="dModel"
+          placeholder="طراز الجهاز (مثلاً: Troxler 3440)"
+        />
+        <input
+          type="text"
+          id="dSerial"
+          placeholder="الرقم التسلسلي (Serial Number)"
+        />
+        <select id="dOwnership">
+          <option value="">-- حالة الجهاز --</option>
+          <option value="owned">ملك الشركة</option>
+          <option value="rented">ايجار</option>
+        </select>
+        <input
+          type="text"
+          id="dBranch"
+          placeholder="الفرع المستخدم (مثلاً: جدة، الرياض)"
+        />
+        <input type="date" id="dCalib" title="تاريخ آخر معايرة" />
+        <input type="date" id="dNextCalib" title="موعد المعايرة القادم" />
+        <label
+          style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+            cursor: pointer;
+          "
+        >
+          <input type="checkbox" id="dNuclearLicense" style="width: auto" />
+          <span>الفرع حاصل على ترخيص نووي</span>
+        </label>
+        <p style="font-size: 12px; color: #888; margin-bottom: 10px">
+          * تاريخ آخر معايرة معتمدة
+        </p>
+        <button class="btn-add" style="width: 100%" onclick="saveDevice()">
+          حفظ الجهاز
+        </button>
+        <button
+          onclick="closeModal('addDeviceModal')"
+          style="
+            width: 100%;
+            background: #eee;
+            border: none;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+          "
+        >
+          إلغاء
+        </button>
+      </div>
+    </div>
+
+    <!-- مودال إدارة مراحل الجهاز -->
+    <div id="deviceManageModal" class="modal">
+      <div class="modal-content">
+        <h3 id="mTitle" style="color: var(--saac-blue)"></h3>
+        <p id="mSerial" style="color: #888; font-size: 14px"></p>
+
+        <div
+          style="
+            background: #f0f4f8;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <label style="font-weight: bold; font-size: 13px"
+            >إضافة إجراء/مرحلة للجهاز:</label
+          >
+          <div style="display: flex; gap: 5px; margin-top: 8px">
+            <input
+              type="text"
+              id="newStage"
+              placeholder="مثلاً: اختبار التسرب الإشعاعي"
+              style="margin: 0"
+            />
+            <button class="btn-add" onclick="addStageToDevice()">
+              + إضافة
+            </button>
+          </div>
+        </div>
+
+        <div id="stagesList"></div>
+
+        <button
+          onclick="closeModal('deviceManageModal')"
+          style="
+            width: 100%;
+            background: #666;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+          "
+        >
+          إغلاق
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let devices = [];
+      let currentDeviceId = null;
+
+      function openModal(id) {
+        document.getElementById(id).style.display = "block";
+      }
+      function closeModal(id) {
+        document.getElementById(id).style.display = "none";
+      }
+
+      function saveDevice() {
+        const model = document.getElementById("dModel").value;
+        const serial = document.getElementById("dSerial").value;
+        const ownership = document.getElementById("dOwnership").value;
+        const branch = document.getElementById("dBranch").value;
+        const calib = document.getElementById("dCalib").value;
+        const nextCalib = document.getElementById("dNextCalib").value;
+        const nuclearLicense =
+          document.getElementById("dNuclearLicense").checked;
+
+        if (!model || !serial) return alert("يرجى إكمال بيانات الجهاز");
+
+        const newDevice = {
+          id: Date.now(),
+          model: model,
+          serial: serial,
+          ownership: ownership,
+          branch: branch,
+          lastCalib: calib,
+          nextCalib: nextCalib,
+          nuclearLicense: nuclearLicense,
+          stages: [],
+        };
+
+        devices.push(newDevice);
+        renderDevices();
+        closeModal("addDeviceModal");
+        // تفريغ الحقول
+        document.getElementById("dModel").value = "";
+        document.getElementById("dSerial").value = "";
+        document.getElementById("dOwnership").value = "";
+        document.getElementById("dBranch").value = "";
+        document.getElementById("dCalib").value = "";
+        document.getElementById("dNextCalib").value = "";
+        document.getElementById("dNuclearLicense").checked = false;
+      }
+
+      // Helper to calculate calibration status
+      function getCalibStatus(nextCalib) {
+        if (!nextCalib)
+          return { text: "غير محدد", color: "#777", bg: "#f0f0f0" };
+        const today = new Date();
+        const calibDate = new Date(nextCalib);
+        const daysLeft = Math.ceil((calibDate - today) / (1000 * 60 * 60 * 24));
+
+        if (daysLeft < 0)
+          return { text: "معايرة متأخرة!", color: "#fff", bg: "#dc2626" };
+        if (daysLeft <= 30)
+          return {
+            text: `متبقي ${daysLeft} يوم`,
+            color: "#fff",
+            bg: "#f59e0b",
+          };
+        return { text: `متبقي ${daysLeft} يوم`, color: "#fff", bg: "#27ae60" };
+      }
+
+      function renderDevices() {
+        const container = document.getElementById("devicesContainer");
+        container.innerHTML = "";
+        document.getElementById("totalCount").innerText = devices.length;
+
+        devices.forEach((d) => {
+          const calibStatus = getCalibStatus(d.nextCalib);
+          const ownershipText =
+            d.ownership === "rented"
+              ? "ايجار"
+              : d.ownership === "owned"
+                ? "ملك الشركة"
+                : "غير محدد";
+          const ownershipColor =
+            d.ownership === "rented"
+              ? "#7c3aed"
+              : d.ownership === "owned"
+                ? "#059669"
+                : "#777";
+
+          container.innerHTML += `
+                <div class="device-card" onclick="manageDevice(${d.id})">
+                    <span class="status-badge status-active" style="background:${calibStatus.bg};color:${calibStatus.color}">${calibStatus.text}</span>
+                    <i class="fas fa-radiation" style="font-size: 30px; color: var(--saac-gold); margin-bottom: 15px;"></i>
+                    <h3 style="margin: 5px 0;">${d.model}</h3>
+                    <p style="margin: 0; color: #777;">S/N: ${d.serial}</p>
+                    
+                    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <span style="background:${ownershipColor};color:white;padding:3px 10px;border-radius:15px;font-size:11px;">${ownershipText}</span>
+                        <span style="background:#0056b3;color:white;padding:3px 10px;border-radius:15px;font-size:11px;"><i class="fas fa-building"></i> ${d.branch || "غير محدد"}</span>
+                    </div>
+                    
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                    <div style="font-size: 12px; color: #555;">
+                        <i class="fas fa-calendar-check"></i> آخر معايرة: ${d.lastCalib || "غير محدد"}
+                    </div>
+                    <div style="font-size: 12px; color: #e74c3c; margin-top:5px;">
+                        <i class="fas fa-clock"></i> القادم: ${d.nextCalib || "غير محدد"}
+                    </div>
+                    <div style="font-size: 11px; margin-top: 5px; color: ${d.nuclearLicense ? "#059669" : "#dc2626"};">
+                        <i class="fas ${d.nuclearLicense ? "fa-check-circle" : "fa-times-circle"}"></i> الترخيص النووي: ${d.nuclearLicense ? "نعم" : "لا"}
+                    </div>
+                    <div style="font-size: 11px; margin-top: 5px; color: var(--saac-blue);">
+                        ${d.stages.length} إجراءات مسجلة
+                    </div>
+                </div>
+            `;
+        });
+      }
+
+      function manageDevice(id) {
+        currentDeviceId = id;
+        const d = devices.find((x) => x.id === id);
+        document.getElementById("mTitle").innerText = d.model;
+        document.getElementById("mSerial").innerText =
+          "الرقم التسلسلي: " + d.serial;
+
+        renderStages();
+        openModal("deviceManageModal");
+      }
+
+      function addStageToDevice() {
+        const stageName = document.getElementById("newStage").value;
+        if (!stageName) return;
+
+        const d = devices.find((x) => x.id === currentDeviceId);
+        d.stages.push({ title: stageName, done: false });
+        document.getElementById("newStage").value = "";
+        renderStages();
+        renderDevices();
+      }
+
+      function renderStages() {
+        const d = devices.find((x) => x.id === currentDeviceId);
+        const list = document.getElementById("stagesList");
+        list.innerHTML = "";
+
+        d.stages.forEach((s, index) => {
+          list.innerHTML += `
+                <div class="stage-item ${s.done ? "stage-done" : ""}" onclick="toggleStage(${index})">
+                    <span>${s.title}</span>
+                    <i class="fas ${s.done ? "fa-check-circle" : "fa-circle"}" style="color: ${s.done ? "var(--success)" : "#ccc"}"></i>
+                </div>
+            `;
+        });
+      }
+
+      function toggleStage(index) {
+        const d = devices.find((x) => x.id === currentDeviceId);
+        d.stages[index].done = !d.stages[index].done;
+        renderStages();
+      }
+    </script>
+  </body>
+</html>

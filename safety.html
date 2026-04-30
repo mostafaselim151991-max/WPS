@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة السلامة والصحة المهنية - HSE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --hse-orange: #f39c12; --hse-red: #c0392b; --hse-dark: #2c3e50; --bg: #fdfdfd; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; direction: rtl; }
+        
+        .header-hse { background: var(--hse-dark); color: white; padding: 25px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid var(--hse-orange); margin-bottom: 30px; }
+        
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        
+        .location-card { background: white; border-radius: 15px; padding: 0; overflow: hidden; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .card-type { padding: 10px 20px; font-size: 12px; font-weight: bold; color: white; text-transform: uppercase; }
+        .type-lab { background: #3498db; }
+        .type-site { background: var(--hse-orange); }
+        .type-office { background: #9b59b6; }
+        
+        .card-body { padding: 20px; }
+        .risk-level { display: inline-block; padding: 2px 10px; border-radius: 5px; font-size: 11px; margin-bottom: 10px; }
+        .risk-high { background: #ffdada; color: #c0392b; }
+        
+        .btn-action { width: 100%; padding: 12px; border: none; background: #f8f9fa; border-top: 1px solid #eee; cursor: pointer; font-family: 'Tajawal'; font-weight: bold; transition: 0.3s; }
+        .btn-action:hover { background: #eee; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+        .modal-content { background: white; width: 90%; max-width: 600px; margin: 30px auto; padding: 25px; border-radius: 15px; max-height: 90vh; overflow-y: auto; }
+        
+        .check-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f0f0f0; }
+        .check-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        
+        input[type="text"], select, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-family: 'Tajawal'; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+<div class="header-hse">
+    <div>
+        <h2 style="margin:0;"><i class="fas fa-hard-hat"></i> نظام رقابة السلامة والصحة المهنية</h2>
+        <p style="margin:5px 0 0 0; opacity: 0.8;">المواقع - المختبرات - الفروع الإدارية</p>
+    </div>
+    <button onclick="openAddModal()" style="background: var(--hse-orange); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">
+        <i class="fas fa-plus"></i> إضافة موقع تفتيش
+    </button>
+</div>
+
+<div class="grid-container" id="locationsGrid">
+    <!-- المواقع ستظهر هنا -->
+</div>
+
+<!-- مودال إضافة موقع -->
+<div id="addLocationModal" class="modal">
+    <div class="modal-content">
+        <h3>تسجيل موقع خاضع للرقابة</h3>
+        <label>اسم الموقع/الفرع:</label>
+        <input type="text" id="locName" placeholder="مثلاً: مختبر مواد الشرقية">
+        
+        <label>نوع الموقع:</label>
+        <select id="locType">
+            <option value="lab">مختبر فني</option>
+            <option value="site">موقع إنشائي / ميداني</option>
+            <option value="office">فرع إداري</option>
+        </select>
+        
+        <label>مسؤول السلامة بالموقع:</label>
+        <input type="text" id="locSafetyOfficer" placeholder="اسم المشرف">
+        
+        <button onclick="saveLocation()" style="width:100%; background:var(--hse-dark); color:white; padding:12px; border:none; border-radius:8px; cursor:pointer; margin-top:10px;">حفظ الموقع</button>
+        <button onclick="closeModal('addLocationModal')" style="width:100%; background:none; color:#666; border:none; margin-top:10px; cursor:pointer;">إلغاء</button>
+    </div>
+</div>
+
+<!-- مودال قائمة التفتيش (Safety Checklist) -->
+<div id="checkModal" class="modal">
+    <div class="modal-content">
+        <h3 id="mLocName" style="color:var(--hse-dark); margin-bottom:5px;"></h3>
+        <p style="color:#777; font-size:14px; margin-bottom:20px;">قائمة مراجعة السلامة الدورية</p>
+        
+        <div id="checklistArea">
+            <div class="check-item"><input type="checkbox"> توفر أدوات الإسعافات الأولية</div>
+            <div class="check-item"><input type="checkbox"> سلامة طفايات الحريق وصلاحيتها</div>
+            <div class="check-item"><input type="checkbox"> التزام الموظفين بـ PPE (أدوات الحماية)</div>
+            <div class="check-item"><input type="checkbox"> وضوح لوحات التحذير والمخارج</div>
+            <div class="check-item"><input type="checkbox"> نظافة الموقع من العوائق والمخلفات</div>
+        </div>
+        
+        <textarea id="safetyNotes" placeholder="اكتب أي ملاحظات فنية أو مخاطر مرصودة هنا..." rows="4"></textarea>
+        
+        <button onclick="submitCheck()" style="width:100%; background:var(--hse-red); color:white; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">اعتماد تقرير التفتيش</button>
+        <button onclick="closeModal('checkModal')" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer;">إغلاق</button>
+    </div>
+</div>
+
+<script>
+    let locations = [
+        { id: 1, name: "مختبر الخرسانة المركزي", type: "lab", officer: "أحمد علي", status: "آمن" },
+        { id: 2, name: "موقع مشروع شمال جدة", type: "site", officer: "محمد حسن", status: "يحتاج فحص" }
+    ];
+
+    function render() {
+        const grid = document.getElementById('locationsGrid');
+        grid.innerHTML = '';
+        
+        locations.forEach(loc => {
+            const typeClass = loc.type === 'lab' ? 'type-lab' : (loc.type === 'site' ? 'type-site' : 'type-office');
+            const typeName = loc.type === 'lab' ? 'مختبر' : (loc.type === 'site' ? 'موقع ميداني' : 'مكتب إداري');
+            
+            grid.innerHTML += `
+                <div class="location-card">
+                    <div class="card-type ${typeClass}">${typeName}</div>
+                    <div class="card-body">
+                        <span class="risk-level risk-high"><i class="fas fa-exclamation-triangle"></i> درجة الخطورة: متوسطة</span>
+                        <h3 style="margin:5px 0;">${loc.name}</h3>
+                        <p style="font-size:13px; color:#666;"><i class="fas fa-user-shield"></i> المسؤول: ${loc.officer}</p>
+                        <div style="font-size:12px; color:#999; margin-top:10px;">آخر تفتيش: منذ يومين</div>
+                    </div>
+                    <button class="btn-action" onclick="openCheck(${loc.id})">
+                        <i class="fas fa-clipboard-check" style="color:var(--hse-orange);"></i> بدء جولة تفتيشية
+                    </button>
+                </div>
+            `;
+        });
+    }
+
+    function openAddModal() { document.getElementById('addLocationModal').style.display = 'block'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function saveLocation() {
+        const name = document.getElementById('locName').value;
+        const type = document.getElementById('locType').value;
+        const officer = document.getElementById('locSafetyOfficer').value;
+        
+        if(!name || !officer) return alert("يرجى ملء البيانات");
+        
+        locations.push({ id: Date.now(), name, type, officer });
+        render();
+        closeModal('addLocationModal');
+    }
+
+    function openCheck(id) {
+        const loc = locations.find(x => x.id === id);
+        document.getElementById('mLocName').innerText = loc.name;
+        document.getElementById('checkModal').style.display = 'block';
+    }
+
+    function submitCheck() {
+        alert("تم حفظ تقرير السلامة وتحديث سجل الموقع بنجاح.");
+        closeModal('checkModal');
+    }
+
+    render();
+</script>
+
+</body>
+</html>

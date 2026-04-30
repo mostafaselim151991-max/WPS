@@ -1,62 +1,25 @@
-# HRMS PHP Conversion Plan
+# TODO - Update neuc.html with Device Details
 
-## Task: Convert hrms.html to hrms.php
+## Plan Confirmation ✅
 
-### Information Gathered:
+User confirmed adding these fields:
 
-- hrms.html: Full HR dashboard with employee management, forms, localStorage-based
-- api.php: Already has mysqli connection to saden_hrms database
-- saden_hrms_database.sql: Complete database schema exists
-- config.php: Has configuration settings
+1. Ownership status (ايجار / ملك الشركة)
+2. Branch (الفرع)
+3. Next calibration date (موعد المعايرة القادم)
+4. Nuclear license status for branch (حاصل على ترخيص نووي ام لا)
 
-### Database Structure (from SQL):
+## Steps to Complete:
 
-- employees table with all fields
-- departments table
-- positions table
-- evaluations table
-- status field: active/inactive/suspended/terminated
-- Allowances: housing_allowance, transport_allowance, communication_allowance
+- [x] 1. Update add device modal to include new fields
+- [x] 2. Update device object structure to include new properties
+- [x] 3. Update device card display with new fields and visual indicators
+- [ ] 4. Test by adding sample device
 
-### Plan:
+## Completed:
 
-1. Create hrms.php with PHP structure
-2. Include mysqli database connection using config from api.php
-3. Keep ALL original HTML/CSS (design integrity)
-4. Add UTF-8 header support for Arabic
-5. Fetch employees from database instead of localStorage
-6. Update module links to point to .php files
-7. Display allowances (Housing, Transport, Communication) from DB
-8. Show employee status from database values
-9. Keep all JavaScript functionality working
-
-### Module Links to Update:
-
-- Employment Requisition → employment_requisition.php (when converted)
-- Job Offer → job_offer.php (when converted)
-- CV Bank → cv_bank.php (when converted)
-- Employee Complaints → employee_complaints.php (when converted)
-
-### Allowances to Display:
-
-- housing_allowance (بدل السكن)
-- transport_allowance (بدل الإنتقال)
-- communication_allowance (بدل الإتصال)
-
-### Status Values:
-
-- active → نشط
-- on_leave → في إجازة
-- suspended →معلق
-- terminated →منتهي
-
-## Implementation Steps:
-
-1. Create hrms.php with full PHP + HTML
-2. Test database connection
-3. Verify employee list displays correctly
-4. Test forms save to database
-
----
-
-Last Updated: [Current Date]
+- [x] Analysis and plan creation
+- [x] Add device modal - new input fields added
+- [x] saveDevice() function - new properties added
+- [x] renderDevices() - new display with badges and indicators
+- [x] getCalibStatus() - calibration countdown logic
