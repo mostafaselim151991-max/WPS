@@ -1,47 +1,62 @@
-# ربط mail.html مع قائمة البريد الداخلي
+# HRMS PHP Conversion Plan
 
-## الخطوات:
+## Task: Convert hrms.html to hrms.php
 
-- [x] إنشاء TODO.md مع خطة التنفيذ
-- [x] قراءة index.html (تم)
-- [x] تصحيح ID mismatch: `id="fincMenu"` → `id="mailMenu"`
-- [x] استبدال محتوى الـ dropdown بـ buttons لـ inbox/sent بناءً على feedback
-- [x] التحقق من التنفيذ عبر test
+### Information Gathered:
 
-# تحديث نموذج إرسال البريد + ربط HRMS
+- hrms.html: Full HR dashboard with employee management, forms, localStorage-based
+- api.php: Already has mysqli connection to saden_hrms database
+- saden_hrms_database.sql: Complete database schema exists
+- config.php: Has configuration settings
 
-✅ تم ربط mail.html الأساسي.  
-**الآن: تحديث Composer + HRMS integration**
+### Database Structure (from SQL):
 
-## الخطوات الجديدة:
+- employees table with all fields
+- departments table
+- positions table
+- evaluations table
+- status field: active/inactive/suspended/terminated
+- Allowances: housing_allowance, transport_allowance, communication_allowance
 
-- [x] إعادة TODO + قراءة mail.html
-      ✅ **تم تحديث mail.html كاملاً:**
+### Plan:
 
-## الإنجازات:
+1. Create hrms.php with PHP structure
+2. Include mysqli database connection using config from api.php
+3. Keep ALL original HTML/CSS (design integrity)
+4. Add UTF-8 header support for Arabic
+5. Fetch employees from database instead of localStorage
+6. Update module links to point to .php files
+7. Display allowances (Housing, Transport, Communication) from DB
+8. Show employee status from database values
+9. Keep all JavaScript functionality working
 
-- [x] To/CC multi-select من HRMS localStorage (`saden_employees`)
-- [x] مرفقات multi-file (FormData)
-- [x] UI محسن (labels, height, CSS)
-- [x] JS sendMail() يدعم arrays + files + validation
-- [x] Watch storage changes لتحديث فوري
+### Module Links to Update:
 
-**Test:** أضف موظفين في hrms.html → افتح mail.html → Ctrl+Click اختيار To/CC → مرفق → إرسال → يعمل مع api.php.
+- Employment Requisition → employment_requisition.php (when converted)
+- Job Offer → job_offer.php (when converted)
+- CV Bank → cv_bank.php (when converted)
+- Employee Complaints → employee_complaints.php (when converted)
 
-**المهمة السابقة مكتملة 100%!** 🎉
+### Allowances to Display:
 
-**التحديث الجديد:**
+- housing_allowance (بدل السكن)
+- transport_allowance (بدل الإنتقال)
+- communication_allowance (بدل الإتصال)
 
-## المتطلبات:
+### Status Values:
 
-- [ ] تكبير composer modal
-- [ ] إنشاء live chat
-- [ ] إشعارات mail/chat في topbar index.html (🔔)
+- active → نشط
+- on_leave → في إجازة
+- suspended →معلق
+- terminated →منتهي
 
-## الخطة:
+## Implementation Steps:
 
-1. mail.html: composer width=600px, height=80vh
-2. chat.html: Live chat system (localStorage)
-3. index.html: Add chat button + notifications integration
+1. Create hrms.php with full PHP + HTML
+2. Test database connection
+3. Verify employee list displays correctly
+4. Test forms save to database
 
-جاهز للتنفيذ
+---
+
+Last Updated: [Current Date]
