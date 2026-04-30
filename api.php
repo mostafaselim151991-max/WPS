@@ -73,7 +73,148 @@ class Database {
 }
 
 // ===================================
+// Users Class
+// ===================================
+class User {
+    private $db;
+    private $conn;
+
+    public function __construct($database) {
+        $this->db = $database;
+        $this->conn = $database->getConnection();
+        $this->initUsersTable();
+    }
+
+    private function initUsersTable() {
+        $sql = "CREATE TABLE IF NOT EXISTS `users` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `username` VARCHAR(50) UNIQUE NOT NULL,
+            `password` VARCHAR(255) NOT NULL,
+            `fullname` VARCHAR(100),
+            `role` ENUM('admin', 'manager', 'user') DEFAULT 'user',
+            `status` ENUM('active', 'inactive') DEFAULT 'active',
+            `department` VARCHAR(100),
+            `permissions` JSON,
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            `last_login` TIMESTAMP NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+        
+        $this->conn->query($sql);
+    }
+
+    public function auth($username, $password) {
+        $username = $this->conn->real_escape_string($username);
+        $password = $this->conn->real_escape_string($password);
+        
+        $query = "SELECT * FROM users WHERE username = '$username' AND password = '$password' AND status = 'active'";
+        $result = $this->conn->query($query);
+        
+        if ($result && $result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            $this->updateLastLogin($user['id']);
+            return ['success' => true, 'data' => $user];
+        }
+        
+        return ['success' => false, 'message' => 'خطأ في البيانات'];
+    }
+
+    public function getUsers() {
+        $query = "SELECT id, username, fullname, role, status, department FROM users ORDER BY created_at DESC";
+        $result = $this->conn->query($query);
+        
+        $users = [];
+        while ($row = $result->fetch_assoc()) {
+            $users[] = $row;
+        }
+        
+        return ['success' => true, 'data' => $users];
+    }
+
+    public function createUser($data) {
+        $username = $this->conn->real_escape_string($data['username']);
+        $password = $this->conn->real_escape_string($data['password']);
+        $fullname = $this->conn->real_escape_string($data['fullname'] ?? '');
+        $role = $this->conn->real_escape_string($data['role'] ?? 'user');
+        $status = $this->conn->real_escape_string($data['status'] ?? 'active');
+        $department = $this->conn->real_escape_string($data['department'] ?? '');
+        $permissions = json_encode($data['permissions'] ?? {});
+        
+        $query = "INSERT INTO users (username, password, fullname, role, status, department, permissions) VALUES ('$username', '$password', '$fullname', '$role', '$status', '$department', '$permissions')";
+        
+        if ($this->conn->query($query)) {
+            return ['success' => true, 'data' => ['id' => $this->conn->insert_id]];
+        }
+        
+        return ['success' => false, 'message' => $this->conn->error];
+    }
+
+    public function updateUser($id, $data) {
+        $id = intval($id);
+        $updates = [];
+        
+        if (isset($data['username'])) {
+            $username = $this->conn->real_escape_string($data['username']);
+            $updates[] = "username = '$username'";
+        }
+        if (isset($data['password'])) {
+            $password = $this->conn->real_escape_string($data['password']);
+            $updates[] = "password = '$password'";
+        }
+        if (isset($data['fullname'])) {
+            $fullname = $this->conn->real_escape_string($data['fullname']);
+            $updates[] = "fullname = '$fullname'";
+        }
+        if (isset($data['role'])) {
+            $role = $this->conn->real_escape_string($data['role']);
+            $updates[] = "role = '$role'";
+        }
+        if (isset($data['status'])) {
+            $status = $this->conn->real_escape_string($data['status']);
+            $updates[] = "status = '$status'";
+        }
+        if (isset($data['department'])) {
+            $department = $this->conn->real_escape_string($data['department']);
+            $updates[] = "department = '$department'";
+        }
+        if (isset($data['permissions'])) {
+            $permissions = json_encode($data['permissions']);
+            $updates[] = "permissions = '$permissions'";
+        }
+        
+        if (empty($updates)) {
+            return ['success' => false, 'message' => 'لا بيانات للتحديث'];
+        }
+        
+        $query = "UPDATE users SET " . implode(', ', $updates) . " WHERE id = $id";
+        
+        if ($this->conn->query($query)) {
+            return ['success' => true, 'message' => 'تم التحديث'];
+        }
+        
+        return ['success' => false, 'message' => $this->conn->error];
+    }
+
+    public function deleteUser($id) {
+        $id = intval($id);
+        $query = "DELETE FROM users WHERE id = $id";
+        
+        if ($this->conn->query($query)) {
+            return ['success' => true, 'message' => 'تم الحذف'];
+        }
+        
+        return ['success' => false, 'message' => $this->conn->error];
+    }
+
+    private function updateLastLogin($id) {
+        $id = intval($id);
+        $query = "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $id";
+        $this->conn->query($query);
+    }
+}
+
+// ===================================
 include_once 'config.php';
+
 
 // ===================================
 // إنشاء جداول البريد إذا لم تكن موجودة
@@ -534,7 +675,34 @@ $user_id = intval($_GET['user'] ?? TEST_USER_ID);  // Default test user
 $response = ['success' => false, 'message' => 'طلب غير صالح'];
 
 try {
-    if ($resource === 'employees') {
+    if ($resource === 'users') {
+        $users = new User($database);
+        
+        if ($request_method === 'GET') {
+            if ($id) {
+                // Get single user (if needed)
+                $response = ['success' => true, 'data' => []]; // TODO: implement
+            } else {
+                $response = $users->getUsers();
+            }
+        } elseif ($request_method === 'POST') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $response = $users->createUser($data);
+        } elseif ($request_method === 'PUT' && $id) {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $response = $users->updateUser($id, $data);
+        } elseif ($request_method === 'DELETE' && $id) {
+            $response = $users->deleteUser($id);
+        }
+    } elseif ($resource === 'auth') {
+        $users = new User($database);
+        if ($request_method === 'POST') {
+            $data = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+            $response = $users->auth($data['username'] ?? '', $data['password'] ?? '');
+        } else {
+            $response = ['success' => false, 'message' => 'POST only'];
+        }
+    } elseif ($resource === 'employees') {
 
         if ($request_method === 'GET') {
             if ($id) {
@@ -568,6 +736,7 @@ try {
             $response = ['success' => true, 'data' => ['vacation_balance' => $balance]];
         }
     }
+
 
     // ========== NEW MAIL ENDPOINTS ==========
     elseif ($resource === 'mail') {
