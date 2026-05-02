@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>التعاميم الإدارية - سادن</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --urgent: #e74c3c;
+        --important: #f39c12;
+        --normal: #3498db;
+        --bg: #f4f7f6;
+      }
+      body {
+        font-family: "Tajawal", sans-serif;
+        background: var(--bg);
+        margin: 0;
+        display: flex;
+      }
+
+      /* السايد بار الأيسر (كما في التصميم السابق) */
+      .sidebar {
+        width: 280px;
+        background: white;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        border-right: 1px solid #eee;
+        padding: 20px;
+        order: 2;
+      }
+      .main-content {
+        margin-left: 280px;
+        flex: 1;
+        padding: 40px;
+        order: 1;
+      }
+
+      .circular-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-right: 8px solid #ccc;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+      .priority-urgent {
+        border-right-color: var(--urgent);
+      }
+      .priority-important {
+        border-right-color: var(--important);
+      }
+      .priority-normal {
+        border-right-color: var(--normal);
+      }
+
+      .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+      }
+      .btn-publish {
+        background: #4361ee;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-family: "Tajawal";
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-content">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 30px;
+        "
+      >
+        <h2>
+          <i class="fas fa-bullhorn" style="color: var(--normal)"></i> المركز
+          الإعلاني والتعاميم
+        </h2>
+        <button class="btn-publish" onclick="toggleModal()">
+          <i class="fas fa-plus"></i> نشر تعميم جديد
+        </button>
+      </div>
+
+      <div id="circularsList">
+        <!-- التعاميم تظهر هنا -->
+      </div>
+    </div>
+
+    <!-- مودال إنشاء تعميم -->
+    <div
+      id="publishModal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+      "
+    >
+      <div
+        style="
+          background: white;
+          width: 500px;
+          margin: 50px auto;
+          padding: 30px;
+          border-radius: 20px;
+        "
+      >
+        <h3>إنشاء تعميم إداري</h3>
+        <input type="text" id="cTitle" placeholder="عنوان التعميم" />
+        <select id="cPriority">
+          <option value="normal">عادي</option>
+          <option value="important">مهم</option>
+          <option value="urgent">عاجل جداً</option>
+        </select>
+        <textarea
+          id="cContent"
+          rows="5"
+          placeholder="اكتب نص التعميم هنا..."
+        ></textarea>
+        <input type="date" id="cDate" title="تاريخ السريان" />
+        <button
+          class="btn-publish"
+          style="width: 100%"
+          onclick="saveCircular()"
+        >
+          نشر وتعميم الآن
+        </button>
+        <button
+          onclick="toggleModal()"
+          style="
+            width: 100%;
+            background: none;
+            border: none;
+            margin-top: 10px;
+            color: #666;
+            cursor: pointer;
+          "
+        >
+          إلغاء
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let circulars = JSON.parse(localStorage.getItem("saden_circulars")) || [];
+
+      function toggleModal() {
+        const m = document.getElementById("publishModal");
+        m.style.display = m.style.display === "none" ? "block" : "none";
+      }
+
+      function saveCircular() {
+        const newC = {
+          id: "circular_" + Date.now(),
+          title: document.getElementById("cTitle").value,
+          content: document.getElementById("cContent").value,
+          priority: document.getElementById("cPriority").value,
+          publishDate: new Date().toLocaleDateString("ar-EG"),
+          effectiveDate: document.getElementById("cDate").value,
+          publisher: "الإدارة العامة",
+        };
+
+        circulars.unshift(newC);
+        localStorage.setItem("saden_circulars", JSON.stringify(circulars));
+        renderCirculars();
+        toggleModal();
+        alert("تم إرسال إشعار لجميع الموظفين بنشر التعميم الجديد");
+      }
+
+      function renderCirculars() {
+        const list = document.getElementById("circularsList");
+        list.innerHTML = circulars
+          .map(
+            (c) => `
+            <div class="circular-card priority-${c.priority}">
+                <div style="display:flex; justify-content:space-between;">
+                    <h3 style="margin:0;">${c.title}</h3>
+                    <span class="badge" style="background:${c.priority === "urgent" ? "#e74c3c" : c.priority === "important" ? "#f39c12" : "#3498db"}">
+                        ${c.priority.toUpperCase()}
+                    </span>
+                </div>
+                <p style="color:#444; line-height:1.6;">${c.content}</p>
+                <div style="font-size:12px; color:#888; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+                    <i class="fas fa-user"></i> الناشر: ${c.publisher} | 
+                    <i class="fas fa-calendar"></i> تاريخ النشر: ${c.publishDate} |
+                    <i class="fas fa-clock"></i> السريان: ${c.effectiveDate}
+                </div>
+            </div>
+        `,
+          )
+          .join("");
+      }
+      renderCirculars();
+    </script>
+  </body>
+</html>

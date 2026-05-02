@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نظام سادن - التقويم العام الذكي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #4361ee; --bg: #f8fafc; --border: #e2e8f0; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        .sidebar { width: 300px; background: white; border-right: 1px solid var(--border); padding: 20px; order: 2; display: flex; flex-direction: column; }
+        .main-content { flex: 1; order: 1; padding: 25px; overflow-y: auto; }
+
+        .calendar-card { background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; }
+        .calendar-header { background: var(--primary); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .grid-7 { display: grid; grid-template-columns: repeat(7, 1fr); }
+        .weekday { background: #f1f5f9; padding: 12px; text-align: center; font-weight: bold; color: #475569; border-bottom: 1px solid var(--border); font-size: 14px; }
+        
+        .day-box { min-height: 100px; padding: 8px; border: 0.5px solid var(--border); transition: 0.2s; background: white; }
+        .day-box:hover { background: #f0f7ff; }
+        .day-box.today { background: #eff6ff; border: 2px solid var(--primary); }
+        .day-box.other-month { opacity: 0.3; background: #fafafa; }
+
+        .m-num { font-size: 18px; font-weight: 700; color: #1e293b; }
+        .h-num { font-size: 10px; color: #64748b; margin-right: 5px; display: block; }
+
+        .event-badge { background: #ff9f1c; color: white; font-size: 10px; padding: 3px 6px; border-radius: 4px; margin-top: 4px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .controls { margin-top: auto; padding-top: 20px; border-top: 1px solid #eee; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-family: 'Tajawal'; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="main-content">
+    <div class="calendar-card">
+        <div class="calendar-header">
+            <button onclick="prevMonth()" style="background:none; border:none; color:white; cursor:pointer;"><i class="fas fa-chevron-right"></i></button>
+            <h2 id="monthDisplay" style="margin:0; font-size: 20px;"></h2>
+            <button onclick="nextMonth()" style="background:none; border:none; color:white; cursor:pointer;"><i class="fas fa-chevron-left"></i></button>
+        </div>
+        
+        <div class="grid-7">
+            <div class="weekday">الأحد</div><div class="weekday">الاثنين</div><div class="weekday">الثلاثاء</div>
+            <div class="weekday">الأربعاء</div><div class="weekday">الخميس</div><div class="weekday">الجمعة</div>
+            <div class="weekday">السبت</div>
+        </div>
+        <div class="grid-7" id="calendarBody"></div>
+    </div>
+</div>
+
+<aside class="sidebar">
+    <h3 style="margin-top:0;"><i class="fas fa-calendar-day"></i> إضافة حدث</h3>
+    <label>عنوان الحدث</label>
+    <input type="text" id="eventTitle" placeholder="مثلاً: اجتماع إدارة">
+    
+    <label>تاريخ الحدث</label>
+    <input type="date" id="eventDate">
+    
+    <button class="btn" onclick="addNewEvent()">حفظ في التقويم</button>
+
+    <div class="controls">
+        <label>الانتقال السريع لشهر</label>
+        <input type="month" id="jumpDate" onchange="jumpToDate(this.value)">
+        <button class="btn" style="background:#64748b; margin-top:10px;" onclick="resetToToday()">العودة لليوم</button>
+    </div>
+</aside>
+
+<script>
+    let currentViewDate = new Date(); // التاريخ المعروض حالياً
+    let events = JSON.parse(localStorage.getItem('saden_events')) || {};
+
+    function renderCalendar() {
+        const year = currentViewDate.getFullYear();
+        const month = currentViewDate.getMonth();
+        
+        // عرض اسم الشهر والسنة
+        const monthName = new Intl.DateTimeFormat('ar-EG', { month: 'long', year: 'numeric' }).format(currentViewDate);
+        document.getElementById('monthDisplay').innerText = monthName;
+
+        const firstDay = new Date(year, month, 1).getDay(); // يوم بداية الشهر (0=الأحد)
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const calendarBody = document.getElementById('calendarBody');
+        calendarBody.innerHTML = '';
+
+        // المربعات الفارغة لبداية الشهر
+        for (let i = 0; i < firstDay; i++) {
+            calendarBody.innerHTML += `<div class="day-box other-month"></div>`;
+        }
+
+        // توليد أيام الشهر
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            // حساب التاريخ الهجري (تقريبي باستخدام Intl)
+            const hijriDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-uma', {day:'numeric', month:'long'}).format(new Date(year, month, day));
+            
+            const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+            
+            // جلب الأحداث لهذا التاريخ
+            const dayEvents = events[dateStr] || [];
+            const eventsHtml = dayEvents.map(e => `<span class="event-badge">${e}</span>`).join('');
+
+            calendarBody.innerHTML += `
+                <div class="day-box ${isToday ? 'today' : ''}">
+                    <span class="m-num">${day}</span>
+                    <span class="h-num">${hijriDate}</span>
+                    ${eventsHtml}
+                </div>
+            `;
+        }
+    }
+
+    function prevMonth() { currentViewDate.setMonth(currentViewDate.getMonth() - 1); renderCalendar(); }
+    function nextMonth() { currentViewDate.setMonth(currentViewDate.getMonth() + 1); renderCalendar(); }
+    function jumpToDate(val) { if(val) { currentViewDate = new Date(val + "-01"); renderCalendar(); } }
+    function resetToToday() { currentViewDate = new Date(); renderCalendar(); }
+
+    function addNewEvent() {
+        const title = document.getElementById('eventTitle').value;
+        const date = document.getElementById('eventDate').value;
+        
+        if (!title || !date) return alert("يرجى إكمال البيانات");
+
+        if (!events[date]) events[date] = [];
+        events[date].push(title);
+        
+        localStorage.setItem('saden_events', JSON.stringify(events));
+        renderCalendar();
+        document.getElementById('eventTitle').value = '';
+    }
+
+    renderCalendar();
+</script>
+</body>
+</html>
