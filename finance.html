@@ -12,140 +12,300 @@
       rel="stylesheet"
     />
     <style>
-                          :root { --primary: #4361ee; --dark: #1e293b; --bg: #f8fafc; --border: #e2e8f0; }
-                          body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+      :root {
+        --primary: #4361ee;
+        --dark: #1e293b;
+        --bg: #f8fafc;
+        --border: #e2e8f0;
+      }
+      body {
+        font-family: "Tajawal", sans-serif;
+        background: var(--bg);
+        margin: 0;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+      }
 
-                          .sidebar { width: 260px; background: var(--dark); color: white; display: flex; flex-direction: column; order: 2; }
-                          .main-content { flex: 1; order: 1; display: flex; flex-direction: column; overflow: hidden; }
+      .sidebar {
+        width: 260px;
+        background: var(--dark);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        order: 2;
+      }
+      .main-content {
+        flex: 1;
+        order: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-                          /* شريط الأدوات العلوي - تم الحفاظ عليه كاملاً */
-                          .top-toolbar {
-                              background: white; border-bottom: 1px solid var(--border);
-                              padding: 5px 15px; display: flex; gap: 10px; align-items: center;
-                              overflow-x: auto; white-space: nowrap;
-                          }
-                          .tool-group { display: flex; gap: 10px; padding: 0 10px; border-left: 1px solid #eee; align-items: center; }
-                          .tool-group:last-child { border-left: none; }
+      /* شريط الأدوات العلوي - تم الحفاظ عليه كاملاً */
+      .top-toolbar {
+        background: white;
+        border-bottom: 1px solid var(--border);
+        padding: 5px 15px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      .tool-group {
+        display: flex;
+        gap: 10px;
+        padding: 0 10px;
+        border-left: 1px solid #eee;
+        align-items: center;
+      }
+      .tool-group:last-child {
+        border-left: none;
+      }
 
-                          .tool-icon { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 5px; min-width: 52px; transition: 0.2s; }
-                          .tool-icon i { font-size: 18px; color: var(--primary); margin-bottom: 3px; }
-                          .tool-icon span { font-size: 10px; font-weight: 700; color: var(--dark); }
+      .tool-icon {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        padding: 5px;
+        min-width: 52px;
+        transition: 0.2s;
+      }
+      .tool-icon i {
+        font-size: 18px;
+        color: var(--primary);
+        margin-bottom: 3px;
+      }
+      .tool-icon span {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--dark);
+      }
 
-                          .workspace { display: flex; flex: 1; overflow: hidden; }
+      .workspace {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
 
-                          /* لوحة التحكم الجانبية - محاكاة لـ image_c1833e.png */
-                          .control-panel {
-                              width: 250px; background: #eaeff2; border-right: 1px solid #bccad6;
-                              padding: 10px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto;
-                          }
+      /* لوحة التحكم الجانبية - محاكاة لـ image_c1833e.png */
+      .control-panel {
+        width: 250px;
+        background: #eaeff2;
+        border-right: 1px solid #bccad6;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        overflow-y: auto;
+      }
 
-                          .side-btn {
-                              background: linear-gradient(to bottom, #ffffff, #e2e8f0);
-                              border: 1px solid #adb5bd; padding: 6px 10px; border-radius: 3px;
-                              font-size: 12px; font-weight: bold; color: #334155;
-                              display: flex; justify-content: space-between; align-items: center;
-                              cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-                          }
-                          .side-btn span.shortcut { color: #d00000; font-family: Arial, sans-serif; font-size: 11px; }
+      .side-btn {
+        background: linear-gradient(to bottom, #ffffff, #e2e8f0);
+        border: 1px solid #adb5bd;
+        padding: 6px 10px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: bold;
+        color: #334155;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+      }
+      .side-btn span.shortcut {
+        color: #d00000;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+      }
 
-                          .search-section { margin-top: 5px; border-top: 1px solid #bccad6; padding-top: 8px; display: flex; flex-direction: column; gap: 4px; }
-                          .check-item { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: bold; }
+      .search-section {
+        margin-top: 5px;
+        border-top: 1px solid #bccad6;
+        padding-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .check-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        font-weight: bold;
+      }
 
-                          .input-field {
-                              width: 100%; padding: 4px; border: 1px solid #adb5bd; border-radius: 2px;
-                              font-family: 'Tajawal'; font-size: 12px; background: #e9f5db; box-sizing: border-box;
-                          }
+      .input-field {
+        width: 100%;
+        padding: 4px;
+        border: 1px solid #adb5bd;
+        border-radius: 2px;
+        font-family: "Tajawal";
+        font-size: 12px;
+        background: #e9f5db;
+        box-sizing: border-box;
+      }
 
-                          /* منطقة الشجرة والسمات الأصلية */
-                          .tree-area { flex: 1; background: white; margin: 15px; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow-y: auto; }
-                          .node-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
-                          .node-row:hover { background: #f1f5f9; }
-                          .node-row.active { background: #eef2ff; border-right: 3px solid var(--primary); font-weight: bold; }
-                          .toggle-btn { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 10px; cursor: pointer; background: #fff; }
-      .code-tag { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 11px; font-family: monospace; color: var(--primary); font-weight: bold; }
-                          .children-group { margin-right: 25px; padding-right: 10px; border-right: 1px dashed #cbd5e1; display: none; }
-                          .children-group.expanded { display: block; }
+      /* منطقة الشجرة والسمات الأصلية */
+      .tree-area {
+        flex: 1;
+        background: white;
+        margin: 15px;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        overflow-y: auto;
+      }
+      .node-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .node-row:hover {
+        background: #f1f5f9;
+      }
+      .node-row.active {
+        background: #eef2ff;
+        border-right: 3px solid var(--primary);
+        font-weight: bold;
+      }
+      .toggle-btn {
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        font-size: 10px;
+        cursor: pointer;
+        background: #fff;
+      }
+      .code-tag {
+        background: #f1f5f9;
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-family: monospace;
+        color: var(--primary);
+        font-weight: bold;
+      }
+      .children-group {
+        margin-right: 25px;
+        padding-right: 10px;
+        border-right: 1px dashed #cbd5e1;
+        display: none;
+      }
+      .children-group.expanded {
+        display: block;
+      }
 
-                          /* Modal Styles */
-                          .modal-overlay {
-                              display: none;
-                              position: fixed;
-                              inset: 0;
-                              background: rgba(0,0,0,0.6);
-                              z-index: 9999;
-                              align-items: center;
-                              justify-content: center;
-                          }
-                          .modal-overlay.active { display: flex; }
-                          .modal {
-                              background: white;
-                              border-radius: 15px;
-                              width: 450px;
-                              max-width: 95%;
-                              box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-                              overflow: hidden;
-                          }
-                          .modal-header {
-                              background: var(--primary);
-                              color: white;
-                              padding: 15px 20px;
-                              display: flex;
-                              justify-content: space-between;
-                              align-items: center;
-                          }
-                          .modal-header h3 { margin: 0; font-size: 18px; }
-                          .modal-close {
-                              background: none;
-                              border: none;
-                              color: white;
-                              font-size: 24px;
-                              cursor: pointer;
-                              line-height: 1;
-                          }
-                          .modal-body { padding: 20px; }
-                          .form-group { margin-bottom: 15px; }
-                          .form-group label {
-                              display: block;
-                              margin-bottom: 5px;
-                              font-weight: bold;
-                              color: var(--dark);
-                              font-size: 13px;
-                          }
-                          .form-group input,
-                          .form-group select {
-                              width: 100%;
-                              padding: 10px;
-                              border: 1px solid #cbd5e1;
-                              border-radius: 8px;
-                              font-family: 'Tajawal';
-                              font-size: 14px;
-                              box-sizing: border-box;
-                          }
-                          .form-group input:focus,
-                          .form-group select:focus {
-                              outline: none;
-                              border-color: var(--primary);
-                              box-shadow: 0 0 0 3px rgba(67,97,238,0.2);
-                          }
-                          .modal-actions {
-                              display: flex;
-                              gap: 10px;
-                              justify-content: flex-end;
-                              margin-top: 20px;
-                          }
-                          .btn {
-                              padding: 10px 20px;
-                              border: none;
-                              border-radius: 8px;
-                              font-family: 'Tajawal';
-                              font-size: 14px;
-                              cursor: pointer;
-                              font-weight: bold;
-                          }
-                          .btn-primary { background: var(--primary); color: white; }
-                          .btn-primary:hover { background: #3451d6; }
-                          .btn-secondary { background: #e2e8f0); color: var(--dark); }
-                          .btn-secondary:hover { background: #cbd5e1; }
+      /* Modal Styles */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal {
+        background: white;
+        border-radius: 15px;
+        width: 450px;
+        max-width: 95%;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+      .modal-header {
+        background: var(--primary);
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        line-height: 1;
+      }
+      .modal-body {
+        padding: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: var(--dark);
+        font-size: 13px;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-family: "Tajawal";
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+      }
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+      }
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-family: "Tajawal";
+        font-size: 14px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #3451d6;
+      }
+      .btn-secondary {
+        background: #e2e8f0;
+        color: var(--dark);
+      }
+      .btn-secondary:hover {
+        background: #cbd5e1;
+      }
     </style>
   </head>
   <body>
@@ -215,13 +375,21 @@
       <div class="workspace">
         <!-- لوحة التحكم الجانبية الجديدة حسب image_c1833e.png -->
         <div class="control-panel">
-          <div class="side-btn">
+          <div class="side-btn" onclick="openAddAccountModal()">
             إضافة حساب <span class="shortcut">Ins</span>
           </div>
-          <div class="side-btn">تعديل <span class="shortcut">F6</span></div>
-          <div class="side-btn">حذف <span class="shortcut">Del</span></div>
-          <div class="side-btn">نقل حساب <span></span></div>
-          <div class="side-btn">كشف حساب <span></span></div>
+          <div class="side-btn" onclick="openEditAccountModal()">
+            تعديل <span class="shortcut">F6</span>
+          </div>
+          <div class="side-btn" onclick="deleteAccount()">
+            حذف <span class="shortcut">Del</span>
+          </div>
+          <div class="side-btn" onclick="openMoveAccountModal()">
+            نقل حساب <span></span>
+          </div>
+          <div class="side-btn" onclick="showAccountStatement()">
+            كشف حساب <span></span>
+          </div>
 
           <div class="search-section">
             <div class="check-item">
@@ -233,34 +401,42 @@
             <div
               class="side-btn"
               style="justify-content: center; margin: 4px 0"
+              onclick="searchAccounts()"
             >
               بحث في قائمة
             </div>
 
             <div style="display: flex; gap: 2px">
               <button style="width: 25px; border: 1px solid #adb5bd">÷</button>
-              <input type="text" class="input-field" />
+              <input type="text" id="searchInput" class="input-field" />
             </div>
 
             <div style="display: flex; gap: 2px">
               <button style="width: 25px; border: 1px solid #adb5bd">▼</button>
               <input
                 type="text"
+                id="searchInputName"
                 class="input-field"
                 value="اسم الحساب"
                 style="text-align: center"
               />
             </div>
 
-            <input type="text" class="input-field" style="height: 22px" />
+            <input
+              type="text"
+              id="searchInputCode"
+              class="input-field"
+              style="height: 22px"
+            />
 
             <div
               class="side-btn"
               style="justify-content: center; margin-top: 4px"
+              onclick="searchAccounts()"
             >
               بحث
             </div>
-            <div class="side-btn">
+            <div class="side-btn" onclick="updateData()">
               تحديث البيانات <span class="shortcut">F4</span>
             </div>
           </div>
@@ -309,9 +485,147 @@
       </div>
     </aside>
 
+    <!-- Modal إضافة حساب -->
+    <div class="modal-overlay" id="addAccountModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>إضافة حساب جديد</h3>
+          <button class="modal-close" onclick="closeAddAccountModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>الحساب الأب</label>
+            <select id="parentAccount">
+              <option value="1">1 - الأصول</option>
+              <option value="2">2 - الخصوم</option>
+              <option value="3">3 - حقوق الملكية</option>
+              <option value="4">4 - الايرادات</option>
+              <option value="5">5 - المصروفات</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>رقم الحساب</label>
+            <input type="text" id="accountCode" placeholder="أدخل رقم الحساب" />
+          </div>
+          <div class="form-group">
+            <label>اسم الحساب</label>
+            <input type="text" id="accountName" placeholder="أدخل اسم الحساب" />
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeAddAccountModal()">
+              إلغاء
+            </button>
+            <button class="btn btn-primary" onclick="addAccount()">
+              إضافة
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal تعديل حساب -->
+    <div class="modal-overlay" id="editAccountModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>تعديل حساب</h3>
+          <button class="modal-close" onclick="closeEditAccountModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>رقم الحساب</label>
+            <input type="text" id="editAccountCode" readonly />
+          </div>
+          <div class="form-group">
+            <label>اسم الحساب</label>
+            <input
+              type="text"
+              id="editAccountName"
+              placeholder="أدخل اسم الحساب الجديد"
+            />
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeEditAccountModal()">
+              إلغاء
+            </button>
+            <button class="btn btn-primary" onclick="saveAccountEdit()">
+              حفظ التغييرات
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal نقل حساب -->
+    <div class="modal-overlay" id="moveAccountModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>نقل حساب</h3>
+          <button class="modal-close" onclick="closeMoveAccountModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>الحساب المراد نقله</label>
+            <input type="text" id="moveAccountName" readonly />
+          </div>
+          <div class="form-group">
+            <label>نقل إلى حساب الأب</label>
+            <select id="newParentAccount">
+              <option value="1">1 - الأصول</option>
+              <option value="2">2 - الخصوم</option>
+              <option value="3">3 - حقوق الملكية</option>
+              <option value="4">4 - الابرادات</option>
+              <option value="5">5 - المصروفات</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeMoveAccountModal()">
+              إلغاء
+            </button>
+            <button class="btn btn-primary" onclick="moveAccount()">نقل</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal كشف حساب -->
+    <div class="modal-overlay" id="accountStatementModal">
+      <div class="modal" style="width: 600px">
+        <div class="modal-header">
+          <h3>كشف حساب</h3>
+          <button class="modal-close" onclick="closeAccountStatement()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div
+            id="statementContent"
+            style="max-height: 400px; overflow-y: auto"
+          >
+            <!-- Account statement will be displayed here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
+      //.Selected account variable
+      let selectedAccount = null;
+
+      // Account transactions storage
+      let accountTransactions = JSON.parse(
+        localStorage.getItem("saden_account_transactions") || "[]",
+      );
+
       // الحفاظ على بيانات الشجرة الأصلية
-      let treeData = [
+      let treeData = JSON.parse(
+        localStorage.getItem("saden_account_tree") || "null",
+      ) || [
         {
           id: "1",
           name: "الأصول",
@@ -352,6 +666,11 @@
         },
       ];
 
+      // Save tree data to localStorage
+      function saveTreeData() {
+        localStorage.setItem("saden_account_tree", JSON.stringify(treeData));
+      }
+
       function draw(data, container) {
         container.innerHTML = "";
         data.forEach((n) => {
@@ -388,10 +707,340 @@
         return false;
       }
       function sel(id, name) {
-        /* تحديد الحساب للتعديل أو الإضافة */
+        // Store selected account with type
+        const account = findAccountById(treeData, id);
+        selectedAccount = {
+          id: id,
+          name: name,
+          type: account ? account.type : "sub",
+        };
+
+        // Highlight selected row
+        document
+          .querySelectorAll(".node-row")
+          .forEach((row) => row.classList.remove("active"));
+        event.currentTarget.classList.add("active");
       }
 
       draw(treeData, document.getElementById("treeDisplay"));
+
+      // Add Account Functions
+      function openAddAccountModal() {
+        document.getElementById("addAccountModal").classList.add("active");
+        document.getElementById("accountCode").value = "";
+        document.getElementById("accountName").value = "";
+        document.getElementById("parentAccount").value = "1";
+      }
+
+      function closeAddAccountModal() {
+        document.getElementById("addAccountModal").classList.remove("active");
+      }
+
+      function addAccount() {
+        const parentId = document.getElementById("parentAccount").value;
+        const code = document.getElementById("accountCode").value.trim();
+        const name = document.getElementById("accountName").value.trim();
+
+        if (!code || !name) {
+          alert("الرجاء إدخال رقم واسم الحساب");
+          return;
+        }
+
+        // Find parent and add child
+        const parent = treeData.find((a) => a.id === parentId);
+        if (parent) {
+          parent.children.push({
+            id: code,
+            name: name,
+            type: "sub",
+            children: [],
+          });
+          parent.expanded = true;
+          saveTreeData();
+          draw(treeData, document.getElementById("treeDisplay"));
+          closeAddAccountModal();
+        }
+      }
+
+      // Edit Account Functions
+      function openEditAccountModal() {
+        if (!selectedAccount) {
+          alert("الرجاء تحديد حساب من الشجرة أولاً");
+          return;
+        }
+        document.getElementById("editAccountModal").classList.add("active");
+        document.getElementById("editAccountCode").value = selectedAccount.id;
+        document.getElementById("editAccountName").value = selectedAccount.name;
+      }
+
+      function closeEditAccountModal() {
+        document.getElementById("editAccountModal").classList.remove("active");
+      }
+
+      function saveAccountEdit() {
+        if (!selectedAccount) return;
+        const newName = document.getElementById("editAccountName").value.trim();
+        if (!newName) {
+          alert("الرجاء إدخال اسم الحساب");
+          return;
+        }
+
+        // Update account name in tree
+        const account = findAccountById(treeData, selectedAccount.id);
+        if (account) {
+          account.name = newName;
+          selectedAccount.name = newName;
+          saveTreeData();
+          draw(treeData, document.getElementById("treeDisplay"));
+          closeEditAccountModal();
+          alert("تم تعديل اسم الحساب بنجاح");
+        }
+      }
+
+      // Delete Account Function
+      function deleteAccount() {
+        if (!selectedAccount) {
+          alert("الرجاء تحديد حساب من الشجرة أولاً");
+          return;
+        }
+        if (selectedAccount.type === "main") {
+          alert("لا يمكن حذف الحسابات الرئيسية");
+          return;
+        }
+        if (!confirm(`هل أنت متأكد من حذف الحساب "${selectedAccount.name}"؟`)) {
+          return;
+        }
+
+        // Remove from tree
+        if (removeAccountById(treeData, selectedAccount.id)) {
+          selectedAccount = null;
+          saveTreeData();
+          draw(treeData, document.getElementById("treeDisplay"));
+          alert("تم حذف الحساب بنجاح");
+        }
+      }
+
+      // Move Account Functions
+      function openMoveAccountModal() {
+        if (!selectedAccount) {
+          alert("الرجاء تحديد حساب من الشجرة أولاً");
+          return;
+        }
+        if (selectedAccount.type === "main") {
+          alert("لا يمكن نقل الحسابات الرئيسية");
+          return;
+        }
+        document.getElementById("moveAccountModal").classList.add("active");
+        document.getElementById("moveAccountName").value =
+          selectedAccount.id + " - " + selectedAccount.name;
+      }
+
+      function closeMoveAccountModal() {
+        document.getElementById("moveAccountModal").classList.remove("active");
+      }
+
+      function moveAccount() {
+        if (!selectedAccount) return;
+        const newParentId = document.getElementById("newParentAccount").value;
+
+        // Remove from current parent
+        const currentParent = findParentOfAccount(treeData, selectedAccount.id);
+        if (currentParent) {
+          currentParent.children = currentParent.children.filter(
+            (c) => c.id !== selectedAccount.id,
+          );
+        }
+
+        // Add to new parent
+        const newParent = treeData.find((a) => a.id === newParentId);
+        if (newParent) {
+          newParent.children.push({
+            id: selectedAccount.id,
+            name: selectedAccount.name,
+            type: "sub",
+            children: selectedAccount.children || [],
+          });
+          newParent.expanded = true;
+        }
+
+        saveTreeData();
+        draw(treeData, document.getElementById("treeDisplay"));
+        closeMoveAccountModal();
+        alert("تم نقل الحساب بنجاح");
+      }
+
+      // Account Statement Functions
+      function showAccountStatement() {
+        if (!selectedAccount) {
+          alert("الرجاء تحديد حساب من الشجرة أولاً");
+          return;
+        }
+        document
+          .getElementById("accountStatementModal")
+          .classList.add("active");
+
+        const content = document.getElementById("statementContent");
+        const transactions = accountTransactions.filter(
+          (t) => t.accountId === selectedAccount.id,
+        );
+
+        if (transactions.length === 0) {
+          content.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #666;">
+              <p>لا توجد حركات لهذا الحساب</p>
+              <p><strong>${selectedAccount.id} - ${selectedAccount.name}</strong></p>
+            </div>
+          `;
+        } else {
+          let html = `
+            <div style="padding: 10px; border-bottom: 2px solid var(--primary);">
+              <h3 style="margin: 0;">${selectedAccount.id} - ${selectedAccount.name}</h3>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+              <tr style="background: #f1f5f9;">
+                <th style="padding: 8px; text-align: right;">التاريخ</th>
+                <th style="padding: 8px; text-align: right;">البيان</th>
+                <th style="padding: 8px; text-align: right;">مدين</th>
+                <th style="padding: 8px; text-align: right;">دائن</th>
+                <th style="padding: 8px; text-align: right;">الرصيد</th>
+              </tr>
+          `;
+          let balance = 0;
+          transactions.forEach((t) => {
+            if (t.type === "debit") balance += t.amount;
+            else balance -= t.amount;
+            html += `
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px;">${t.date}</td>
+                <td style="padding: 8px;">${t.description}</td>
+                <td style="padding: 8px;">${t.type === "debit" ? t.amount : "-"}</td>
+                <td style="padding: 8px;">${t.type === "credit" ? t.amount : "-"}</td>
+                <td style="padding: 8px; font-weight: bold;">${balance}</td>
+              </tr>
+            `;
+          });
+          html += "</table>";
+          content.innerHTML = html;
+        }
+      }
+
+      function closeAccountStatement() {
+        document
+          .getElementById("accountStatementModal")
+          .classList.remove("active");
+      }
+
+      // Search Functions
+      function searchAccounts() {
+        const query = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        if (!query) {
+          draw(treeData, document.getElementById("treeDisplay"));
+          return;
+        }
+
+        const results = [];
+        findAccountsByName(treeData, query, results);
+
+        if (results.length === 0) {
+          alert("لم يتم العثور على حسابات مطابقة");
+          draw(treeData, document.getElementById("treeDisplay"));
+          return;
+        }
+
+        // Draw only matching accounts
+        const container = document.getElementById("treeDisplay");
+        container.innerHTML = "";
+
+        results.forEach((acc) => {
+          const div = document.createElement("div");
+          div.innerHTML = `
+            <div class="node-row" onclick="sel('${acc.id}', '${acc.name}')" style="background: #fff3cd;">
+              <i class="fas fa-file-invoice" style="color: #2ecc71;"></i>
+              <span class="code-tag">${acc.id}</span>
+              <span>${acc.name}</span>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      }
+
+      // Update Data Function
+      function updateData() {
+        treeData =
+          JSON.parse(localStorage.getItem("saden_account_tree") || "null") ||
+          treeData;
+        draw(treeData, document.getElementById("treeDisplay"));
+        alert("تم تحديث البيانات");
+      }
+
+      // Helper Functions
+      function findAccountById(list, id) {
+        for (let n of list) {
+          if (n.id === id) return n;
+          if (n.children) {
+            const found = findAccountById(n.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      }
+
+      function findParentOfAccount(list, id) {
+        for (let n of list) {
+          if (n.children) {
+            for (let child of n.children) {
+              if (child.id === id) return n;
+            }
+            const found = findParentOfAccount(n.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      }
+
+      function removeAccountById(list, id) {
+        for (let n of list) {
+          if (n.children) {
+            const idx = n.children.findIndex((c) => c.id === id);
+            if (idx !== -1) {
+              n.children.splice(idx, 1);
+              return true;
+            }
+            if (removeAccountById(n.children, id)) return true;
+          }
+        }
+        return false;
+      }
+
+      function findAccountsByName(list, query, results) {
+        for (let n of list) {
+          if (n.name.toLowerCase().includes(query)) {
+            results.push(n);
+          }
+          if (n.children) {
+            findAccountsByName(n.children, query, results);
+          }
+        }
+      }
+
+      // Keyboard Shortcuts
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "F6") {
+          e.preventDefault();
+          openEditAccountModal();
+        } else if (e.key === "Delete") {
+          e.preventDefault();
+          deleteAccount();
+        } else if (e.key === "F4") {
+          e.preventDefault();
+          updateData();
+        } else if (e.key === "Insert") {
+          e.preventDefault();
+          openAddAccountModal();
+        }
+      });
     </script>
   </body>
 </html>
