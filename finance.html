@@ -497,11 +497,11 @@
         <div class="modal-body">
           <div class="form-group">
             <label>الحساب الأب</label>
-            <select id="parentAccount">
+            <select id="parentAccount" onchange="generateAutoAccountCode()">
               <option value="1">1 - الأصول</option>
               <option value="2">2 - الخصوم</option>
               <option value="3">3 - حقوق الملكية</option>
-              <option value="4">4 - الايرادات</option>
+              <option value="4">4 - الابرادات</option>
               <option value="5">5 - المصروفات</option>
             </select>
           </div>
@@ -726,10 +726,62 @@
 
       // Add Account Functions
       function openAddAccountModal() {
+        const parentSelect = document.getElementById("parentAccount");
+        parentSelect.innerHTML = ""; // Clear existing options
+
+        // If a sub-account is selected, allow adding child under it
+        if (selectedAccount && selectedAccount.type === "sub") {
+          const option = document.createElement("option");
+          option.value = selectedAccount.id;
+          option.textContent =
+            selectedAccount.id + " - " + selectedAccount.name;
+          parentSelect.appendChild(option);
+        } else {
+          // Show all main accounts as options
+          treeData.forEach((mainAccount) => {
+            const option = document.createElement("option");
+            option.value = mainAccount.id;
+            option.textContent = mainAccount.id + " - " + mainAccount.name;
+            parentSelect.appendChild(option);
+          });
+        }
+
         document.getElementById("addAccountModal").classList.add("active");
-        document.getElementById("accountCode").value = "";
+
+        // Generate automatic account code
+        generateAutoAccountCode();
         document.getElementById("accountName").value = "";
-        document.getElementById("parentAccount").value = "1";
+      }
+
+      // Generate automatic account code based on parent
+      function generateAutoAccountCode() {
+        const parentId = document.getElementById("parentAccount").value;
+        const parent = findAccountById(treeData, parentId);
+
+        if (!parent || !parent.children || parent.children.length === 0) {
+          // If no children, use parent code + 01
+          document.getElementById("accountCode").value = parentId + "01";
+          return;
+        }
+
+        // Find the highest child code
+        let maxCode = 0;
+        parent.children.forEach((child) => {
+          const childCodeNum = parseInt(child.id.replace(parentId, ""));
+          if (childCodeNum > maxCode) maxCode = childCodeNum;
+        });
+
+        // Generate next code with leading zeros
+        const nextNum = maxCode + 1;
+        const digitCount = parentId.length + 2; // Parent + 2 digits
+        let nextCode = nextNum.toString().padStart(digitCount, "0");
+
+        // Ensure it starts with parent ID
+        if (!nextCode.startsWith(parentId)) {
+          nextCode = parentId + nextNum.toString().padStart(2, "0");
+        }
+
+        document.getElementById("accountCode").value = nextCode;
       }
 
       function closeAddAccountModal() {
@@ -746,8 +798,8 @@
           return;
         }
 
-        // Find parent and add child
-        const parent = treeData.find((a) => a.id === parentId);
+        // Find parent and add child - search in all accounts (main and sub)
+        const parent = findAccountById(treeData, parentId);
         if (parent) {
           parent.children.push({
             id: code,
@@ -759,6 +811,7 @@
           saveTreeData();
           draw(treeData, document.getElementById("treeDisplay"));
           closeAddAccountModal();
+          alert("تم إضافة الحساب بنجاح");
         }
       }
 

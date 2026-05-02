@@ -13,6 +13,8 @@
 - [x] 7. Update Data (F4) - Enable refresh data function
 - [x] 8. Keyboard shortcuts (Ins, F6, Del, F4)
 - [x] 9. Data persistence with localStorage
+- [x] 10. Add sub-account under sub-account - When standing on sub-account, can add child under it
+- [x] 11. Automatic account numbering - Auto-generates account codes based on parent
 
 ## Features Working:
 
@@ -23,11 +25,13 @@
 - ✅ كشف حساب - Show account statement
 - ✅ بحث في قائمة - Search accounts by name
 - ✅ تحديث البيانات (F4) - Refresh data from localStorage
+- ✅ إضافة تفريع - Add sub-branch under sub-account
+- ✅ ترقيم تلقائي - Auto numbering for accounts
 
 ## Main Accounts:
 
 - الأصول (Assets) - id: 1
 - الخصوم (Liabilities) - id: 2
 - حقوق الملكية (Equity) - id: 3
-- الايرادات (Revenues) - id: 4
+- الإيرادات (Revenues) - id: 4
 - المصروفات (Expenses) - id: 5
