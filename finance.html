@@ -358,7 +358,7 @@
           <div class="tool-icon">
             <i class="fas fa-shopping-bag"></i><span>شراء</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openBondModal()">
             <i class="fas fa-file-signature"></i><span>سند</span>
           </div>
         </div>
@@ -608,6 +608,102 @@
             style="max-height: 400px; overflow-y: auto"
           >
             <!-- Account statement will be displayed here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal سند (Bond/Journal Entry) -->
+    <div class="modal-overlay" id="bondModal">
+      <div class="modal" style="width: 500px">
+        <div class="modal-header">
+          <h3>سند قيد</h3>
+          <button class="modal-close" onclick="closeBondModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>رقم القيد</label>
+            <input type="text" id="bondNumber" readonly />
+          </div>
+          <div class="form-group">
+            <label>رقم الحساب</label>
+            <select id="bondAccount" onchange="updateBondAccountName()">
+              <option value="">-- اختر الحساب --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>اسم الحساب</label>
+            <input type="text" id="bondAccountName" readonly />
+          </div>
+          <div style="display: flex; gap: 10px">
+            <div class="form-group" style="flex: 1">
+              <label>مدين (د)</label>
+              <input
+                type="number"
+                id="bondDebit"
+                placeholder="المبلغ"
+                oninput="calculateBondTotals()"
+              />
+            </div>
+            <div class="form-group" style="flex: 1">
+              <label>دائن (د)</label>
+              <input
+                type="number"
+                id="bondCredit"
+                placeholder="المبلغ"
+                oninput="calculateBondTotals()"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>البيان</label>
+            <input type="text" id="bondDescription" placeholder="أدخل البيان" />
+          </div>
+          <div class="form-group">
+            <label>مركز التكلفة</label>
+            <select id="bondCostCenter">
+              <option value="">-- اختر مركز التكلفة --</option>
+              <option value="مركز 1">مركز 1</option>
+              <option value="مركز 2">مركز 2</option>
+              <option value="مركز 3">مركز 3</option>
+            </select>
+          </div>
+          <div
+            style="
+              background: #f1f5f9;
+              padding: 10px;
+              border-radius: 8px;
+              margin-bottom: 15px;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 5px;
+              "
+            >
+              <span>إجمالي مدين:</span>
+              <span id="totalDebit" style="font-weight: bold; color: #e74c3c"
+                >0</span
+              >
+            </div>
+            <div style="display: flex; justify-content: space-between">
+              <span>إجمالي دائن:</span>
+              <span id="totalCredit" style="font-weight: bold; color: #27ae60"
+                >0</span
+              >
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeBondModal()">
+              إلغاء
+            </button>
+            <button class="btn btn-primary" onclick="saveBond()">
+              حفظ القيد
+            </button>
           </div>
         </div>
       </div>
@@ -1094,6 +1190,159 @@
           openAddAccountModal();
         }
       });
+
+      // ===== Bond (سند) Functions =====
+      // Bond/Journal Entry storage
+      let bondEntries = JSON.parse(
+        localStorage.getItem("saden_bond_entries") || "[]",
+      );
+
+      // Open Bond Modal
+      function openBondModal() {
+        // Populate account dropdown from tree
+        const accountSelect = document.getElementById("bondAccount");
+        accountSelect.innerHTML = '<option value="">-- اختر الحساب --</option>';
+
+        // Add all accounts from tree
+        addAccountsToSelect(treeData, accountSelect);
+
+        // Generate auto bond number
+        generateBondNumber();
+
+        // Clear form fields
+        document.getElementById("bondAccountName").value = "";
+        document.getElementById("bondDebit").value = "";
+        document.getElementById("bondCredit").value = "";
+        document.getElementById("bondDescription").value = "";
+        document.getElementById("bondCostCenter").value = "";
+        calculateBondTotals();
+
+        document.getElementById("bondModal").classList.add("active");
+      }
+
+      // Add accounts to select dropdown recursively
+      function addAccountsToSelect(accounts, select) {
+        accounts.forEach((account) => {
+          const option = document.createElement("option");
+          option.value = account.id;
+          option.textContent = account.id + " - " + account.name;
+          select.appendChild(option);
+
+          // Add children if any
+          if (account.children && account.children.length > 0) {
+            addAccountsToSelect(account.children, select);
+          }
+        });
+      }
+
+      // Generate automatic bond number
+      function generateBondNumber() {
+        const nextNum = bondEntries.length + 1;
+        const bondNum = nextNum.toString().padStart(4, "0");
+        document.getElementById("bondNumber").value = bondNum;
+      }
+
+      // Update account name when selection changes
+      function updateBondAccountName() {
+        const accountId = document.getElementById("bondAccount").value;
+        const account = findAccountById(treeData, accountId);
+        if (account) {
+          document.getElementById("bondAccountName").value = account.name;
+        } else {
+          document.getElementById("bondAccountName").value = "";
+        }
+      }
+
+      // Calculate bond totals
+      function calculateBondTotals() {
+        const debit =
+          parseFloat(document.getElementById("bondDebit").value) || 0;
+        const credit =
+          parseFloat(document.getElementById("bondCredit").value) || 0;
+
+        document.getElementById("totalDebit").textContent =
+          debit.toLocaleString();
+        document.getElementById("totalCredit").textContent =
+          credit.toLocaleString();
+      }
+
+      // Close Bond Modal
+      function closeBondModal() {
+        document.getElementById("bondModal").classList.remove("active");
+      }
+
+      // Save Bond Entry
+      function saveBond() {
+        const bondNumber = document.getElementById("bondNumber").value;
+        const accountId = document.getElementById("bondAccount").value;
+        const accountName = document.getElementById("bondAccountName").value;
+        const debit =
+          parseFloat(document.getElementById("bondDebit").value) || 0;
+        const credit =
+          parseFloat(document.getElementById("bondCredit").value) || 0;
+        const description = document
+          .getElementById("bondDescription")
+          .value.trim();
+        const costCenter = document.getElementById("bondCostCenter").value;
+
+        // Validation
+        if (!accountId) {
+          alert("الرجاء اختيار حساب");
+          return;
+        }
+        if (debit === 0 && credit === 0) {
+          alert("الرجاء إدخال المبلغ (مدين أو دائن)");
+          return;
+        }
+        if (debit !== 0 && credit !== 0) {
+          alert("لا يمكن إدخال مدين ودائن في نفس السند");
+          return;
+        }
+
+        // Create bond entry object
+        const bondEntry = {
+          number: bondNumber,
+          accountId: accountId,
+          accountName: accountName,
+          debit: debit,
+          credit: credit,
+          type: debit > 0 ? "debit" : "credit",
+          description: description,
+          costCenter: costCenter,
+          date: new Date().toLocaleDateString("ar-SA"),
+          time: new Date().toLocaleTimeString("ar-SA"),
+        };
+
+        // Save to array
+        bondEntries.push(bondEntry);
+
+        // Save to localStorage
+        localStorage.setItem("saden_bond_entries", JSON.stringify(bondEntries));
+
+        // Also save as account transaction
+        accountTransactions.push({
+          accountId: accountId,
+          accountName: accountName,
+          type: debit > 0 ? "debit" : "credit",
+          amount: debit > 0 ? debit : credit,
+          description: description,
+          date: new Date().toLocaleDateString("ar-SA"),
+          bondNumber: bondNumber,
+        });
+        localStorage.setItem(
+          "saden_account_transactions",
+          JSON.stringify(accountTransactions),
+        );
+
+        // Show success message with bond number
+        alert("تم حفظ القيد رقم " + bondNumber + " بنجاح");
+
+        // Close modal
+        closeBondModal();
+
+        // Refresh tree display to show updated data
+        draw(treeData, document.getElementById("treeDisplay"));
+      }
     </script>
   </body>
 </html>
