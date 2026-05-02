@@ -313,49 +313,49 @@
       <!-- شريط الأدوات الأصلي كاملاً -->
       <div class="top-toolbar">
         <div class="tool-group" style="border: none">
-          <div class="tool-icon">
-            <i class="fas fa-user-tie"></i><span>زبائن</span>
+          <div class="tool-icon" onclick="openCustomersModal()">
+            <i class="fas fa-user-tie"></i><span>عملاء</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openSuppliersModal()">
             <i class="fas fa-truck-loading"></i><span>موردين</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openAccountsModal()">
             <i class="fas fa-university"></i><span>حسابات</span>
           </div>
         </div>
         <div class="tool-group">
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openLedgerModal()">
             <i class="fas fa-book-open"></i><span>أستاذ</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openBalanceModal()">
             <i class="fas fa-balance-scale-right"></i><span>ميزان</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openMaterialsModal()">
             <i class="fas fa-boxes"></i><span>مواد</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openCardModal()">
             <i class="fas fa-address-card"></i><span>بطاقة</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openListModal()">
             <i class="fas fa-list-ul"></i><span>قائمة</span>
           </div>
         </div>
         <div class="tool-group">
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openTransferModal()">
             <i class="fas fa-exchange-alt"></i><span>مناقلة</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openManufacturingModal()">
             <i class="fas fa-industry"></i><span>تصنيع</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openPOSModal()">
             <i class="fas fa-cash-register"></i><span>POS</span>
           </div>
         </div>
         <div class="tool-group">
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openSalesModal()">
             <i class="fas fa-shopping-cart"></i><span>مبيع</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openPurchaseModal()">
             <i class="fas fa-shopping-bag"></i><span>شراء</span>
           </div>
           <div class="tool-icon" onclick="openBondModal()">
@@ -363,10 +363,10 @@
           </div>
         </div>
         <div class="tool-group">
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openEmployeesModal()">
             <i class="fas fa-user-friends"></i><span>العاملين</span>
           </div>
-          <div class="tool-icon">
+          <div class="tool-icon" onclick="openMiscModal()">
             <i class="fas fa-layer-group"></i><span>متنوعات</span>
           </div>
         </div>
@@ -438,6 +438,13 @@
             </div>
             <div class="side-btn" onclick="updateData()">
               تحديث البيانات <span class="shortcut">F4</span>
+            </div>
+            <div
+              class="side-btn"
+              onclick="resetToDefault()"
+              style="background: #fee; margin-top: 4px"
+            >
+              إعادة تعيين الافتراضي
             </div>
           </div>
         </div>
@@ -613,6 +620,51 @@
       </div>
     </div>
 
+<!-- Modal إضافة عميل -->
+    <div class="modal-overlay" id="customerModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>إضافة عميل جديد</h3>
+          <button class="modal-close" onclick="closeCustomerModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>اسم العميل</label>
+            <input type="text" id="customerName" placeholder="أدخل اسم العميل" />
+          </div>
+          <div class="form-group">
+            <label>نوع العميل</label>
+            <select id="customerType">
+              <option value="1221">عملاء محليين</option>
+              <option value="1222">عملاء أجانب</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>رقم الهاتف</label>
+            <input type="text" id="customerPhone" placeholder="أدخل رقم الهاتف" />
+          </div>
+          <div class="form-group">
+            <label>العنوان</label>
+            <input type="text" id="customerAddress" placeholder="أدخل العنوان" />
+          </div>
+          <div class="form-group">
+            <label>الرصيد المفتوح</label>
+            <input type="number" id="customerBalance" placeholder="أدخل الرصيد المفتوح" />
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeCustomerModal()">
+              إلغاء
+            </button>
+            <button class="btn btn-primary" onclick="addCustomer()">
+              إضافة
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal سند (Bond/Journal Entry) -->
     <div class="modal-overlay" id="bondModal">
       <div class="modal" style="width: 500px">
@@ -726,10 +778,109 @@
           id: "1",
           name: "الأصول",
           type: "main",
-          expanded: true,
+          expanded: false,
           children: [
-            { id: "11", name: "الأصول الثابتة", type: "sub", children: [] },
-            { id: "12", name: "الأصول المتداولة", type: "sub", children: [] },
+            {
+              id: "11",
+              name: "الأصول الثابتة",
+              type: "sub",
+              expanded: false,
+              children: [
+                {
+                  id: "111",
+                  name: "الأراضي والمباني",
+                  type: "sub",
+                  children: [],
+                },
+                { id: "112", name: "المركبات", type: "sub", children: [] },
+                {
+                  id: "113",
+                  name: "الأثاث والمعدات",
+                  type: "sub",
+                  children: [],
+                },
+                {
+                  id: "114",
+                  name: "أجهزة الحاسب الآلي",
+                  type: "sub",
+                  children: [],
+                },
+                { id: "115", name: "معدات مكتبية", type: "sub", children: [] },
+                {
+                  id: "116",
+                  name: "إهلاك الأصول الثابتة",
+                  type: "sub",
+                  children: [],
+                },
+              ],
+            },
+            {
+              id: "12",
+              name: "الأصول المتداولة",
+              type: "sub",
+expanded: false,
+              children: [
+                {
+                  id: "121",
+                  name: "النقدية",
+                  type: "sub",
+                  expanded: false,
+                  children: [
+                    { id: "1211", name: "الصندوق", type: "sub", children: [] },
+                    { id: "1212", name: "البنك", type: "sub", children: [] },
+                  ],
+                },
+                {
+                  id: "122",
+                  name: "العملاء (الذمم المدينة)",
+                  type: "sub",
+                  expanded: false,
+                  children: [
+                    {
+                      id: "1221",
+                      name: "عملاء محليين",
+                      type: "sub",
+                      children: [],
+                    },
+                    {
+                      id: "1222",
+                      name: "عملاء أجانب",
+                      type: "sub",
+                      children: [],
+                    },
+                  ],
+                },
+                { id: "123", name: "أوراق القبض", type: "sub", children: [] },
+                {
+                  id: "124",
+                  name: "المخزون",
+                  type: "sub",
+                  expanded: false,
+                  children: [
+                    { id: "1241", name: "مواد خام", type: "sub", children: [] },
+                    {
+                      id: "1242",
+                      name: "بضاعة تامة",
+                      type: "sub",
+                      children: [],
+                    },
+                    { id: "1243", name: "مستلزمات", type: "sub", children: [] },
+                  ],
+                },
+                {
+                  id: "125",
+                  name: "المصروفات المقدمة",
+                  type: "sub",
+                  children: [],
+                },
+                {
+                  id: "126",
+                  name: "الإيرادات المستحقة",
+                  type: "sub",
+                  children: [],
+                },
+              ],
+            },
           ],
         },
         {
@@ -737,28 +888,139 @@
           name: "الخصوم",
           type: "main",
           expanded: false,
-          children: [],
+          children: [
+            {
+              id: "21",
+              name: "الموردين (الذمم الدائنة)",
+              type: "sub",
+              children: [],
+            },
+            { id: "22", name: "أوراق الدفع", type: "sub", children: [] },
+            { id: "23", name: "المصروفات المستحقة", type: "sub", children: [] },
+            { id: "24", name: "الإيرادات المقدمة", type: "sub", children: [] },
+            {
+              id: "25",
+              name: "القروض",
+              type: "sub",
+              expanded: false,
+              children: [
+                {
+                  id: "251",
+                  name: "قروض قصيرة الأجل",
+                  type: "sub",
+                  children: [],
+                },
+                {
+                  id: "252",
+                  name: "قروض طويلة الأجل",
+                  type: "sub",
+                  children: [],
+                },
+              ],
+            },
+            {
+              id: "26",
+              name: "الضرائب",
+              type: "sub",
+              expanded: false,
+              children: [
+                {
+                  id: "261",
+                  name: "ضريبة القيمة المضافة",
+                  type: "sub",
+                  children: [],
+                },
+                { id: "262", name: "ضريبة الدخل", type: "sub", children: [] },
+              ],
+            },
+            { id: "27", name: "الرواتب المستحقة", type: "sub", children: [] },
+          ],
         },
         {
           id: "3",
           name: "حقوق الملكية",
           type: "main",
           expanded: false,
-          children: [],
+          children: [
+            { id: "31", name: "رأس المال", type: "sub", children: [] },
+            { id: "32", name: "جاري الشركاء", type: "sub", children: [] },
+            { id: "33", name: "الاحتياطيات", type: "sub", children: [] },
+            { id: "34", name: "الأرباح المرحلة", type: "sub", children: [] },
+            {
+              id: "35",
+              name: "صافي الربح / الخسارة",
+              type: "sub",
+              children: [],
+            },
+          ],
         },
         {
           id: "4",
-          name: "الايرادات",
+          name: "الإيرادات",
           type: "main",
           expanded: false,
-          children: [],
+          children: [
+            {
+              id: "41",
+              name: "إيرادات تشغيلية",
+              type: "sub",
+              expanded: false,
+              children: [
+                { id: "411", name: "إيرادات خدمات", type: "sub", children: [] },
+                {
+                  id: "412",
+                  name: "إيرادات مبيعات",
+                  type: "sub",
+                  children: [],
+                },
+              ],
+            },
+            {
+              id: "42",
+              name: "إيرادات أخرى",
+              type: "sub",
+              expanded: false,
+              children: [
+                {
+                  id: "421",
+                  name: "أرباح فروق عملة",
+                  type: "sub",
+                  children: [],
+                },
+                {
+                  id: "422",
+                  name: "إيرادات استثمار",
+                  type: "sub",
+                  children: [],
+                },
+                {
+                  id: "423",
+                  name: "إيرادات إيجارات",
+                  type: "sub",
+                  children: [],
+                },
+              ],
+            },
+          ],
         },
         {
           id: "5",
           name: "المصروفات",
           type: "main",
           expanded: false,
-          children: [],
+          children: [
+            { id: "51", name: "الرواتب والأجور", type: "sub", children: [] },
+            { id: "52", name: "الإيجارات", type: "sub", children: [] },
+            { id: "53", name: "الكهرباء والمياه", type: "sub", children: [] },
+            { id: "54", name: "الاتصالات", type: "sub", children: [] },
+            { id: "55", name: "مصاريف إدارية", type: "sub", children: [] },
+            { id: "56", name: "مصاريف تسويق", type: "sub", children: [] },
+            { id: "57", name: "مصاريف صيانة", type: "sub", children: [] },
+            { id: "58", name: "مصاريف نقل", type: "sub", children: [] },
+            { id: "59", name: "مصاريف بنكية", type: "sub", children: [] },
+            { id: "60", name: "إهلاك الأصول", type: "sub", children: [] },
+            { id: "61", name: "مصاريف أخرى", type: "sub", children: [] },
+          ],
         },
       ];
 
@@ -770,20 +1032,20 @@
       function draw(data, container) {
         container.innerHTML = "";
         data.forEach((n) => {
+          const hasChildren = n.children && n.children.length > 0;
           const isMain = n.type === "main";
           const div = document.createElement("div");
           div.innerHTML = `
                 <div class="node-row" onclick="sel('${n.id}', '${n.name}')">
-                    ${isMain ? `<div class="toggle-btn" onclick="tog(event, '${n.id}')">${n.expanded ? "-" : "+"}</div>` : '<div style="width:18px"></div>'}
-                    <i class="${isMain ? "fas fa-folder" : "fas fa-file-invoice"}" style="color:${isMain ? "#f1c40f" : "#2ecc71"}"></i>
+                    ${hasChildren ? `<div class="toggle-btn" onclick="tog(event, '${n.id}')">${n.expanded ? "-" : "+"}</div>` : '<div style="width:18px"></div>'}
+                    <i class="${isMain || hasChildren ? "fas fa-folder" : "fas fa-file-invoice"}" style="color:${isMain ? "#f1c40f" : "#2ecc71"}"></i>
                     <span class="code-tag">${n.id}</span>
                     <span>${n.name}</span>
                 </div>
                 <div class="children-group ${n.expanded ? "expanded" : ""}" id="g-${n.id}"></div>
             `;
           container.appendChild(div);
-          if (n.children && n.children.length > 0)
-            draw(n.children, div.querySelector(`#g-${n.id}`));
+          if (hasChildren) draw(n.children, div.querySelector(`#g-${n.id}`));
         });
       }
 
@@ -1124,6 +1386,24 @@
         alert("تم تحديث البيانات");
       }
 
+      // Reset to Default Function
+      function resetToDefault() {
+        if (
+          !confirm(
+            "هل أنت متأكد من إعادة تعيين البيانات الافتراضية؟\nسيتم مسح جميع الحسابات المضافة وحفظ الشجرة الافتراضية الجديدة.",
+          )
+        ) {
+          return;
+        }
+        // Clear localStorage and reload default tree
+        localStorage.removeItem("saden_account_tree");
+        localStorage.removeItem("saden_bond_entries");
+        localStorage.removeItem("saden_account_transactions");
+
+        // Reload page to get fresh default data
+        location.reload();
+      }
+
       // Helper Functions
       function findAccountById(list, id) {
         for (let n of list) {
@@ -1190,6 +1470,55 @@
           openAddAccountModal();
         }
       });
+
+      // ===== Toolbar Button Functions =====
+      // These functions show alerts for now - can be extended to open actual modals
+
+      function openCustomersModal() {
+        alert("جاري فتح نافذة الزبائن...");
+      }
+      function openSuppliersModal() {
+        alert("جاري فتح نافذة الموردين...");
+      }
+      function openAccountsModal() {
+        alert("جاري فتح نافذة الحسابات...");
+      }
+      function openLedgerModal() {
+        alert("جاري فتح نافذة الأستاذ...");
+      }
+      function openBalanceModal() {
+        alert("جاري فتح نافذة الميزان...");
+      }
+      function openMaterialsModal() {
+        alert("جاري فتح نافذة المواد...");
+      }
+      function openCardModal() {
+        alert("جاري فتح نافذة البطاقة...");
+      }
+      function openListModal() {
+        alert("جاري فتح نافذة القائمة...");
+      }
+      function openTransferModal() {
+        alert("جاري فتح نافذة المناقلة...");
+      }
+      function openManufacturingModal() {
+        alert("جاري فتح نافذة التصنيع...");
+      }
+      function openPOSModal() {
+        alert("جاري فتح نافذة الـ POS...");
+      }
+      function openSalesModal() {
+        alert("جاري فتح نافذة المبيعات...");
+      }
+      function openPurchaseModal() {
+        alert("جاري فتح نافذة المشتريات...");
+      }
+      function openEmployeesModal() {
+        alert("جاري فتح نافذة العاملين...");
+      }
+      function openMiscModal() {
+        alert("جاري فتح نافذة المتنوعات...");
+      }
 
       // ===== Bond (سند) Functions =====
       // Bond/Journal Entry storage
