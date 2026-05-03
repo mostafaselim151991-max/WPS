@@ -306,6 +306,82 @@
       .btn-secondary:hover {
         background: #cbd5e1;
       }
+
+      /* Dropdown Menu for Clients */
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background: white;
+        min-width: 200px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        z-index: 1000;
+        top: 100%;
+        left: 0;
+        overflow: hidden;
+      }
+      .dropdown-content.show {
+        display: block;
+      }
+      .dropdown-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: bold;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.2s;
+      }
+      .dropdown-item:hover {
+        background: #f1f5f9;
+        color: var(--primary);
+      }
+      .dropdown-item i {
+        width: 20px;
+        text-align: center;
+      }
+
+      /* Customer List in Tree */
+      .client-node {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 6px;
+        padding: 4px 8px;
+        margin: 2px 0;
+        font-size: 12px;
+      }
+      .client-node:hover {
+        background: #dcfce7;
+      }
+
+      /* Client Details Modal */
+      .client-details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-top: 15px;
+      }
+      .detail-item {
+        background: #f8fafc;
+        padding: 10px;
+        border-radius: 6px;
+      }
+      .detail-item label {
+        font-size: 11px;
+        color: #64748b;
+        display: block;
+        margin-bottom: 3px;
+      }
+      .detail-item span {
+        font-weight: bold;
+        color: var(--dark);
+      }
     </style>
   </head>
   <body>
@@ -313,8 +389,39 @@
       <!-- شريط الأدوات الأصلي كاملاً -->
       <div class="top-toolbar">
         <div class="tool-group" style="border: none">
-          <div class="tool-icon" onclick="openCustomersModal()">
-            <i class="fas fa-user-tie"></i><span>عملاء</span>
+          <div class="dropdown" onclick="toggleCustomerDropdown(event)">
+            <div class="tool-icon" style="pointer-events: none">
+              <i class="fas fa-user-tie"></i><span>عملاء</span>
+            </div>
+            <div id="customerDropdown" class="dropdown-content">
+              <div
+                class="dropdown-item"
+                onclick="
+                  openAddCustomerModal();
+                  event.stopPropagation();
+                "
+              >
+                <i class="fas fa-user-plus"></i> إضافة عميل جديد
+              </div>
+              <div
+                class="dropdown-item"
+                onclick="
+                  viewCurrentClients();
+                  event.stopPropagation();
+                "
+              >
+                <i class="fas fa-users"></i> عرض العملاء الحاليين
+              </div>
+              <div
+                class="dropdown-item"
+                onclick="
+                  openCustomerListModal();
+                  event.stopPropagation();
+                "
+              >
+                <i class="fas fa-list"></i> قائمة العملاء
+              </div>
+            </div>
           </div>
           <div class="tool-icon" onclick="openSuppliersModal()">
             <i class="fas fa-truck-loading"></i><span>موردين</span>
@@ -620,7 +727,7 @@
       </div>
     </div>
 
-<!-- Modal إضافة عميل -->
+    <!-- Modal إضافة عميل -->
     <div class="modal-overlay" id="customerModal">
       <div class="modal">
         <div class="modal-header">
@@ -632,7 +739,11 @@
         <div class="modal-body">
           <div class="form-group">
             <label>اسم العميل</label>
-            <input type="text" id="customerName" placeholder="أدخل اسم العميل" />
+            <input
+              type="text"
+              id="customerName"
+              placeholder="أدخل اسم العميل"
+            />
           </div>
           <div class="form-group">
             <label>نوع العميل</label>
@@ -643,15 +754,27 @@
           </div>
           <div class="form-group">
             <label>رقم الهاتف</label>
-            <input type="text" id="customerPhone" placeholder="أدخل رقم الهاتف" />
+            <input
+              type="text"
+              id="customerPhone"
+              placeholder="أدخل رقم الهاتف"
+            />
           </div>
           <div class="form-group">
             <label>العنوان</label>
-            <input type="text" id="customerAddress" placeholder="أدخل العنوان" />
+            <input
+              type="text"
+              id="customerAddress"
+              placeholder="أدخل العنوان"
+            />
           </div>
           <div class="form-group">
             <label>الرصيد المفتوح</label>
-            <input type="number" id="customerBalance" placeholder="أدخل الرصيد المفتوح" />
+            <input
+              type="number"
+              id="customerBalance"
+              placeholder="أدخل الرصيد المفتوح"
+            />
           </div>
           <div class="modal-actions">
             <button class="btn btn-secondary" onclick="closeCustomerModal()">
@@ -818,7 +941,7 @@
               id: "12",
               name: "الأصول المتداولة",
               type: "sub",
-expanded: false,
+              expanded: false,
               children: [
                 {
                   id: "121",
@@ -1671,6 +1794,277 @@ expanded: false,
 
         // Refresh tree display to show updated data
         draw(treeData, document.getElementById("treeDisplay"));
+      }
+
+      // ==================== Customer Functions ====================
+
+      // Customer data storage
+      let customers = JSON.parse(
+        localStorage.getItem("saden_customers") || "[]",
+      );
+
+      // Toggle dropdown menu
+      function toggleCustomerDropdown(event) {
+        event.stopPropagation();
+        const dropdown = document.getElementById("customerDropdown");
+        dropdown.classList.toggle("show");
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function closeDropdown(e) {
+          if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove("show");
+            document.removeEventListener("click", closeDropdown);
+          }
+        });
+      }
+
+      // Open add customer modal
+      function openAddCustomerModal() {
+        document.getElementById("customerName").value = "";
+        document.getElementById("customerPhone").value = "";
+        document.getElementById("customerAddress").value = "";
+        document.getElementById("customerBalance").value = "";
+        document.getElementById("customerModal").classList.add("active");
+        // Close dropdown
+        document.getElementById("customerDropdown").classList.remove("show");
+      }
+
+      // Close customer modal
+      function closeCustomerModal() {
+        document.getElementById("customerModal").classList.remove("active");
+      }
+
+      // Add new customer
+      function addCustomer() {
+        const customerName = document
+          .getElementById("customerName")
+          .value.trim();
+        const customerType = document.getElementById("customerType").value;
+        const customerPhone = document
+          .getElementById("customerPhone")
+          .value.trim();
+        const customerAddress = document
+          .getElementById("customerAddress")
+          .value.trim();
+        const customerBalance =
+          parseFloat(document.getElementById("customerBalance").value) || 0;
+
+        if (!customerName) {
+          alert("الرجاء إدخال اسم العميل");
+          return;
+        }
+
+        // Generate unique customer code
+        const parentCode = customerType;
+        const existingCustomers = customers.filter(
+          (c) => c.type === parentCode,
+        );
+        let maxCode = 0;
+        existingCustomers.forEach((c) => {
+          const codeNum = parseInt(c.code.replace(parentCode, ""));
+          if (codeNum > maxCode) maxCode = codeNum;
+        });
+        const customerCode =
+          parentCode + (maxCode + 1).toString().padStart(2, "0");
+
+        // Add customer to array
+        const newCustomer = {
+          code: customerCode,
+          name: customerName,
+          type: customerType,
+          phone: customerPhone,
+          address: customerAddress,
+          balance: customerBalance,
+          date: new Date().toLocaleDateString("ar-SA"),
+        };
+
+        customers.push(newCustomer);
+        localStorage.setItem("saden_customers", JSON.stringify(customers));
+
+        // Add to account tree
+        addCustomerToTree(newCustomer);
+
+        alert("تم إضافة العميل " + customerName + " بنجاح");
+        closeCustomerModal();
+      }
+
+      // Add customer to account tree
+      function addCustomerToTree(customer) {
+        const parentId = customer.type;
+        const parent = findAccountById(treeData, parentId);
+
+        if (parent) {
+          // Check if customer already exists
+          const exists =
+            parent.children &&
+            parent.children.some((c) => c.id === customer.code);
+          if (!exists) {
+            parent.children.push({
+              id: customer.code,
+              name: customer.name,
+              type: "client",
+              clientData: customer,
+            });
+            parent.expanded = true;
+            saveTreeData();
+            draw(treeData, document.getElementById("treeDisplay"));
+          }
+        }
+      }
+
+      // View current clients in tree
+      function viewCurrentClients() {
+        // Close dropdown
+        document.getElementById("customerDropdown").classList.remove("show");
+
+        // Expand and highlight clients section
+        const clientsNode = findAccountById(treeData, "122");
+        if (clientsNode) {
+          clientsNode.expanded = true;
+          // Also expand sub-categories
+          if (clientsNode.children) {
+            clientsNode.children.forEach((child) => {
+              child.expanded = true;
+            });
+          }
+          saveTreeData();
+          draw(treeData, document.getElementById("treeDisplay"));
+
+          // Scroll to tree
+          document
+            .querySelector(".tree-area")
+            .scrollIntoView({ behavior: "smooth" });
+        }
+      }
+
+      // Open customer list modal
+      function openCustomerListModal() {
+        document.getElementById("customerDropdown").classList.remove("show");
+
+        let html = '<div style="padding:20px;">';
+        html += '<h3 style="margin-top:0;">قائمة العملاء</h3>';
+
+        if (customers.length === 0) {
+          html +=
+            '<p style="color:#666; text-align:center;">لا يوجد عملاء مسجلين</p>';
+        } else {
+          html += '<table style="width:100%; border-collapse:collapse;">';
+          html +=
+            '<tr style="background:#f1f5f9;"><th style="padding:8px; text-align:right;">#</th><th style="padding:8px; text-align:right;">اسم العميل</th><th style="padding:8px; text-align:right;">النوع</th><th style="padding:8px; text-align:right;">الهاتف</th><th style="padding:8px; text-align:right;">الرصيد</th><th style="padding:8px; text-align:right;">إجراءات</th></tr>';
+
+          customers.forEach((c, i) => {
+            const typeName = c.type === "1221" ? "محلي" : "أجنبي";
+            html += '<tr style="border-bottom:1px solid #eee;">';
+            html += '<td style="padding:8px;">' + (i + 1) + "</td>";
+            html +=
+              '<td style="padding:8px; font-weight:bold;">' + c.name + "</td>";
+            html += '<td style="padding:8px;">' + typeName + "</td>";
+            html += '<td style="padding:8px;">' + (c.phone || "-") + "</td>";
+            html +=
+              '<td style="padding:8px;">' +
+              c.balance.toLocaleString() +
+              "</td>";
+            html += '<td style="padding:8px;">';
+            html +=
+              '<button onclick="viewClientDetails(' +
+              i +
+              ')" style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">👁️</button> ';
+            html +=
+              '<button onclick="deleteCustomer(' +
+              i +
+              ')" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">🗑️</button>';
+            html += "</td></tr>";
+          });
+          html += "</table>";
+        }
+
+        html += "</div>";
+
+        // Show in statement modal
+        document.getElementById("statementContent").innerHTML = html;
+        document
+          .getElementById("accountStatementModal")
+          .classList.add("active");
+
+        // Update modal header
+        document.querySelector(
+          "#accountStatementModal .modal-header h3",
+        ).textContent = "قائمة العملاء";
+      }
+
+      // View client details
+      function viewClientDetails(index) {
+        const c = customers[index];
+        if (!c) return;
+
+        const typeName = c.type === "1221" ? "محلي" : "أجنبي";
+
+        let html = '<div style="padding:15px;">';
+        html +=
+          '<h3 style="margin-top:0; color:var(--primary);">' + c.name + "</h3>";
+        html += '<div class="client-details-grid">';
+        html +=
+          '<div class="detail-item"><label>رقم الحساب</label><span>' +
+          c.code +
+          "</span></div>";
+        html +=
+          '<div class="detail-item"><label>النوع</label><span>' +
+          typeName +
+          "</span></div>";
+        html +=
+          '<div class="detail-item"><label>رقم الهاتف</label><span>' +
+          (c.phone || "-") +
+          "</span></div>";
+        html +=
+          '<div class="detail-item"><label>العنوان</label><span>' +
+          (c.address || "-") +
+          "</span></div>";
+        html +=
+          '<div class="detail-item"><label>الرصيد المفتوح</label><span>' +
+          c.balance.toLocaleString() +
+          " ر.س</span></div>";
+        html +=
+          '<div class="detail-item"><label>تاريخ الإضافة</label><span>' +
+          c.date +
+          "</span></div>";
+        html += "</div>";
+        html += "</div>";
+
+        document.getElementById("statementContent").innerHTML = html;
+      }
+
+      // Delete customer
+      function deleteCustomer(index) {
+        if (!confirm("هل أنت متأكد من حذف هذا العميل؟")) return;
+
+        const c = customers[index];
+        if (c) {
+          customers.splice(index, 1);
+          localStorage.setItem("saden_customers", JSON.stringify(customers));
+
+          // Remove from tree
+          removeAccountById(treeData, c.code);
+          saveTreeData();
+          draw(treeData, document.getElementById("treeDisplay"));
+
+          alert("تم حذف العميل بنجاح");
+          openCustomerListModal(); // Refresh list
+        }
+      }
+
+      // Load customers to tree on startup
+      function loadCustomersToTree() {
+        customers.forEach((customer) => {
+          addCustomerToTree(customer);
+        });
+      }
+
+      // Initialize customers on page load
+      loadCustomersToTree();
+
+      // Replace old function to use dropdown
+      function openCustomersModal() {
+        toggleCustomerDropdown(event);
       }
     </script>
   </body>
